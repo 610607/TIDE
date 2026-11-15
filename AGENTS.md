@@ -2,7 +2,7 @@
 
 ## Purpose
 
-TIDE is a digital-life kernel driven by basic rules. Execution, replication, spatial interaction, and resource constraints are the subject of study. The kernel is written in C++.
+TIDE (TIDE Is Digital Evolution) is a digital-life kernel driven by basic rules. Execution, replication, spatial interaction, and resource constraints are the subject of study. The kernel is written in C++.
 
 Research comes first: the project aims to contribute to the study of open-ended evolution, with results others can replay. See the [roadmap](docs/roadmap.md) for stages, the performance line, and the literature search plan.
 

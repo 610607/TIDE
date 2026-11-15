@@ -1,5 +1,7 @@
 # TIDE Roadmap
 
+TIDE stands for TIDE Is Digital Evolution.
+
 Updated: 2026-11-15.
 
 This roadmap is a plan. Stage contents are proposals until their rules are agreed; [AGENTS.md](../AGENTS.md) records what is decided.
