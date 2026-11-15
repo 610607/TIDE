@@ -15,12 +15,22 @@ Decided:
 - Build the C++ kernel first; consider upper layers afterwards.
 - Start the kernel fresh under an agreed contract rather than evolving the earlier prototype.
 - Study evolution after a supplied ancestor first. Emergence of replicators from random programs is a separate, later experiment with its own acceptance criteria.
-- Ecological labels and classifications must not influence physical behavior.
+- Ecological labels and classifications must not influence physical behavior. Kernel state carries no role, shield, or host fields; relationships such as parasitism are diagnosed in analysis only.
+- The first kernel is a local address-based VM: each individual owns its CPU, and readable regions, writable allocations, and instruction-fetch permissions are explicit. A bound-reaction model is a possible later kernel or comparison, not the first one. See [kernel notes](docs/tierra-stringmol-kernel-notes.md).
+- Copying moves a byte from a read pointer to a write pointer. A program can direct the read pointer at any region its permissions allow, including a neighbor's.
+- Allocation occupies public lattice space before division, so competition for space happens during replication.
+
+Working defaults for the first version. Each is a named configuration variable to test, not a settled rule:
+
+- One program per site; addresses are a neighbor direction plus an offset.
+- A program writes only to its own allocation; reading and instruction fetch may reach neighbors.
+- Death leaves the code bytes in place as unowned memory that others can read and fetch but that no longer executes itself.
+- CPU time slices are the only cost. Per-byte upkeep and length-based division costs are switchable variables, off by default.
 
 Open:
 
-- The execution and addressing contract: local address-based VM versus bound-reaction model. See [kernel notes](docs/tierra-stringmol-kernel-notes.md).
-- Spatial granularity, update order, explicit energy, offspring placement, and reclamation.
+- Update order and newborn scheduling, boundaries, offspring placement, reclamation policy, and mutation operators.
+- The instruction set and the exact permission rules that realize the decisions above.
 
 Do not present an open item or a candidate design as an agreed requirement. Move an item to "Decided" only after the user agrees to it.
 
