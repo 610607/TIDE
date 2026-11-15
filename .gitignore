@@ -1,0 +1,12 @@
+# Earlier exploratory prototype; local reference only
+prototype/
+
+# Cached research PDFs; tracked through docs/references/manifest.json
+docs/references/pdf/*
+!docs/references/pdf/.gitkeep
+
+# Build output
+build/
+
+# OS and editor files
+.DS_Store
