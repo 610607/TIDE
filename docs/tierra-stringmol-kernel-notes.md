@@ -2,7 +2,7 @@
 
 Updated: 2026-11-15.
 
-This reading examines execution ownership, replication addresses, offspring placement, and scheduling against the current [C++ kernel](../prototype/core/src/tide_vm.cpp) and [state definitions](../prototype/core/include/tide_vm.hpp). See the [literature review](alife-literature-review.md) for the wider research scope.
+This reading examines execution ownership, replication addresses, offspring placement, and scheduling against the C++ kernel of the earlier exploratory prototype (`prototype/core/src/tide_vm.cpp`) and its state definitions (`prototype/core/include/tide_vm.hpp`). The prototype is a local reference and is not tracked in this repository; "current" below refers to that prototype. See the [literature review](alife-literature-review.md) for the wider research scope.
 
 The central design question is how far programs can change the source, destination, control flow, and cost of replication. Removing ecological labels from causal rules addresses only part of that question.
 
@@ -103,5 +103,6 @@ After agreement, centralize shared state/interface changes and delegate implemen
 
 - Mechanism reading and source-code comparison are complete for this round.
 - Candidate contracts and discriminating experiments are documented; no new kernel contract is agreed.
+- Later update: the local address-based VM was chosen as the first kernel contract. [AGENTS.md](../AGENTS.md) holds the current decisions.
 - These experiments have not been run, and C++, Node bindings, and frontend files have not been changed.
 - The 2021 Stringmol mutation configuration remains a specific follow-up; it does not alter the execution and spatial distinctions established here.
