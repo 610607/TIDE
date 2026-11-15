@@ -4,21 +4,25 @@
 
 TIDE is a digital-life kernel driven by basic rules. Execution, replication, spatial interaction, and resource constraints are the subject of study. The kernel is written in C++.
 
+Research comes first: the project aims to contribute to the study of open-ended evolution, with results others can replay. See the [roadmap](docs/roadmap.md) for stages, the performance line, and the literature search plan.
+
 Upper layers (phenotype naming, cards, controller seats, narrative, web UI) are out of scope until the kernel is established. Do not add them, and do not let their vocabulary shape kernel rules.
 
 ## Current stage
 
-Literature reading is complete for the first round. The first-kernel rule discussion is in progress. No kernel code exists in this repository yet.
+Literature reading is complete for the first round. Research positioning (RQ) and the kernel contract (R0) are in progress. No kernel code exists in this repository yet.
 
 Decided:
 
-- Build the C++ kernel first; consider upper layers afterwards.
+- Research is the first priority. Build the C++ kernel first; consider upper layers afterwards.
 - Start the kernel fresh under an agreed contract rather than evolving the earlier prototype.
 - Study evolution after a supplied ancestor first. Emergence of replicators from random programs is a separate, later experiment with its own acceptance criteria.
 - Ecological labels and classifications must not influence physical behavior. Kernel state carries no role, shield, or host fields; relationships such as parasitism are diagnosed in analysis only.
 - The first kernel is a local address-based VM: each individual owns its CPU, and readable regions, writable allocations, and instruction-fetch permissions are explicit. A bound-reaction model is a possible later kernel or comparison, not the first one. See [kernel notes](docs/tierra-stringmol-kernel-notes.md).
 - Copying moves a byte from a read pointer to a write pointer. A program can direct the read pointer at any region its permissions allow, including a neighbor's.
 - Allocation occupies public lattice space before division, so competition for space happens during replication.
+- The default update is two-phase and synchronous: execute, then resolve conflicts by a deterministic rule. Sequential random-order update is a CPU-only comparison mode.
+- GPU acceleration comes after the rules stabilize and must be cross-platform. The single-threaded CPU implementation is the reference that other backends must match by state hash.
 
 Working defaults for the first version. Each is a named configuration variable to test, not a settled rule:
 
@@ -29,7 +33,8 @@ Working defaults for the first version. Each is a named configuration variable t
 
 Open:
 
-- Update order and newborn scheduling, boundaries, offspring placement, reclamation policy, and mutation operators.
+- The research question the kernel must be able to test.
+- Conflict resolution and newborn scheduling, boundaries, offspring placement, reclamation policy, and mutation operators.
 - The instruction set and the exact permission rules that realize the decisions above.
 
 Do not present an open item or a candidate design as an agreed requirement. Move an item to "Decided" only after the user agrees to it.
@@ -38,7 +43,7 @@ Do not present an open item or a candidate design as an agreed requirement. Move
 
 | Path | Contents |
 | --- | --- |
-| `docs/` | Literature review, mechanism notes, and design discussion |
+| `docs/` | Roadmap, literature review, mechanism notes, and design discussion |
 | `docs/references/` | Reference index and cache manifest; PDF files are local only |
 | `prototype/` | Earlier exploratory prototype; local only, not tracked |
 
