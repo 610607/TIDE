@@ -1,0 +1,17 @@
+# v11: energy diffusion and bond storage; rich = e_in 3, lean = e_in 1 e_basal 2
+rich_D_allow_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 e_diffuse=1 seed=1 ext_write=allow
+lean_D_allow_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 e_diffuse=1 seed=1 ext_write=allow e_in=1 e_basal=2
+lean_DB2_allow_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 e_diffuse=1 seed=1 ext_write=allow e_in=1 e_basal=2 bond_store=1 e_bond=2
+lean_DB8_allow_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 e_diffuse=1 seed=1 ext_write=allow e_in=1 e_basal=2 bond_store=1 e_bond=8
+rich_D_erase_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 e_diffuse=1 seed=1 ext_write=erase e_erase=4
+lean_D_erase_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 e_diffuse=1 seed=1 ext_write=erase e_erase=4 e_in=1 e_basal=2
+lean_DB2_erase_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 e_diffuse=1 seed=1 ext_write=erase e_erase=4 e_in=1 e_basal=2 bond_store=1 e_bond=2
+lean_DB8_erase_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 e_diffuse=1 seed=1 ext_write=erase e_erase=4 e_in=1 e_basal=2 bond_store=1 e_bond=8
+rich_D_allow_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 e_diffuse=1 seed=2 ext_write=allow
+lean_D_allow_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 e_diffuse=1 seed=2 ext_write=allow e_in=1 e_basal=2
+lean_DB2_allow_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 e_diffuse=1 seed=2 ext_write=allow e_in=1 e_basal=2 bond_store=1 e_bond=2
+lean_DB8_allow_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 e_diffuse=1 seed=2 ext_write=allow e_in=1 e_basal=2 bond_store=1 e_bond=8
+rich_D_erase_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 e_diffuse=1 seed=2 ext_write=erase e_erase=4
+lean_D_erase_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 e_diffuse=1 seed=2 ext_write=erase e_erase=4 e_in=1 e_basal=2
+lean_DB2_erase_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 e_diffuse=1 seed=2 ext_write=erase e_erase=4 e_in=1 e_basal=2 bond_store=1 e_bond=2
+lean_DB8_erase_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 e_diffuse=1 seed=2 ext_write=erase e_erase=4 e_in=1 e_basal=2 bond_store=1 e_bond=8

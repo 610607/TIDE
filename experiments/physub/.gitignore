@@ -1,0 +1,4 @@
+# Run outputs and replays are reproducible from scripts/jobs and stay local.
+runs/
+viewer/data/
+build*/

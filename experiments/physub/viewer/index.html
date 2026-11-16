@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>physub replay viewer</title>
+<style>
+  :root {
+    --bg: #0b1120; --panel: #111827; --panel-2: #1f2937; --border: #334155;
+    --text: #e5e7eb; --muted: #9ca3af; --accent: #f59e0b; --primary: #3b82f6;
+    --danger: #f87171; --mono: ui-monospace, "Fira Code", "SF Mono", Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.5 var(--mono); }
+  header { display: flex; gap: 16px; align-items: center; padding: 8px 16px;
+           border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  header h1 { font-size: 16px; margin: 0; font-weight: 600; }
+  header .info { color: var(--muted); }
+  main { display: grid; grid-template-columns: minmax(320px, 1fr) 440px; gap: 12px; padding: 12px 16px; }
+  @media (max-width: 1000px) { main { grid-template-columns: 1fr; } }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+  .card h2 { font-size: 13px; margin: 0 0 8px; color: var(--muted); font-weight: 600;
+             text-transform: uppercase; letter-spacing: .04em; }
+  #world-wrap { position: relative; }
+  #world { width: min(100%, calc(100vh - 190px)); margin: 0 auto; aspect-ratio: 1; image-rendering: pixelated; cursor: crosshair;
+           border-radius: 4px; background: #000; display: block; }
+  #hover { color: var(--muted); min-height: 21px; margin-top: 6px; }
+  .side { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  .layers { display: flex; flex-wrap: wrap; gap: 6px; }
+  button, select, input[type=file]::file-selector-button {
+    font: inherit; color: var(--text); background: var(--panel-2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 6px 10px; min-height: 36px; cursor: pointer;
+  }
+  button[aria-pressed=true] { background: var(--primary); border-color: var(--primary); color: #fff; }
+  button:hover, select:hover { border-color: var(--muted); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  #legend { margin-top: 8px; color: var(--muted); font-size: 12px; min-height: 18px; }
+  .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px;
+        margin: 0 4px 0 12px; vertical-align: -1px; }
+  .sw:first-child { margin-left: 0; }
+  #chart { width: 100%; height: 120px; display: block; cursor: pointer; }
+  .timeline { grid-column: 1 / -1; position: sticky; bottom: 0; z-index: 1; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  #slider { flex: 1; min-width: 200px; accent-color: var(--accent); height: 36px; }
+  #frame-label { min-width: 210px; text-align: right; color: var(--muted); }
+  table { border-collapse: collapse; width: 100%; font-size: 12px; }
+  td { padding: 1px 4px; }
+  .kv td:first-child { color: var(--muted); width: 40%; }
+  #bytes { display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px; font-size: 11px; }
+  #bytes div { background: var(--panel-2); border-radius: 3px; padding: 2px 3px; text-align: center;
+               overflow: hidden; white-space: nowrap; }
+  #bytes div.inert { color: #4b5563; background: transparent; }
+  #bytes div.ip { outline: 2px solid var(--accent); }
+  #bytes div .o { color: var(--muted); display: block; font-size: 10px; }
+  #listing { max-height: 220px; overflow: auto; font-size: 12px; white-space: pre; margin: 8px 0 0;
+             background: #0f172a; padding: 6px; border-radius: 4px; }
+  #listing .cur { color: var(--accent); }
+  #drop { border: 2px dashed var(--border); border-radius: 8px; padding: 40px; text-align: center;
+          color: var(--muted); }
+  #drop.over { border-color: var(--accent); color: var(--text); }
+  .hidden { display: none !important; }
+  .muted { color: var(--muted); }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>physub replay</h1>
+  <label class="row">Replay file <input id="file" type="file" accept=".psv"></label>
+  <span class="info" id="meta">no file loaded</span>
+</header>
+
+<div id="drop" class="card" style="margin:16px">
+  Drop a <code>.psv</code> file here, choose one above, or open <code>?file=data/demo.psv</code> when served over HTTP.
+</div>
+
+<main id="app" class="hidden">
+  <section class="card" aria-label="World">
+    <div id="world-wrap"><canvas id="world" tabindex="0" aria-label="World grid. Arrow keys move the selection."></canvas></div>
+    <div id="hover" aria-live="polite"></div>
+  </section>
+
+  <aside class="side">
+    <section class="card" aria-label="Layer">
+      <h2>Layer</h2>
+      <div class="layers" id="layers" role="group" aria-label="Layer"></div>
+      <div class="row" style="margin-top:8px">
+        <label class="row"><input type="checkbox" id="show-walls" checked> wall overlay (white)</label>
+        <label class="row"><input type="checkbox" id="dim-dead" checked> dim inactive code</label>
+      </div>
+      <div id="legend"></div>
+    </section>
+
+    <section class="card" aria-label="Population">
+      <h2>Active sites over time</h2>
+      <canvas id="chart" aria-label="Active sites per lineage over time; click to seek"></canvas>
+      <div id="chart-legend" class="muted" style="font-size:12px"></div>
+    </section>
+
+    <section class="card" aria-label="Selected site">
+      <h2>Selected site</h2>
+      <div id="inspect" class="muted">Click a site.</div>
+    </section>
+  </aside>
+
+  <section class="card timeline" aria-label="Timeline">
+    <button id="prev" aria-label="Previous frame">◀︎</button>
+    <button id="play" aria-label="Play">Play</button>
+    <button id="next" aria-label="Next frame">▶︎</button>
+    <label class="row">speed
+      <select id="speed" aria-label="Frames per second">
+        <option value="2">2 fps</option><option value="5">5 fps</option>
+        <option value="10" selected>10 fps</option><option value="20">20 fps</option>
+        <option value="40">40 fps</option>
+      </select>
+    </label>
+    <input id="slider" type="range" min="0" max="0" value="0" aria-label="Frame">
+    <span id="frame-label"></span>
+  </section>
+</main>
+
+<script>
+"use strict";
+// ---- format (see ps_run.cpp FrameWriter) ----
+const OPS = ["mov", "inc", "dec", "jz", "jmp", "rnd", "ignite", "wall", "unwall"];
+const NO_IP = 255;
+const DIRS = ["N", "E", "S", "W"];
+const LINEAGE_COLORS = ["#60a5fa", "#f59e0b", "#34d399", "#f472b6", "#a78bfa", "#f87171", "#22d3ee", "#facc15"];
+
+function parseReplay(buf) {
+  const dv = new DataView(buf);
+  const magic = String.fromCharCode(...new Uint8Array(buf, 0, 4));
+  if (magic !== "PSV1") throw new Error("not a PSV1 file");
+  const W = dv.getUint16(4, true), H = dv.getUint16(6, true);
+  const L = dv.getUint16(8, true), cap = dv.getUint16(10, true);
+  const n = W * H;
+  const frameSize = 8 + 24 + n * L + n + n + 2 * n + 2 * n + 4 * n + 2 * n;
+  const count = Math.floor((buf.byteLength - 12) / frameSize);
+  const offsets = Array.from({ length: count }, (_, i) => 12 + i * frameSize);
+  const head = offsets.map(o => ({
+    tick: Number(dv.getBigUint64(o, true)), active: dv.getUint32(o + 8, true),
+    births: dv.getUint32(o + 12, true), free: dv.getUint32(o + 16, true),
+    code: dv.getUint32(o + 20, true), wall: dv.getUint32(o + 24, true),
+    energy: dv.getUint32(o + 28, true),
+  }));
+  return { buf, dv, W, H, L, cap, n, offsets, head, cache: new Map() };
+}
+
+function frameAt(R, i) {
+  if (R.cache.has(i)) return R.cache.get(i);
+  const { dv, buf, n, L } = R;
+  let o = R.offsets[i] + 32;
+  const code = new Uint8Array(buf, o, n * L); o += n * L;
+  const act = new Uint8Array(buf, o, n); o += n;
+  const ip = new Uint8Array(buf, o, n); o += n;
+  const u16 = () => { const a = new Uint16Array(n); for (let k = 0; k < n; k++) a[k] = dv.getUint16(o + 2 * k, true); o += 2 * n; return a; };
+  const free = u16(), energy = u16();
+  const wall = new Uint8Array(buf, o, 4 * n); o += 4 * n;
+  const lineage = u16();
+  const mass = new Uint8Array(n);
+  for (let s = 0; s < n; s++) { let m = 0; for (let k = 0; k < L; k++) m += code[s * L + k] !== 0; mass[s] = m; }
+  const f = { code, act, ip, free, energy, wall, lineage, mass };
+  if (R.cache.size > 64) R.cache.delete(R.cache.keys().next().value);
+  R.cache.set(i, f);
+  return f;
+}
+
+// ---- colors ----
+const hex = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+const LC = LINEAGE_COLORS.map(hex);
+function ramp(t) { // dark blue -> cyan -> yellow (perceptually ordered, colorblind-safe enough)
+  t = Math.max(0, Math.min(1, t));
+  const stops = [[15, 23, 42], [37, 99, 235], [34, 211, 238], [250, 204, 21]];
+  const x = t * (stops.length - 1), k = Math.min(stops.length - 2, Math.floor(x)), u = x - k;
+  return stops[k].map((v, j) => Math.round(v + (stops[k + 1][j] - v) * u));
+}
+function lineageColor(id) { return id === 0 ? [100, 116, 139] : LC[(id - 1) % LC.length]; }
+
+// ---- state ----
+const state = { R: null, i: 0, layer: "lineage", sel: -1, playing: false, timer: null, lineageSeries: null };
+const LAYERS = [
+  ["lineage", "Lineage"], ["activity", "Activity"], ["mass", "Code mass"],
+  ["free", "Free monomers"], ["energy", "Energy"], ["hamming", "Hamming to selected"],
+];
+const $ = id => document.getElementById(id);
+
+function buildLayerButtons() {
+  const box = $("layers");
+  for (const [key, label] of LAYERS) {
+    const b = document.createElement("button");
+    b.textContent = label; b.dataset.layer = key;
+    b.setAttribute("aria-pressed", key === state.layer);
+    b.onclick = () => { state.layer = key; for (const c of box.children) c.setAttribute("aria-pressed", c === b); draw(); };
+    box.appendChild(b);
+  }
+}
+
+// ---- world drawing ----
+function maxOf(a) { let m = 1; for (const v of a) if (v > m) m = v; return m; }
+
+function cellColors(R, f) {
+  const { n, L } = R, out = new Uint8ClampedArray(n * 4);
+  const dim = $("dim-dead").checked;
+  let legend = "";
+  const put = (s, c, a = 255) => { out.set(c, s * 4); out[s * 4 + 3] = a; };
+  if (state.layer === "lineage") {
+    for (let s = 0; s < n; s++) {
+      if (f.mass[s] === 0) { put(s, [0, 0, 0]); continue; }
+      const c = lineageColor(f.lineage[s]);
+      put(s, c, f.act[s] || !dim ? 255 : 70);
+    }
+    legend = LINEAGE_COLORS.slice(0, 4).map((c, k) => sw(c) + `lineage ${k + 1}`).join("") +
+      " · faint = code without activation";
+  } else if (state.layer === "activity") {
+    for (let s = 0; s < n; s++) put(s, f.act[s] ? [245, 158, 11] : f.mass[s] ? [71, 85, 105] : [0, 0, 0]);
+    legend = sw("#f59e0b") + "active" + sw("#475569") + "code, inactive" + sw("#000000") + "empty";
+  } else if (state.layer === "mass") {
+    for (let s = 0; s < n; s++) put(s, ramp(f.mass[s] / L));
+    legend = rampLegend(0, L, "non-inert bytes per site");
+  } else if (state.layer === "free" || state.layer === "energy") {
+    const a = f[state.layer], m = maxOf(a);
+    for (let s = 0; s < n; s++) put(s, ramp(a[s] / m));
+    legend = rampLegend(0, m, state.layer === "free" ? "free monomers (frame max)" : "energy (frame max)");
+  } else if (state.layer === "hamming") {
+    if (state.sel < 0) { for (let s = 0; s < n; s++) put(s, [0, 0, 0]); legend = "Select a site first."; }
+    else {
+      const ref = f.code.subarray(state.sel * L, state.sel * L + L);
+      for (let s = 0; s < n; s++) {
+        if (f.mass[s] === 0) { put(s, [0, 0, 0]); continue; }
+        let d = 0; for (let k = 0; k < L; k++) d += f.code[s * L + k] !== ref[k];
+        put(s, ramp(1 - d / L), f.act[s] || !dim ? 255 : 70);
+      }
+      legend = rampLegend(L, 0, "byte differences to selected site (bright = similar)");
+    }
+  }
+  $("legend").innerHTML = legend;
+  return out;
+}
+const sw = c => `<span class="sw" style="background:${c}"></span>`;
+function rampLegend(lo, hi, label) {
+  const g = [0, .33, .66, 1].map(t => `rgb(${ramp(t).join(",")})`).join(",");
+  return `${lo} <span style="display:inline-block;width:90px;height:10px;vertical-align:-1px;background:linear-gradient(90deg,${g})"></span> ${hi} · ${label}`;
+}
+
+function draw() {
+  const R = state.R; if (!R) return;
+  const f = frameAt(R, state.i);
+  const cv = $("world"), ctx = cv.getContext("2d");
+  const px = Math.max(4, Math.floor(Math.min(cv.clientWidth, 900) * devicePixelRatio / R.W));
+  cv.width = R.W * px; cv.height = R.H * px;
+  const img = new ImageData(R.W, R.H); img.data.set(cellColors(R, f));
+  const off = new OffscreenCanvas(R.W, R.H); off.getContext("2d").putImageData(img, 0, 0);
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(off, 0, 0, cv.width, cv.height);
+  if ($("show-walls").checked) drawWalls(ctx, R, f, px);
+  if (state.sel >= 0) {
+    ctx.strokeStyle = "#000000"; ctx.lineWidth = Math.max(4, px / 3);
+    ctx.strokeRect((state.sel % R.W) * px + 1, Math.floor(state.sel / R.W) * px + 1, px - 2, px - 2);
+    ctx.strokeStyle = "#f59e0b"; ctx.lineWidth = Math.max(2, px / 6);
+    ctx.strokeRect((state.sel % R.W) * px + 1, Math.floor(state.sel / R.W) * px + 1, px - 2, px - 2);
+  }
+  const h = R.head[state.i];
+  $("frame-label").textContent = `tick ${h.tick} · frame ${state.i + 1}/${R.offsets.length}`;
+  $("slider").value = state.i;
+  drawChart(); inspect();
+}
+
+function drawWalls(ctx, R, f, px) {
+  ctx.strokeStyle = "#ffffff";
+  for (let s = 0; s < R.n; s++) {
+    const x = (s % R.W) * px, y = Math.floor(s / R.W) * px;
+    for (let d = 0; d < 4; d++) {
+      const w = f.wall[s * 4 + d]; if (!w) continue;
+      ctx.lineWidth = Math.min(px / 3, 1 + w);
+      ctx.beginPath();
+      if (d === 0) { ctx.moveTo(x, y + 1); ctx.lineTo(x + px, y + 1); }
+      if (d === 1) { ctx.moveTo(x + px - 1, y); ctx.lineTo(x + px - 1, y + px); }
+      if (d === 2) { ctx.moveTo(x, y + px - 1); ctx.lineTo(x + px, y + px - 1); }
+      if (d === 3) { ctx.moveTo(x + 1, y); ctx.lineTo(x + 1, y + px); }
+      ctx.stroke();
+    }
+  }
+}
+
+// ---- population chart ----
+function computeLineageSeries(R) {
+  const ids = new Map();
+  const per = R.offsets.map((_, i) => {
+    const f = frameAt(R, i), c = new Map();
+    for (let s = 0; s < R.n; s++) if (f.act[s]) c.set(f.lineage[s], (c.get(f.lineage[s]) || 0) + 1);
+    for (const [k, v] of c) ids.set(k, Math.max(ids.get(k) || 0, v));
+    return c;
+  });
+  R.cache.clear();
+  const top = [...ids.entries()].sort((a, b) => b[1] - a[1]).slice(0, LINEAGE_COLORS.length).map(e => e[0]);
+  return { per, top };
+}
+
+function drawChart() {
+  const R = state.R, cv = $("chart"), ctx = cv.getContext("2d");
+  cv.width = cv.clientWidth * devicePixelRatio; cv.height = cv.clientHeight * devicePixelRatio;
+  const W = cv.width, H = cv.height, N = R.offsets.length, pad = 4 * devicePixelRatio;
+  const ymax = Math.max(1, ...R.head.map(h => h.active));
+  const X = i => pad + (W - 2 * pad) * (N > 1 ? i / (N - 1) : 0);
+  const Y = v => H - pad - (H - 2 * pad) * v / ymax;
+  ctx.clearRect(0, 0, W, H);
+  ctx.lineWidth = 1.5 * devicePixelRatio;
+  const line = (vals, color) => { ctx.strokeStyle = color; ctx.beginPath(); vals.forEach((v, i) => i ? ctx.lineTo(X(i), Y(v)) : ctx.moveTo(X(i), Y(v))); ctx.stroke(); };
+  line(R.head.map(h => h.active), "#e5e7eb");
+  const L = state.lineageSeries;
+  for (const id of L.top) line(L.per.map(c => c.get(id) || 0), `rgb(${lineageColor(id).join(",")})`);
+  ctx.strokeStyle = "#f59e0b"; ctx.lineWidth = devicePixelRatio;
+  ctx.beginPath(); ctx.moveTo(X(state.i), 0); ctx.lineTo(X(state.i), H); ctx.stroke();
+  const cur = L.per[state.i];
+  $("chart-legend").innerHTML = `${sw("#e5e7eb")}all ${R.head[state.i].active}` +
+    L.top.map(id => `${sw(`rgb(${lineageColor(id).join(",")})`)}L${id} ${cur.get(id) || 0}`).join("") +
+    ` · max ${ymax}`;
+}
+
+// ---- inspector ----
+function decodeListing(bytes, L, ip) {
+  const lines = []; let o = 0, guard = 0;
+  while (o < L && guard++ < L) {
+    const v = bytes[o];
+    if (v === 0) { o += 1; continue; }
+    const op = (v - 1) % OPS.length, len = op === 0 ? 3 : 2;
+    const args = [];
+    for (let k = 1; k < len; k++) args.push(bytes[(o + k) % L] % L);
+    const mark = o === ip ? "▶ " : "  ";
+    lines.push({ cur: o === ip, text: `${mark}${String(o).padStart(2)}  ${OPS[op].padEnd(6)} ${args.join(" ")}` });
+    o += len;
+  }
+  return lines;
+}
+
+function inspect() {
+  const R = state.R, s = state.sel, box = $("inspect");
+  if (s < 0) { box.textContent = "Click a site."; box.className = "muted"; return; }
+  box.className = "";
+  const f = frameAt(R, state.i), L = R.L;
+  const bytes = f.code.subarray(s * L, s * L + L), ip = f.ip[s] === NO_IP ? -1 : f.ip[s];
+  const walls = DIRS.map((d, k) => `${d}${f.wall[s * 4 + k]}`).join(" ");
+  let html = `<table class="kv">
+    <tr><td>site</td><td>(${s % R.W}, ${Math.floor(s / R.W)})</td></tr>
+    <tr><td>lineage</td><td>${sw(`rgb(${lineageColor(f.lineage[s]).join(",")})`)}${f.lineage[s] || "none"}</td></tr>
+    <tr><td>activation</td><td>${f.act[s] ? `on, ip ${ip}` : "off"}</td></tr>
+    <tr><td>code bytes</td><td>${f.mass[s]} / ${L}</td></tr>
+    <tr><td>free monomers</td><td>${f.free[s]}</td></tr>
+    <tr><td>energy</td><td>${f.energy[s]}</td></tr>
+    <tr><td>walls (own side)</td><td>${walls}</td></tr></table>
+    <div style="margin:8px 0 4px" class="muted">bytes (offset, value:op)</div><div id="bytes">`;
+  for (let k = 0; k < L; k++) {
+    const v = bytes[k];
+    const cls = (v === 0 ? "inert" : "") + (k === ip ? " ip" : "");
+    html += `<div class="${cls}" title="offset ${k}"><span class="o">${k}</span>${v === 0 ? "·" : `${v}:${OPS[(v - 1) % OPS.length]}`}</div>`;
+  }
+  html += `</div><div class="muted" style="margin-top:8px">decoded from offset 0 (operands mod ${L})</div><pre id="listing">`;
+  html += decodeListing(bytes, L, ip).map(l => l.cur ? `<span class="cur">${l.text}</span>` : l.text).join("\n");
+  box.innerHTML = html + "</pre>";
+}
+
+// ---- interaction ----
+function siteAt(ev) {
+  const R = state.R, r = $("world").getBoundingClientRect();
+  const x = Math.floor((ev.clientX - r.left) / r.width * R.W), y = Math.floor((ev.clientY - r.top) / r.height * R.H);
+  return x >= 0 && y >= 0 && x < R.W && y < R.H ? y * R.W + x : -1;
+}
+function seek(i) { state.i = Math.max(0, Math.min(state.R.offsets.length - 1, i)); draw(); }
+function setPlaying(p) {
+  state.playing = p; $("play").textContent = p ? "Pause" : "Play"; $("play").setAttribute("aria-label", p ? "Pause" : "Play");
+  clearInterval(state.timer);
+  if (p) state.timer = setInterval(() => {
+    if (state.i >= state.R.offsets.length - 1) { setPlaying(false); return; }
+    seek(state.i + 1);
+  }, 1000 / Number($("speed").value));
+}
+
+function wire() {
+  buildLayerButtons();
+  $("world").addEventListener("click", ev => { const s = siteAt(ev); if (s >= 0) { state.sel = s; draw(); $("world").focus(); } });
+  $("world").addEventListener("mousemove", ev => {
+    const s = siteAt(ev); if (s < 0) return;
+    const f = frameAt(state.R, state.i);
+    $("hover").textContent = `(${s % state.R.W}, ${Math.floor(s / state.R.W)}) lineage ${f.lineage[s]} · ${f.act[s] ? "active" : "inactive"} · code ${f.mass[s]} · free ${f.free[s]} · energy ${f.energy[s]}`;
+  });
+  $("world").addEventListener("keydown", ev => {
+    const R = state.R; if (state.sel < 0) state.sel = 0;
+    const x = state.sel % R.W, y = Math.floor(state.sel / R.W);
+    const mv = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[ev.key];
+    if (!mv) return;
+    ev.preventDefault();
+    state.sel = ((y + mv[1] + R.H) % R.H) * R.W + (x + mv[0] + R.W) % R.W; draw();
+  });
+  document.addEventListener("keydown", ev => {
+    if (!state.R || ev.target.tagName === "SELECT" || ev.target.type === "range") return;
+    if (ev.key === " " && ev.target.tagName !== "BUTTON") { ev.preventDefault(); setPlaying(!state.playing); }
+    if (ev.key === ",") seek(state.i - 1);
+    if (ev.key === ".") seek(state.i + 1);
+  });
+  $("slider").addEventListener("input", ev => seek(Number(ev.target.value)));
+  $("prev").onclick = () => seek(state.i - 1);
+  $("next").onclick = () => seek(state.i + 1);
+  $("play").onclick = () => setPlaying(!state.playing);
+  $("speed").onchange = () => { if (state.playing) setPlaying(true); };
+  $("show-walls").onchange = draw; $("dim-dead").onchange = draw;
+  $("chart").addEventListener("click", ev => {
+    const r = ev.currentTarget.getBoundingClientRect();
+    seek(Math.round((ev.clientX - r.left) / r.width * (state.R.offsets.length - 1)));
+  });
+  addEventListener("resize", () => state.R && draw());
+  $("file").onchange = ev => ev.target.files[0] && loadFile(ev.target.files[0]);
+  const drop = $("drop");
+  for (const t of [drop, document.body]) {
+    t.addEventListener("dragover", ev => { ev.preventDefault(); drop.classList.add("over"); });
+    t.addEventListener("dragleave", () => drop.classList.remove("over"));
+    t.addEventListener("drop", ev => { ev.preventDefault(); drop.classList.remove("over"); ev.dataTransfer.files[0] && loadFile(ev.dataTransfer.files[0]); });
+  }
+}
+
+function load(buf, name) {
+  try {
+    const R = parseReplay(buf);
+    if (!R.offsets.length) throw new Error("no complete frames");
+    state.R = R; state.i = 0; state.sel = -1; setPlaying(false);
+    state.lineageSeries = computeLineageSeries(R);
+    $("slider").max = R.offsets.length - 1;
+    const q = new URLSearchParams(location.search);
+    if (q.has("frame")) state.i = Math.max(0, Math.min(R.offsets.length - 1, Number(q.get("frame"))));
+    if (q.has("sel")) state.sel = Number(q.get("sel"));
+    if (q.has("layer")) document.querySelector(`[data-layer="${q.get("layer")}"]`)?.click();
+    $("meta").textContent = `${name} · ${R.W}×${R.H} · site_len ${R.L} · act_cap ${R.cap} · ${R.offsets.length} frames · ticks ${R.head[0].tick}–${R.head.at(-1).tick}`;
+    $("drop").classList.add("hidden"); $("app").classList.remove("hidden");
+    draw();
+  } catch (e) { $("meta").textContent = `cannot load ${name}: ${e.message}`; }
+}
+function loadFile(file) { $("meta").textContent = `loading ${file.name}…`; file.arrayBuffer().then(b => load(b, file.name)); }
+
+wire();
+const qs = new URLSearchParams(location.search).get("file");
+if (qs) {
+  $("meta").textContent = `loading ${qs}…`;
+  fetch(qs).then(r => { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
+    .then(b => load(b, qs)).catch(e => { $("meta").textContent = `cannot fetch ${qs}: ${e.message}`; });
+}
+if (typeof module !== "undefined") module.exports = { parseReplay, frameAt, decodeListing };
+</script>
+</body>
+</html>

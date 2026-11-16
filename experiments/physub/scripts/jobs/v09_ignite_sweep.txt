@@ -1,0 +1,17 @@
+# v9: e_ignite / e_max sweep (ig16_max64 = baseline, byte-identical to v8)
+ig16_max64_allow_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=1 ext_write=allow e_ignite=16 e_max=64
+ig16_max512_allow_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=1 ext_write=allow e_ignite=16 e_max=512
+ig64_max512_allow_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=1 ext_write=allow e_ignite=64 e_max=512
+ig256_max512_allow_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=1 ext_write=allow e_ignite=256 e_max=512
+ig16_max64_fill_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=1 ext_write=fill e_ignite=16 e_max=64
+ig16_max512_fill_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=1 ext_write=fill e_ignite=16 e_max=512
+ig64_max512_fill_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=1 ext_write=fill e_ignite=64 e_max=512
+ig256_max512_fill_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=1 ext_write=fill e_ignite=256 e_max=512
+ig16_max64_allow_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=2 ext_write=allow e_ignite=16 e_max=64
+ig16_max512_allow_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=2 ext_write=allow e_ignite=16 e_max=512
+ig64_max512_allow_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=2 ext_write=allow e_ignite=64 e_max=512
+ig256_max512_allow_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=2 ext_write=allow e_ignite=256 e_max=512
+ig16_max64_fill_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=2 ext_write=fill e_ignite=16 e_max=64
+ig16_max512_fill_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=2 ext_write=fill e_ignite=16 e_max=512
+ig64_max512_fill_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=2 ext_write=fill e_ignite=64 e_max=512
+ig256_max512_fill_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=2 ext_write=fill e_ignite=256 e_max=512

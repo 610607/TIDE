@@ -1,0 +1,10 @@
+# v8: birth classification, polite ancestor, three ext_write modes
+probe_allow_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=1 ext_write=allow
+probe_fill_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=1 ext_write=fill
+probe_erase4_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=1 ext_write=erase e_erase=4
+probe_allow_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=2 ext_write=allow
+probe_fill_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=2 ext_write=fill
+probe_erase4_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=2 ext_write=erase e_erase=4
+probe_allow_s3 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=3 ext_write=allow
+probe_fill_s3 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=3 ext_write=fill
+probe_erase4_s3 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=3 ext_write=erase e_erase=4

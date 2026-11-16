@@ -10,7 +10,7 @@ Upper layers (phenotype naming, cards, controller seats, narrative, web UI) are 
 
 ## Current stage
 
-Literature reading is complete for the first round. Research positioning (RQ) and the kernel contract (R0) are in progress. No kernel code exists in this repository yet.
+Literature reading is complete for the first round. Research positioning (RQ) and the kernel contract (R0) are in progress. No kernel code exists in this repository yet; `experiments/physub/` holds exploratory substrate code, not the kernel.
 
 Decided:
 
@@ -45,9 +45,20 @@ Do not present an open item or a candidate design as an agreed requirement. Move
 | --- | --- |
 | `docs/` | Roadmap, literature review, mechanism notes, and design discussion |
 | `docs/references/` | Reference index and cache manifest; PDF files are local only |
+| `experiments/physub/` | Exploratory physics-like substrate in C++ (not the kernel); provisional rules, tests, probes, replay viewer, run job lists |
 | `prototype/` | Earlier exploratory prototype; local only, not tracked |
 
 `prototype/` is a behavioral reference, not a starting point. Its instruction set, role labels, and upper layers carry no authority over the new kernel. Links from `docs/` into `prototype/` resolve only in a working copy that has it.
+
+`experiments/` code is tracked for reproducibility and remote development. Its rules are provisional experiment configuration and carry no authority over the kernel contract. Build and test `experiments/physub/` with CMake (3.20+, C++20):
+
+```sh
+cmake -S experiments/physub -B experiments/physub/build
+cmake --build experiments/physub/build -j
+ctest --test-dir experiments/physub/build --output-on-failure
+```
+
+See `experiments/physub/README.md` for running experiments and replaying results.
 
 Record the kernel's location, build commands, and test commands here once they exist.
 
