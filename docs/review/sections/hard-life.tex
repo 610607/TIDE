@@ -1,0 +1,105 @@
+\section{Hard artificial life: embodiment, adaptation, and collective construction}
+\label{sec:hard-life}
+
+Hard artificial life places synthetic organization in physical machines, where
+structure, control, contact, and available power jointly determine behavior.
+Its relevance to a predominantly soft-ALife review is methodological: embodiment
+tests which modeled mechanisms survive material implementation. Three primary
+studies illustrate distinct achievements---evolutionary design, adaptation within
+an individual's lifetime, and distributed construction. They do not collectively
+establish an autonomous population of reproducing robots. Keeping these
+achievements separate makes their contributions easier to compare with digital
+evolution.
+
+\subsection{Joint evolution of morphology and control}
+
+\citet{hardlipson2000} evolved robotic bodies and neural controllers together in
+simulation. Mutation added, removed, or modified structural and control
+components; selection rewarded displacement over a prescribed interval. Selected
+designs were converted into printable structures and fabricated in thermoplastic,
+after which motors were inserted manually. Three physical examples produced
+locomotion corresponding to their simulated mechanisms. This demonstrated a
+connection between evolutionary search and physical fabrication, with morphology
+and control selected as integrated units rather than treating the body as fixed.
+
+Transfer was imperfect. The manuscript's Table~I reports substantial distance
+differences for two examples, attributed to slipping and an inadequate friction
+model. The \emph{reality gap} is therefore visible within this demonstration:
+qualitative transfer of a mechanism need not preserve quantitative performance.
+Its autonomy also has a defined boundary. Fitness evaluation and selection took
+place in simulation; fabrication used supplied equipment and materials, and
+assembly retained a human step. The study supports automated embodied design,
+not an ecological population manufacturing its own descendants
+\citep{hardlipson2000}.
+
+\subsection{Self-modeling and adaptation after damage}
+
+\citet{hardbongard2006} investigated a different problem: recovering useful
+behavior after an existing robot's body changes. A four-legged robot alternated
+physical actions with synthesis of candidate body models. Exploratory actions
+were chosen to distinguish competing models; a selected model then supported
+optimization of a locomotion sequence. After part of a leg was removed, revised
+models enabled an alternative gait. Comparisons against two random-exploration
+baselines used the same number of physical actions, and model-driven exploration
+improved inference within the tested hypothesis space.
+
+The distinction from Darwinian evolution is central. Competing internal models
+and optimized actions belong to an adaptation procedure, not a lineage of
+reproducing physical individuals. Furthermore, the model family was constrained:
+after damage, topology remained fixed while limb dimensions could change. The
+reported locomotion demonstration used a model selected from repeated modeling
+experiments. These qualifications retain the achievement---active inference can
+guide compensatory behavior---while avoiding a claim of unrestricted self-knowledge,
+physical regeneration, or inherited evolutionary improvement
+\citep{hardbongard2006}.
+
+\subsection{Distributed rules and externally specified collective form}
+
+\citet{hardrubenstein2014} demonstrated programmable shape formation with
+1024 Kilobots. Local communication, distance estimation, edge following,
+gradients, and distributed localization supported assembly despite noisy motion
+and sensing. Each robot received the same algorithm and target-shape image;
+a user positioned four specially programmed seed robots to establish the
+assembly's origin and orientation. The full swarm formed two shapes, each in
+roughly twelve hours. Additional smaller-swarm trials examined consistency and
+accuracy. Reported trials completed without charging, reprogramming, or other
+human intervention during execution, although final shapes showed warping and
+packing defects.
+
+This is a strong demonstration of decentralized execution under physical
+variability. It is also compatible with centralized specification of the desired
+outcome: local interactions implement a supplied objective. The resulting
+arrangement reorganizes existing robots; it does not manufacture new robots or
+transmit variable inherited programs through reproduction. The paper also treats
+physical attachment into stable structures as a future direction. Consequently,
+``self-assembly'' here should be read according to the demonstrated collective
+shape-formation task, rather than as evidence for a self-producing machine
+organism \citep{hardrubenstein2014}.
+
+\subsection{What embodiment contributes to soft artificial life}
+
+The following comparison is a synthesis of these cases, not an additional
+experimental result. A useful transfer is to examine the coupling between an
+individual's organization and the operations available to it. In soft systems,
+representation, instruction semantics, and environmental access jointly delimit
+what can evolve, just as body and controller jointly delimit robotic behavior.
+Interventions can ask which apparent capability disappears when one coupling is
+changed. Adaptive performance should also be separated from its mechanism:
+within-lifetime learning, population selection, and a designer's search may all
+improve an observable score through different causal processes.
+
+Physical embodiment additionally requires an explicit accounting boundary.
+Feedstock, manufacturing equipment, electronics, power supplies, and maintenance
+cannot be omitted when evaluating material autonomy. A robot's operational
+independence during a trial does not close its production cycle. Soft experiments
+can similarly state which resources and services their environment supplies, but
+a digital resource budget is not thereby a measurement of physical energy or
+manufacturing feasibility. Conversely, hardware noise need not be copied into a
+digital kernel merely to make it appear biological. The transferable requirement
+is to justify the abstraction and test sensitivity to it.
+
+These historical exemplars therefore contribute tests of realization,
+adaptation, and collective reliability to the review's main computational focus.
+They provide neither a universal recipe for artificial life nor evidence that
+open-ended evolution follows from embodiment. This bounded selection does not
+survey the full contemporary frontier of evolutionary robotics.

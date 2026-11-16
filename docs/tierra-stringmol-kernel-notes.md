@@ -28,7 +28,7 @@ The v0.2 language specification describes paired pointers into both strings, hel
 
 Source: [Stringmol specification, local PDF](references/pdf/stringmol-specification-v0.2-ycs-2010-458.pdf), sections 7 and 10.6-10.8.
 
-One mutation detail remains unresolved: the article's overview mentions replacement and indels, while its methods elaborate replacement. The experiment's v0.2.3.4 configuration must be checked before asserting an exact mutation mix.
+The follow-up [pinned-code inspection](research/spatial-update-semantics.md) confirms built-in indels and substitution in release 0.2.3.4's spatial copy path. The exact configurations of the twenty published runs remain unverified; operator support is not an exact experimental mutation mix.
 
 ## Current C++ behavior
 
@@ -65,7 +65,7 @@ These experiments have not been implemented. Define their contracts and observat
 
 ### Copy addresses and execution context
 
-Use two distinguishable sequences, no mutation, and both ordinary copying code and code intended to redirect copying. Record the executing identity, instruction source, read/write locations, and product bytes. First characterize the current instruction set; then decide between a local address-based VM and a bound-reaction model if required capabilities are missing.
+Use two distinguishable sequences, no mutation, and both ordinary copying code and code intended to redirect copying. Record the executing identity, instruction source, read/write locations, and product bytes. The new local address-based VM must express these traces; the old prototype supplies a behavioral comparison. A bound-reaction model remains a possible later comparison.
 
 ### Spatial occupation and update timing
 
@@ -86,23 +86,22 @@ Zero upkeep is an experimental control, not a decision to remove the energy syst
 
 Invalidate a provider during borrowed execution, first retaining its bytes and then overwriting its location. Trace the next instruction, registers, and stack. Verify the existing identity-reference contract before considering readable unowned memory. Deleting memory-safety checks is not an acceptable implementation of residual-code ecology.
 
-## Next design discussion
+## Design comparison and current decision
 
-Settle the execution and addressing contract before committing to spatial granularity.
+The comparison below records the alternatives considered. The local address-based VM has since been selected; its instruction-level contract is still open.
 
 | Candidate | Contract | Main cost |
 | --- | --- | --- |
 | Local address-based VM | An individual owns its CPU; readable regions, writable allocations, and instruction-fetch permissions are explicit | Define addresses, allocation, invalidation, and revised copy instructions |
 | Bound-reaction model | Two programs form an execution unit controlling cross-string copying and product formation | Redesign state ownership, binding, and release; effectively a different kernel model |
 
-The current engineering preference is to evaluate the local address-based VM first. It is closer to the existing implementation and directly tests whether programs can change what they copy. This is a proposal, not a literature-mandated choice. Reading a neighbor does not automatically imply permission to overwrite it.
+The project decision is to build a fresh local address-based VM first, as recorded in [AGENTS.md](../AGENTS.md). It directly tests whether programs can change what they copy. This is a project choice, not a literature-mandated conclusion. Reading a neighbor does not automatically imply permission to overwrite it.
 
 After agreement, centralize shared state/interface changes and delegate implementation, testing, and review with separate file ownership. Hard acceptance criteria should cover instruction semantics, resource accounting, locality, and deterministic replay. Ecological experiments should report survival, stagnation, and extinction.
 
 ## Status
 
 - Mechanism reading and source-code comparison are complete for this round.
-- Candidate contracts and discriminating experiments are documented; no new kernel contract is agreed.
-- Later update: the local address-based VM was chosen as the first kernel contract. [AGENTS.md](../AGENTS.md) holds the current decisions.
+- The local address-based VM direction is agreed. Detailed instruction transitions, failure effects, and several experimental policies remain open; the full R0 contract is not complete.
 - These experiments have not been run, and C++, Node bindings, and frontend files have not been changed.
-- The 2021 Stringmol mutation configuration remains a specific follow-up; it does not alter the execution and spatial distinctions established here.
+- The follow-up code inspection confirms the release's indel/substitution support. Exact published per-run mutation configurations remain open; this does not alter the execution and spatial distinctions established here.

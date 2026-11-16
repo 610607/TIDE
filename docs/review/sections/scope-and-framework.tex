@@ -1,0 +1,75 @@
+\section{Scope, method, and conceptual framework}
+\subsection{A constructive study of life-like processes}
+Artificial life asks what kinds of organization can arise when components are
+given explicit rules of interaction, reproduction, development, or maintenance.
+The field's computational (soft), robotic (hard), and biochemical (wet) approaches
+are overlapping experimental methods, rather than successive levels of
+achievement \citep{Aguilar2014}. A robot can be evolved in simulation and then
+manufactured; a biochemical population can be controlled by software. The
+substrate therefore does not, by itself, identify what a study demonstrates.
+
+This review emphasizes soft artificial life, the setting of the TIDE project,
+while retaining substantive comparisons with physical machines and chemical
+systems. Its organizing questions are: what persists, what is reproduced, what
+can vary, which consequences affect reproduction, and who or what supplies the
+conditions for continuation? These questions make apparently similar claims
+comparable without requiring a single all-or-nothing definition of life.
+
+\subsection{Search strategy and evidence limits}
+The search was conducted on 15 November 2026. It began with cached studies of
+Tierra, Avida, evoloops, Stringmol, computational replicators, and open-ended
+evolution, then followed three parallel streams: recent frontiers, stagnation
+and measurement, and spatial/update semantics. Additional searches covered
+cellular-automata foundations, embodied systems, and chemical construction.
+Original papers, author and institutional copies, and official repositories
+were preferred. Field reviews provide taxonomy; experimental claims are tied
+to the relevant primary work. Exact queries and reading-depth notes accompany
+the LaTeX source in the repository's research records.
+
+This is a narrative review, not a systematic review or meta-analysis. Selection
+favored studies that expose mechanisms, causal controls, or informative failure
+cases. It does not establish that omitted systems lack relevant capabilities.
+Versioned preprints are distinguished from journal articles. Where only
+indexed primary-text passages or publisher previews were accessible, that
+limitation is stated. No reported experiment was independently reproduced.
+Comparisons across substrates are analytical interpretations, not quantitative
+rankings on a common benchmark.
+
+\subsection{Separate capabilities before comparing systems}
+Self-organization denotes the formation of macroscopic structure through local
+interactions. Self-maintenance concerns persistence under disturbance and
+turnover. Self-reproduction additionally requires a causal process producing
+another instance of the relevant organization. Evolution is heritable population
+change, which can involve selection or drift. Natural selection specifically
+concerns trait-dependent differences in reproductive success. None of these terms
+automatically establishes continuing innovation \citep{Taylor2016}.
+
+The distinctions are operational. A moving pattern can persist without
+reproducing. A designed loop can reproduce without generating an evolving
+population. A trained local rule can repair a shape while its parameters remain
+fixed. A genetically simplified cell can divide while depending on a rich
+external environment. These are informative achievements, but different ones.
+
+Three layers should also remain distinct: the transition rules of a substrate,
+the processes occurring within it, and the observer or search procedure used to
+find and evaluate those processes. This distinction becomes especially useful
+when comparing digital ecology with modern optimization-assisted discovery.
+An external objective can be scientifically valuable without being mistaken
+for a reproductive advantage generated inside the studied world.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Substrate classes and the questions their evidence can address. The
+last column identifies a limit of inference, not a judgment of research value.}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{17mm}YYY@{}}
+\toprule
+Approach & Experimental object & Characteristic strength & Inference requiring more evidence \\
+\midrule
+Soft & Programs, automata, simulated agents and reactions & Explicit interventions, complete state access, controlled replay & Biological feasibility; physical autonomy; indefinite innovation \\
+Hard & Embodied robots, manufactured structures and collectives & Contact with material dynamics, sensing, actuation and fabrication & Autonomous reproduction or evolution beyond an external optimizer \\
+Wet & Compartments, catalysts, genomes and cells & Actual chemical compatibility, material turnover and biochemical heredity & A complete autonomous life cycle from separately demonstrated modules \\
+\bottomrule
+\end{tabularx}
+\label{tab:substrates}
+\end{table}
+

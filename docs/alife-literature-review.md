@@ -7,9 +7,13 @@ TIDE's current focus is a digital-life kernel driven by basic rules. Execution, 
 ## Direction and open decisions
 
 - Established: learn from Tierra and cellular automata; ecological labels should not determine physical behavior.
-- Established: read and discuss the literature before delegating C++ implementation.
-- Open: one program per site versus programs spanning sites, synchronous versus asynchronous updates, explicit energy, placement, and reclamation.
-- Candidate research sequence: evolution after a supplied ancestor first; emergence from random programs as a separate experiment. This sequence remains open for discussion.
+- Established: read and discuss the literature before delegating C++ implementation; start a fresh local address-based VM rather than extending the exploratory prototype.
+- Established: pointer-directed byte copying, public-space allocation before division, and two-phase synchronous updates as the default, with sequential random-order updates as a CPU comparison.
+- Established: study evolution after a supplied ancestor first; emergence from random programs is a separate, later experiment.
+- Working defaults: one program per site, writes restricted to owned allocations, readable residual code, and CPU time as the only active cost. These remain named experimental variables.
+- Open: the research question, instruction-level permissions and failure effects, conflict resolution, newborn timing, boundaries, placement, reclamation, and mutation operators.
+
+[AGENTS.md](../AGENTS.md) is the authority for current decisions. The [research search record](research/README.md) tracks the next literature pass.
 
 The design question is whether rules are composable, testable, and permit replication mechanisms to evolve. Few opcodes, no explicit fitness function, or complex images do not independently establish open-ended evolution.
 
@@ -83,7 +87,7 @@ These are project inferences, not sufficient conditions proved by the papers.
 | --- | --- | --- |
 | Focused literature review | Complete for this round | Sources, limitations, and open decisions above |
 | Tierra and spatial Stringmol mechanism reading | Complete for this round | [Kernel notes](tierra-stringmol-kernel-notes.md), including code comparisons and candidate experiments |
-| First-kernel rule discussion | Pending | Explicit transition rules and acceptance criteria |
+| Research positioning and first-kernel rule discussion | In progress | Selected VM direction; research question and detailed transition rules remain open |
 | Delegated C++ implementation and integration | After rule agreement | Implementation, targeted tests, and experimental results |
 
 ## Reading scope and cache
@@ -91,3 +95,5 @@ These are project inferences, not sufficient conditions proved by the papers.
 The core entries use relevant methods, results, and discussion sections of full-text sources. The 2024 entries refer explicitly to preprint versions. Langton 1984 was checked only at abstract level and is not used for detailed mechanism claims here. This is a focused design review, not an exhaustive literature survey.
 
 See the [reference index](references/README.md) and [cache manifest](references/manifest.json) for local files, source URLs, versions, and verification metadata.
+
+The subsequent [LaTeX field review](review/README.md) covers soft, hard, and wet artificial life with soft systems as its focus. It includes full-text follow-up on Langton 1984, newer frontier studies, and explicit access/version limits. The [research search record](research/README.md) distinguishes completed searches from deferred leads.

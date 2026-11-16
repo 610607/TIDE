@@ -1,0 +1,114 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,microtype}
+\usepackage[margin=25mm,headheight=15pt]{geometry}
+\usepackage{amsmath,amssymb,booktabs,tabularx,array,longtable}
+\usepackage[table]{xcolor}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{enumitem}
+\usepackage{placeins}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{xurl}
+\usepackage{hyperref}
+\usepackage{bookmark}
+\definecolor{ink}{HTML}{17324D}
+\definecolor{accent}{HTML}{087E8B}
+\definecolor{pale}{HTML}{EFF5F7}
+\hypersetup{colorlinks=true,linkcolor=ink,citecolor=accent,urlcolor=accent,
+  pdftitle={Artificial Life: Substrates, Evolutionary Dynamics, and Open-Endedness},
+  pdfauthor={TIDE Research Notes}}
+\urlstyle{same}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt plus 1pt}
+\setlength{\emergencystretch}{2em}
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\textfraction}{0.08}
+\renewcommand{\floatpagefraction}{0.8}
+\setcounter{topnumber}{3}
+\makeatletter
+\setlength{\@fptop}{0pt}
+\setlength{\@fpsep}{18pt}
+\makeatother
+\widowpenalty=10000
+\clubpenalty=10000
+\setlist{nosep,leftmargin=*}
+\renewcommand{\arraystretch}{1.18}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textcolor{ink}{ARTIFICIAL LIFE}}
+\fancyhead[R]{\small TIDE research review}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcommand{\model}[1]{\textsc{#1}}
+
+\begin{document}
+\hypersetup{pageanchor=false}
+\begin{titlepage}
+\vspace*{15mm}
+{\small\sffamily\textcolor{accent}{RESEARCH REVIEW \quad | \quad NOVEMBER 2026}\par}
+\vspace{10mm}
+{\Huge\bfseries\textcolor{ink}{Artificial Life}\par}
+\vspace{4mm}
+{\LARGE Substrates, Evolutionary Dynamics,\\and the Problem of Open-Endedness\par}
+\vspace{10mm}
+{\large A narrative review of soft, hard, and wet artificial life\par}
+\vspace{12mm}
+\textbf{Abstract}\par
+Artificial life studies how life-like organization can be constructed, maintained,
+and transformed in computational, robotic, and biochemical systems. Its methods
+span executable replicators, cellular automata, evolving robots, collective
+machines, protocells, and minimal cells. This review compares these approaches
+through their units of heredity, sources of variation, reproductive constraints,
+physical embodiment, and experimental observables. It distinguishes
+self-organization from self-reproduction, externally optimized discovery from
+endogenous evolution, and finite adaptive change from claims of open-endedness.
+Particular attention is given to ecological feedback, spatial organization,
+constructed boundaries, conserved flows, operational individuality,
+measurement, and reproducibility. Recent work on computational replicator
+detection and foundation-model-assisted search sharpens these distinctions
+without removing the need for causal tests. A final section translates the
+comparison into research questions for TIDE, a planned digital-life kernel.
+The review reports literature evidence and design proposals. Original diagrams
+clarify mechanisms; a separate appendix reanalyzes archived exploratory
+prototype outputs. No new simulation, robotics, or laboratory runs were made
+for this review.
+\vfill
+\textbf{Scope and status}\par
+English narrative review; literature search dated 15 November 2026.
+Representative primary studies and selected field syntheses are included.
+Coverage is broad but not systematic or exhaustive. Preprints, limited-access
+sources, and project-specific proposals are identified explicitly.\par
+\vspace{6mm}
+{\small Prepared in the TIDE research workspace. Bibliographic provenance and
+local reference-cache metadata accompany the source.\par}
+\end{titlepage}
+\pagenumbering{roman}
+\hypersetup{pageanchor=true}
+{\small\setlength{\parskip}{0pt}\tableofcontents}
+\clearpage
+\pagenumbering{arabic}
+\input{sections/scope-and-framework}
+\input{sections/soft-life}
+\FloatBarrier
+\input{sections/hard-life}
+\input{sections/wet-life}
+\input{sections/evolution-and-measurement}
+\FloatBarrier
+\input{sections/boundaries-and-individuality}
+\FloatBarrier
+\input{sections/research-agenda}
+\FloatBarrier
+\clearpage
+\appendix
+\input{sections/probe-comparison}
+\FloatBarrier
+\clearpage
+\begingroup
+\small\raggedright
+\bibliographystyle{plainnat}
+\bibliography{references}
+\endgroup
+\end{document}

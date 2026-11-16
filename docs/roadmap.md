@@ -29,7 +29,7 @@ An experience layer (observation UI, cards, controller seats for humans, AI, and
 
 RQ and R0 run together: the survey informs the contract, and the contract discussion does not wait for the survey to finish. The research question must be fixed before R3 experiments are designed.
 
-R3 is the largest uncertainty. Tierra-like systems commonly converge to short programs and stagnate. After R3, decide explicitly whether to vary rules, add environmental structure, or build a bound-reaction kernel as a comparison.
+R3 is the largest uncertainty. In studied Tierra configurations, selection can favor short programs, while relaxed parsimony can produce longer programs without increased measured complexity. These are distinct outcomes, not a universal convergence rule; see the [stagnation evidence](research/stagnation-and-measurement.md). After R3, decide explicitly whether to vary rules, add environmental structure, or build a bound-reaction kernel as a comparison.
 
 R4 tooling is needed to read R3 results, so its design starts before R3 runs.
 
@@ -47,7 +47,7 @@ Sequential random-order update remains available on the CPU as a comparison mode
 
 ## Literature and project search plan
 
-Nothing in this section has been searched yet. Named works are leads to verify, not checked citations. Follow the research-source rules in [AGENTS.md](../AGENTS.md) when carrying it out.
+A bounded first pass of directions F, 3, 4, and 5 was conducted on 2026-11-15; see the [search record and evidence limits](research/README.md). The lists below remain a search plan, not a claim that every named lead was read. Tierra successors and the implementation survey remain deferred. Follow the research-source rules in [AGENTS.md](../AGENTS.md) when continuing.
 
 ### Tier 1: before the research question and contract are fixed
 
