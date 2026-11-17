@@ -3,8 +3,9 @@
 Updated: 2026-11-17. Status: candidate designs for `experiments/physub/`. On 2026-11-17 the
 user agreed to run decay form M with a uniform rate and mobility option (a) as optional
 physub configurations (section 4), and then to two controls that separate the two effects of
-form M (section 5); per-op rates, binding (b) and size-dependent mobility remain open.
-Nothing here applies to the kernel contract.
+form M (section 5). Per-op rates in form M are proposed in section 6 and await agreement;
+binding (b) and size-dependent mobility remain open. Nothing here applies to the kernel
+contract.
 
 This note separates source findings, observations of the physub code, executed runs and
 candidate designs. Page numbers are printed pages unless marked "PDF p.".
@@ -307,6 +308,212 @@ Expected differences (inference, not measured):
 
 Results are in the [physub README](../../experiments/physub/README.md) (v15).
 
+## 6. Per-op decay rates in form M (proposal, not agreed)
+
+Request (2026-11-17): keep form M (a whole program decays in one event, with hazard equal to
+the sum of its byte rates) and give each op class its own rate. The rate is fixed per class
+and does not depend on activation or environment. The mean rate is aligned with the v14
+r = 1.95e-6 for comparison with M. The spread between classes needs a source. The binding
+rule (b) stays out. This section is a proposal; nothing in it is implemented.
+
+### Rule as requested
+
+A site with non-inert bytes x₁…xₙ decays as a whole with probability
+1 − ∏ₖ(1 − r[c(xₖ)]) per tick, c(v) = (v − 1) mod 9. Its hazard is h(x) ≈ Σₖ r[c(xₖ)]
+(series rule, section 2). The same table applies to every site, live or not, so the option
+would run with `hydro_whole` = 1 and without `p_dead` or `dead_quiet`.
+
+### Code observations
+
+- **The class is a property of the byte value.** Every non-inert byte has a class, whether it
+  runs as an opcode or serves as an operand or data. The values 1-255 give mov, inc and dec 29
+  values each and the other six classes 28 each. A per-op rate therefore applies to all
+  bytes, not only to executed opcodes. Polite has 40 non-inert bytes out of 46: 13 opcode
+  bytes and 27 operand or data bytes. By class: jmp 7, rnd 7, mov 5, jz 5, dec 5, ignite 4,
+  inc 3, wall 2, unwall 2. Wall and unwall occur only as data. Inert bytes never decay.
+- **Synonyms.** An opcode byte's class is its op, so its rate changes only with the
+  instruction. Many operand bytes are read only as an offset mod `site_len` (64) or as a
+  direction ((v − 1) mod 4, or INERT for the own site), so other values do the same job.
+  Since 64 ≡ 1 (mod 9), the offset synonyms v, v + 64, v + 128, v + 192 fall in four
+  consecutive classes. Direction synonyms (step 4) reach all nine classes. Some data bytes
+  use the full value: polite's copy counter starts at K = 192 and the loop ends when it
+  wraps to INERT, so a synonym there changes the copy length. Inference: under a spread,
+  selection could lower a program's hazard through data-byte substitutions before it
+  changes instructions. The resemblance to synonymous codons is an analogy without a source.
+- **Rates change during execution.** INC and DEC change a byte's value and hence its class.
+  Polite's two copy counters pass through all nine classes during a copy.
+- **Random bytes.** Mutation and RND write `1 + key % 255`, uniform over the non-inert
+  values (`ps_exec.cpp`). The expected rate of a written random byte is therefore the mean
+  over the 255 values, weighted by values per class.
+
+### Source findings
+
+Spread between monomer classes:
+
+- **Lindahl, Nobel lecture 2015.** In a 3×10⁹ bp double-stranded genome per 24 h at 37 °C,
+  there are 9,000 depurinations and 300 depyrimidinations (Fig. 3, p. 76; slides, slide 6).
+  Purines and pyrimidines occur in equal numbers in a duplex (base pairing; inference), so
+  the per-base ratio between the two classes is about 30:1. "The abasic sites resulting from
+  the loss of the bases guanine or adenine are chemically identical and were introduced at
+  similar rates" (p. 75). Double- and single-stranded DNA depurinate "with only a 3- to
+  4-fold difference" (p. 75). This is the only source read that gives two monomer classes
+  leaving the same polymer under one condition.
+  [lecture](../references/pdf/lindahl-2015-nobel-lecture-intrinsic-fragility-of-dna.pdf),
+  [slides](../references/pdf/lindahl-2015-nobel-lecture-slides.pdf)
+- **An et al. 2014.** The difference between adenine and guanine loss "was not obvious, and
+  only a change of 3–25% was observed" (p. 4). At 37 °C and pH 7.1, the rate constants are
+  2.2×10⁻¹⁰ s⁻¹ for G and 2.5×10⁻¹⁰ s⁻¹ for A (Table 1, p. 5). Context matters, however:
+  "depurination rates changed dramatically with different sequences" (p. 8), and at pH 2.5
+  the A30 half-life was 11.4 times that of AT15 (p. 9).
+  [cached](../references/pdf/an-et-al-2014-nonenzymatic-depurination.pdf)
+- **Levy and Miller 1998** (abstract, p. 7933; full text not cached). Free nucleobases at
+  pH 7 have half-lives at 100 °C of "A and G ≈ 1 yr; U = 12 yr; C = 19 days". At 0 °C, A, U,
+  G and T have half-lives of at least 10⁶ yr, and C has 17,000 yr. At 100 °C the rate
+  ratios are C : A ≈ G : U ≈ 230 : 12 : 1 (computed from the half-lives). These are free
+  bases decomposing, not monomers leaving a chain, and the order and spread depend on
+  temperature.
+- **Context dependence** (excluded by the request, listed so the exclusion is visible):
+  - Kaukinen et al. 2002 (abstract, p. 468; not cached): RNA phosphodiester bonds 5′-UpA-3′
+    and 5′-CpA-3′ showed ">100- and up to 35-fold reactivity differences" across sequence
+    contexts, "a change of a single base several nucleosides away from the scissile bond
+    markedly affected the reaction rate", and duplex formation was "strongly rate retarding".
+  - Robinson and Robinson 2001 (HTML read, not cached, no page): asparagine deamidation
+    half-times range from about 1 to 455 days depending on the neighboring residue.
+
+Precedents in artificial life and replicator models:
+
+- **Rates per molecular species.** Boerlijst and Hogeweg 1991 set p(empty) = decay[x] for
+  each molecule species x (Table 1, p. 19). The hypercycle species share decay 0.2, and the
+  parasite's decay (0.15, or "≤ 0.1" in plate 1C) is an experimental setting (p. 25).
+  Takeuchi, Hogeweg and Koonin 2011 note that DNA is "markedly more resistant to hydrolysis
+  than RNA" (p. 1). They give DNA a "substantially lower" decay rate than RNA as a model
+  condition (p. 17), and each constituent of a complex decays on its own (p. 3). Both set
+  rates per polymer species, not per monomer.
+  [Boerlijst and Hogeweg](../references/pdf/boerlijst-hogeweg-1991-spiral-wave.pdf),
+  [Takeuchi et al.](../references/pdf/takeuchi-hogeweg-koonin-2011-origin-of-dna-genomes.pdf)
+- **Rates from structure.** Könnyű, Szilágyi and Czárán 2015 set the degradation
+  probability from the fold energy, between a minimum of 0.1 and a maximum of 0.9 (p. 4).
+  This is context dependent and so outside the request.
+  [cached](../references/pdf/konnyu-et-al-2015-in-silico-ribozyme-evolution.pdf)
+- **Uniform rates.** Ono and Ikegami 2000 use one rate (p. 244), and Hutton 2002 is
+  uniform. Avida's per-instruction `prob_fail` (default 0; code) is an execution failure,
+  not decay.
+- **Instructions as monomers.** Ray 1991 compares instructions to amino acids rather than
+  nucleotides "because they are 'chemically active'" (p. 374). Dorn, Nealson and Adami 2011
+  treat Avida instructions as monomers "in the sense that they are selectable" (PDF p. 6).
+  In a discussion of biosignatures they note that "different monomers may degrade at
+  different rates" (PDF p. 4), but that remark is not a rule of their model.
+  [Ray](../references/pdf/ray-1991-synthesis-of-life.pdf),
+  [Dorn et al.](../references/pdf/dorn-nealson-adami-2011-monomer-abundance-v1.pdf)
+
+What the sources support, and what they do not:
+
+1. Decay rates that depend on monomer type exist in chemistry.
+2. The spread between two monomer classes in one polymer under one condition is about 30:1
+   (Lindahl).
+3. Within a class, rates are close: A and G differ by 3-25%.
+4. Context changes rates by one to two orders of magnitude; this is excluded by the request.
+
+No source maps a specific instruction to a specific monomer or bond, so which op is fast
+cannot be taken from the literature.
+
+### Candidate design (none agreed)
+
+**Spectrum.**
+
+- **S1 (recommended): two levels, fast : slow = 30 : 1, from Lindahl.** This is the one
+  source with two monomer classes leaving the same polymer under one condition, and it is
+  physiological. Treating each class as a single rate follows Lindahl's "similar rates" and
+  An et al.'s 3-25%.
+- **S2 (not recommended first): four levels, 230 : 12 : 12 : 1, from Levy and Miller at
+  100 °C.** These are free bases, and the spread and order change with temperature. Nine
+  classes over four levels would also need a second grouping without a source.
+
+**Assignment.** No source assigns ops to levels. Proposed: draw the assignment at random
+and treat each draw ("table") as a replicate over the unknown mapping.
+
+- **Number of fast classes.** Lindahl's ratio compares two classes of equal size. Nine
+  classes cannot split evenly, so four are fast and five slow. Fast values are then 112-114
+  of 255 (44-45%). Five fast classes is equally close to half; the choice of four is a tie
+  break to confirm.
+- **Draw rule.** For table t ≥ 1, h = mix(t ⊕ 17·golden). The classes k = 0…8 are sorted
+  by mix(h ⊕ k), and the first four are fast. `mix` is physub's existing hash, and 17 is
+  the next free stream id. A table does not depend on the run seed, so table and seed are
+  separate factors.
+- **Tables 1-4** are drawn by this rule; table 5 repeats an earlier set, so the list stops at
+  four distinct tables:
+
+  | table | fast classes | polite fast bytes (opcode + data) | polite hazard, N2 | vs M |
+  | --- | --- | --- | --- | --- |
+  | 1 | mov, dec, rnd, unwall | 19/40 (5 + 14) | 8.30e-5 | 1.06 |
+  | 2 | jmp, ignite, wall, unwall | 15/40 (4 + 11) | 6.67e-5 | 0.85 |
+  | 3 | dec, jmp, rnd, unwall | 21/40 (4 + 17) | 9.11e-5 | 1.17 |
+  | 4 | mov, inc, jmp, wall | 17/40 (9 + 8) | 7.48e-5 | 0.96 |
+
+  Under uniform M, polite's hazard is 40 × 1.95e-6 = 7.8e-5 (mean lifetime about 12.8k
+  ticks).
+
+**Normalization.**
+
+- **N2 (recommended): the unweighted mean over the nine class rates equals r.** With four
+  fast classes, (4·r_f + 5·r_s)/9 = r and r_f = 30·r_s. This gives r_s = 9r/125 = 1.404e-7
+  and r_f = 4.212e-6, the same for every table. The mean over the 255 values, which is the
+  expected rate of a random byte from mutation or RND, is 1.93-1.96e-6 in tables 1-4, within
+  1.1% of r. Polite's hazard varies by table (0.85-1.17 × M). That variation is part of what
+  the tables sample. Reasons: N2 follows the request's "mean rate", and it keeps the rates a
+  property of the substrate rather than of the ancestor.
+- **N1 (alternative): rescale each table so that polite's mean byte rate is r.** Polite's
+  hazard then equals M's 7.8e-5 in every table, as in the step-1 ancestor match (section 2).
+  The rates depend on the ancestor and differ by table. (slow, fast) are (1.32e-7, 3.96e-6),
+  (1.64e-7, 4.93e-6), (1.20e-7, 3.61e-6) and (1.46e-7, 4.39e-6) for tables 1-4.
+
+**Not chosen.**
+
+- Picking fast ops by analogy, for example making "chemically active" ops fast after Ray.
+  No source supports any specific assignment.
+- Context-dependent rates, which the request excludes.
+
+### Implementation outline (after agreement)
+
+- **Options.** New optional settings: `decay_table` (0 = off, the default; t ≥ 1 selects a
+  table) and `decay_ratio` (default 30). The mean rate comes from `p_hydro`. The settings
+  require `hydro_whole` = 1, and `p_dead` must be unset.
+- **Hazard.** With two levels, the hazard depends only on the counts of fast and slow bytes
+  (n_f, n_s). The thresholds form a 65 × 65 table built by repeated multiplication: first
+  n_f factors of (1 − r_f), then n_s factors of (1 − r_s). There is one keyed draw on
+  `kWhole` per site, as now.
+- **Checks.**
+  - With `decay_ratio` 1 the factors are identical, so the chain of multiplications is the
+    same as uniform M and the run should reproduce v14 `m195` bit for bit.
+  - The default replay digest stays unchanged.
+  - A test pins the table draw.
+
+### Runs and measures (after agreement)
+
+Same settings as v15: 96x96, 100k ticks, `ext_write` fill, `p_mut` 0.003, seeds 1-2,
+census, no rotation. Tables 1-4 × seeds 1-2 make 8 runs, about 15-20 min. The control is
+`m195`, which the uniform case should reproduce.
+
+Measures:
+
+- The replicator census, as before.
+- Mean h(x) and mean non-inert length over time, for replicators and for non-replicators.
+- Share of non-inert bytes in fast classes over time, overall and in replicators. Random
+  bytes have a fast share of 44-45%.
+- Durable non-replicators: a fall in mean h(x) among non-replicators that does not appear
+  among replicators.
+
+Expected (inference, not measured): in saturated space, births need vacancies, so a lower
+hazard lengthens a program's occupancy and its copies per lifetime. The size of the effect
+over 100k ticks is not predicted.
+
+### To confirm
+
+1. S1 (two levels, 30:1) or S2.
+2. Random assignment by fixed tables, with four fast classes (or five).
+3. N2 or N1.
+4. Tables 1-4 × seeds 1-2, with `m195` as the control.
+
 ## Search record
 
 Two verification passes on 2026-11-17 read the sources above and cached them; the
@@ -315,3 +522,11 @@ Toffoli and Margolus 1987 book; Lindahl 1993 and Lindahl and Karlström 1973; th
 and Zimm 1956 originals; Carmesin and Kremer 1988; the Czárán and Szathmáry 2000 chapter;
 Szabó et al. 2002; Higgs and Lehman 2015; the Wu and Higgs 2009 article. Hutton 2007 could not
 be restored because its archive copy was unreachable.
+
+A third pass on 2026-11-17, for section 6, cached An et al. 2014, Takeuchi, Hogeweg and Koonin
+2011, Dorn, Nealson and Adami 2011, and Könnyű, Szilágyi and Czárán 2015. Levy and Miller 1998,
+Kaukinen et al. 2002 and Robinson and Robinson 2001 were not cached: their PDF hosts returned
+bot challenges, and the open-access full-text services failed. Their abstracts were checked
+through NCBI. Not accessible and not read: Lindahl and Nyberg 1972 (one subagent saw it only
+in a scan inside a court filing; not used), Radzicka and Wolfenden 1996, and Ofria and Wilke
+2004.

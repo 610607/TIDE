@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "verified_at": "2026-11-15T11:09:35.248500+00:00",
+  "verified_at": "2026-11-17T03:26:01.933788+00:00",
   "papers": [
     {
       "path": "pdf/ray-1991-synthesis-of-life.pdf",
@@ -985,6 +985,70 @@
       "sha256": "07c93830f22b257220346bc6c675791cee11cf5df75772619c343b1285164c79",
       "validation": "Original PDF bytes retained; pdfinfo parse and opening identity checked",
       "reading_depth": "Section II (PDF pp. 6-7) read"
+    },
+    {
+      "path": "pdf/an-et-al-2014-nonenzymatic-depurination.pdf",
+      "title": "Non-Enzymatic Depurination of Nucleic Acids: Factors and Mechanisms",
+      "authors": "Ran An; Yu Jia; Baihui Wan; Yanfang Zhang; Ping Dong; Jing Li; Xingguo Liang",
+      "year": "2014",
+      "version": "Published article, PLoS ONE 9(12):e115950; DOI 10.1371/journal.pone.0115950; CC BY",
+      "source_url": "https://pmc-oa-opendata.s3.amazonaws.com/PMC4278771.1/PMC4278771.1.pdf",
+      "resolved_url": "https://pmc-oa-opendata.s3.amazonaws.com/PMC4278771.1/PMC4278771.1.pdf",
+      "retrieved_on": "2026-11-17",
+      "access": "Open access (PMC OA bucket)",
+      "bytes": 740542,
+      "pages": 17,
+      "sha256": "8605097e7146227b15c86aaa8139e66cb93a38fa55423a212ac4eef3f2139a7f",
+      "validation": "Original PDF bytes retained; pdfinfo parse and opening identity checked",
+      "reading_depth": "Results pp. 4-5 (Table 1) and pp. 8-9 read"
+    },
+    {
+      "path": "pdf/takeuchi-hogeweg-koonin-2011-origin-of-dna-genomes.pdf",
+      "title": "On the Origin of DNA Genomes: Evolution of the Division of Labor between Template and Catalyst in Model Replicator Systems",
+      "authors": "Nobuto Takeuchi; Paulien Hogeweg; Eugene V. Koonin",
+      "year": "2011",
+      "version": "Published article, PLoS Computational Biology 7(3):e1002024; DOI 10.1371/journal.pcbi.1002024; open access",
+      "source_url": "https://journals.plos.org/ploscompbiol/article/file?id=10.1371/journal.pcbi.1002024&type=printable",
+      "resolved_url": "https://journals.plos.org/ploscompbiol/article/file?id=10.1371/journal.pcbi.1002024&type=printable",
+      "retrieved_on": "2026-11-17",
+      "access": "Open access (publisher)",
+      "bytes": 21817683,
+      "pages": 19,
+      "sha256": "c07549227143ec095954de5023acbdb66e6964b7876be36d2ca2ca878df8748b",
+      "validation": "Original PDF bytes retained; pdfinfo parse and opening identity checked",
+      "reading_depth": "Introduction p. 1, model p. 3 and discussion p. 17 read"
+    },
+    {
+      "path": "pdf/dorn-nealson-adami-2011-monomer-abundance-v1.pdf",
+      "title": "Monomer Abundance Distribution Patterns as a Universal Biosignature: Examples from Terrestrial and Digital Life",
+      "authors": "Evan D. Dorn; Kenneth H. Nealson; Christoph Adami",
+      "year": "2011",
+      "version": "Preprint arXiv:1101.1013v1; published in Journal of Molecular Evolution 72:283-295",
+      "source_url": "https://arxiv.org/pdf/1101.1013v1",
+      "resolved_url": "https://arxiv.org/pdf/1101.1013v1",
+      "retrieved_on": "2026-11-17",
+      "access": "arXiv preprint",
+      "bytes": 2486730,
+      "pages": 35,
+      "sha256": "d1ba2afbc705bc6195f207da9f35c90a6c44da97aeeb1c6192bc69e28c0b0796",
+      "validation": "Original PDF bytes retained; pdfinfo parse and opening identity checked",
+      "reading_depth": "PDF pp. 4 and 6 read"
+    },
+    {
+      "path": "pdf/konnyu-et-al-2015-in-silico-ribozyme-evolution.pdf",
+      "title": "In silico ribozyme evolution in a metabolically coupled RNA population",
+      "authors": "Balázs Könnyű; András Szilágyi; Tamás Czárán",
+      "year": "2015",
+      "version": "Published article, Biology Direct 10:30; DOI 10.1186/s13062-015-0049-6; CC BY",
+      "source_url": "https://pmc-oa-opendata.s3.amazonaws.com/PMC4445502.1/PMC4445502.1.pdf",
+      "resolved_url": "https://pmc-oa-opendata.s3.amazonaws.com/PMC4445502.1/PMC4445502.1.pdf",
+      "retrieved_on": "2026-11-17",
+      "access": "Open access (PMC OA bucket)",
+      "bytes": 2021748,
+      "pages": 17,
+      "sha256": "19b590c81692f6105b241b0fc6c1507bd50af6b478e9190a3404848614d3dc22",
+      "validation": "Original PDF bytes retained; pdfinfo parse and opening identity checked",
+      "reading_depth": "Model section p. 4 read"
     }
   ]
 }

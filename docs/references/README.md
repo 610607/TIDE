@@ -2,7 +2,7 @@
 
 Retrieved and verified: 2026-11-15; decay and mobility additions 2026-11-17.
 
-The cache contains **60 distinct PDFs**. Read local copies before downloading again. The [manifest](manifest.json) records source URLs, versions, byte counts, page counts, and SHA-256 hashes. Original downloaded bytes are preserved.
+The cache contains **64 distinct PDFs**. Read local copies before downloading again. The [manifest](manifest.json) records source URLs, versions, byte counts, page counts, and SHA-256 hashes. Original downloaded bytes are preserved.
 
 Reference PDFs are local-only and ignored by Git. Public availability is not treated as a redistribution license. The generated review PDF is a separate authored artifact.
 
@@ -93,6 +93,35 @@ manifest).
 | [Macromolecular Dynamics: An introductory lecture](pdf/wuttke-2011-macromolecular-dynamics.pdf) | Lecture notes, arXiv:1103.4238v1 | 26 | [Source](https://arxiv.org/pdf/1103.4238) |
 | [Accurate estimate of the critical exponent nu for self-avoiding walks via a fast implementation of the pivot algorithm](pdf/clisby-2010-saw-critical-exponent-nu.pdf) | Preprint arXiv:1002.0494v1; published as Physical Review Letters 104:055702 | 5 | [Source](https://arxiv.org/pdf/1002.0494) |
 | [Scale-free center-of-mass displacement correlations in polymer melts without topological constraints and momentum conservation: A bond-fluctuation model study](pdf/wittmer-et-al-2011-bfm-com-displacement.pdf) | Preprint arXiv:1102.4962v2; published DOI 10.1063/1.3601918 | 27 | [Source](https://arxiv.org/pdf/1102.4962) |
+
+## Per-op decay additions (2026-11-17)
+
+Sources for the per-op decay proposal (section 6 of the
+[decay and mobility note](../research/decay-and-mobility.md)) added four original PDFs. The
+Ono and Ikegami 1999 and 2000 copies and the Ray 1991 copy were restored, and they match the
+manifest.
+
+| Reference | Cached version | Pages | Online source |
+| --- | --- | --- | --- |
+| [Non-Enzymatic Depurination of Nucleic Acids: Factors and Mechanisms](pdf/an-et-al-2014-nonenzymatic-depurination.pdf) | Published article, PLoS ONE 9(12):e115950; DOI 10.1371/journal.pone.0115950; CC BY | 17 | [Source](https://pmc-oa-opendata.s3.amazonaws.com/PMC4278771.1/PMC4278771.1.pdf) |
+| [On the Origin of DNA Genomes: Evolution of the Division of Labor between Template and Catalyst in Model Replicator Systems](pdf/takeuchi-hogeweg-koonin-2011-origin-of-dna-genomes.pdf) | Published article, PLoS Computational Biology 7(3):e1002024; open access | 19 | [Source](https://journals.plos.org/ploscompbiol/article/file?id=10.1371/journal.pcbi.1002024&type=printable) |
+| [Monomer Abundance Distribution Patterns as a Universal Biosignature: Examples from Terrestrial and Digital Life](pdf/dorn-nealson-adami-2011-monomer-abundance-v1.pdf) | Preprint arXiv:1101.1013v1; published in Journal of Molecular Evolution 72:283-295 | 35 | [Source](https://arxiv.org/pdf/1101.1013v1) |
+| [In silico ribozyme evolution in a metabolically coupled RNA population](pdf/konnyu-et-al-2015-in-silico-ribozyme-evolution.pdf) | Published article, Biology Direct 10:30; DOI 10.1186/s13062-015-0049-6; CC BY | 17 | [Source](https://pmc-oa-opendata.s3.amazonaws.com/PMC4445502.1/PMC4445502.1.pdf) |
+
+Read through abstracts only and not cached; see [unavailable references](unavailable.md):
+
+- Levy and Miller 1998, "The stability of the RNA bases: Implications for the origin of
+  life", PNAS 95(14):7933-7938, [DOI](https://doi.org/10.1073/pnas.95.14.7933),
+  [PMC20907](https://pmc.ncbi.nlm.nih.gov/articles/PMC20907/), PMID 9653118.
+- Kaukinen, Lyytikäinen, Mikkola and Lönnberg 2002, "The reactivity of phosphodiester
+  bonds within linear single-stranded oligoribonucleotides is strongly dependent on the base
+  sequence", Nucleic Acids Research 30(2):468-474,
+  [DOI](https://doi.org/10.1093/nar/30.2.468),
+  [PMC99829](https://pmc.ncbi.nlm.nih.gov/articles/PMC99829/), PMID 11788709.
+- Robinson and Robinson 2001, "Molecular clocks", PNAS 98(3):944-949,
+  [DOI](https://doi.org/10.1073/pnas.98.3.944),
+  [PMC14689](https://pmc.ncbi.nlm.nih.gov/articles/PMC14689/), PMID 11158575. A subagent
+  read the HTML; no page numbers were recorded.
 
 ## Reading notes
 
