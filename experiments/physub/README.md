@@ -162,12 +162,15 @@ in the last W ticks before each checkpoint and adds four kinds of line (definiti
   first copy is exact and later ones are not). `loose` passes only the two-carrier test.
   `prop` is not a replicator, but its trial reached copy depth 2: a child of the founder
   made a copy. `other` is the rest.
-- Class of a copy birth, from the sources of the offsets where child and parent differ:
-  `env` when any was written by another site (foreign) or left by an earlier occupant
-  (residue); else `shift` when three or more were written by the parent (a misaligned copy;
-  three copy errors in one copy have probability about 2.7e-4 at `p_mut` 0.003 and 40
+- Class of a copy birth, from the sources of the offsets where child and parent differ.
+  Writers are recorded by site, not by activation, so "written from the parent's site"
+  includes writes by an earlier occupant of that site. `env` when any difference was
+  written from another site (foreign) or left by an earlier occupant of the child's site
+  (residue); else `multi` when three or more were written from the parent's site (not copy
+  errors alone: three in one copy have probability about 2.7e-4 at `p_mut` 0.003 and 40
   copied bytes); else `gap` when an offset was never written and is inert in the child; else
-  `point` (one or two parent-written differences: copy errors); else `exact`.
+  `point` (one or two such differences: copy errors); else `exact`. v18 outputs, made at
+  80f9fcf, print `multi` as `shift`.
 - `# lineage`: active sites and genotypes by status, mean trial depth, and sites whose
   reference-inert offsets (polite's own-site pointer directions 30, 34, 36, 38, 40) have
   been filled from outside.

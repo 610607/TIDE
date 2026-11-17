@@ -54,24 +54,26 @@ inline int classify(const World::Birth& b) {
 }
 
 // Sources of the offsets where a child differs from its parent at birth (volatile offsets
-// excluded):
-//   written: last written by the parent since the child's previous ignition;
-//   foreign: last written by another site in that time;
+// excluded). The observer records writers by site (World::Birth), not by activation:
+//   written: last written from the parent's site since the child's previous ignition (by the
+//            parent, or by an earlier occupant of that site);
+//   foreign: last written from another site in that time;
 //   residue: not written in that time and non-inert in the child (left by an earlier occupant,
 //            for instance where a fill-mode write was refused);
 //   gap:     not written in that time and inert in the child (the copy did not reach the
 //            offset, or the write failed: no free monomer, a wall, or a lost conflict).
-// The birth's class: env when any difference is foreign or residue; else shift when at least
-// kShiftMin differences are written (a misaligned copy: with copy error u per byte and m
-// copied bytes, three or more copy errors have probability ~C(m,3)u^3, 2.7e-4 at u = 0.003
-// and m = 40); else gap when any is gap; else point when any is written (one or two copy
+// The birth's class: env when any difference is foreign or residue; else multi when at least
+// kMultiMin differences are written (not copy errors alone: with copy error u per byte and
+// m copied bytes, three or more errors in one copy have probability ~C(m,3)u^3, 2.7e-4 at
+// u = 0.003 and m = 40; a misaligned copy, or writes left by an earlier occupant of the
+// parent's site); else gap when any is gap; else point when any is written (one or two copy
 // errors); else exact.
 enum DiffSrc { kSrcWritten = 0, kSrcForeign, kSrcResidue, kSrcGap, kDiffSrcs };
 inline constexpr const char* kDiffSrcName[kDiffSrcs] = {"written", "foreign", "residue", "gap"};
-enum DiffClass { kClsExact = 0, kClsPoint, kClsGap, kClsShift, kClsEnv, kDiffClasses };
-inline constexpr const char* kDiffClsName[kDiffClasses] = {"exact", "point", "gap", "shift",
+enum DiffClass { kClsExact = 0, kClsPoint, kClsGap, kClsMulti, kClsEnv, kDiffClasses };
+inline constexpr const char* kDiffClsName[kDiffClasses] = {"exact", "point", "gap", "multi",
                                                            "env"};
-constexpr int kShiftMin = 3;
+constexpr int kMultiMin = 3;
 
 struct Diff {
   int n[kDiffSrcs] = {};
@@ -91,7 +93,7 @@ inline Diff diff_sources(const World& w, const World::Birth& b, const Reference&
     else d.n[kSrcGap] += 1;
   }
   if (d.n[kSrcForeign] + d.n[kSrcResidue] > 0) d.cls = kClsEnv;
-  else if (d.n[kSrcWritten] >= kShiftMin) d.cls = kClsShift;
+  else if (d.n[kSrcWritten] >= kMultiMin) d.cls = kClsMulti;
   else if (d.n[kSrcGap] > 0) d.cls = kClsGap;
   else if (d.n[kSrcWritten] > 0) d.cls = kClsPoint;
   return d;

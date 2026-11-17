@@ -127,7 +127,7 @@ int main(int argc, char** argv) {
     return it->second;
   };
   std::cout << "label\ttick\trank\tstatus\trun_births\trun_child_strict%\tlen\tm"
-               "\tfirst_n\tfirst_strict%\tfirst_exact%\tfirst_point%\tfirst_gap%\tfirst_shift%"
+               "\tfirst_n\tfirst_strict%\tfirst_exact%\tfirst_point%\tfirst_gap%\tfirst_multi%"
                "\tko_n\tko_nonstrict\tsub_n\tsub_nonstrict\tsub_sensitive_len\tpred%\n";
   std::string line;
   const double u = cfg.p_mut;
@@ -171,7 +171,7 @@ int main(int argc, char** argv) {
               << field(line, "child_strict%") << '\t' << field(line, "len") << '\t' << m << '\t'
               << born << '\t' << pct(strict, born) << '\t' << pct(cls[kClsExact], born) << '\t'
               << pct(cls[kClsPoint], born) << '\t' << pct(cls[kClsGap], born) << '\t'
-              << pct(cls[kClsShift], born) << '\t' << ko_n << '\t' << ko_bad << '\t' << sub_n
+              << pct(cls[kClsMulti], born) << '\t' << ko_n << '\t' << ko_bad << '\t' << sub_n
               << '\t' << sub_bad << '\t' << (m - sum_s) << '\t' << 100.0 * pred << std::endl;
   }
   return 0;
