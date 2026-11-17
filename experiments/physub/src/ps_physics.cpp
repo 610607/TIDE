@@ -89,7 +89,8 @@ void World::diffuse_field(std::vector<int32_t>& field, int32_t div, Stream flux_
 // Per byte (form P): one keyed draw per non-inert byte. Whole (form M): one keyed draw per
 // site with code, against the series threshold for its non-inert count; the activation
 // ends at the wick check. The class (live or not) picks the rate and, with hydro_whole,
-// the form; with dead_quiet a recently written inactive site counts as live.
+// the form; with dead_quiet a recently written inactive site counts as live. With
+// decay_table, whole sites take the per-op threshold for their fast and slow counts instead.
 void World::hydrolyze() {
   if (t_hydro_ == 0 && t_dead_ == 0) return;
   const Whole mode = cfg_.hydro_whole;
@@ -101,10 +102,16 @@ void World::hydrolyze() {
     const bool live = active || recent;
     uint8_t* mem = site_ptr(s);
     if (mode == Whole::All || (mode == Whole::Live && live) || (mode == Whole::Dead && !live)) {
-      int n = 0;
+      int n = 0, nf = 0;
       for (int o = 0; o < cfg_.site_len; ++o) n += mem[o] != INERT;
       if (n == 0) continue;
-      const uint64_t tw = (live ? t_whole_ : t_whole_dead_)[n];
+      uint64_t tw = 0;
+      if (!t_pair_.empty()) {  // decay_table: per-op rates, the same for every class
+        for (int o = 0; o < cfg_.site_len; ++o) nf += mem[o] != INERT && fast_[op_class(mem[o])];
+        tw = t_pair_[static_cast<size_t>(nf) * (cfg_.site_len + 1) + (n - nf)];
+      } else {
+        tw = (live ? t_whole_ : t_whole_dead_)[n];
+      }
       if (tw == 0 || (key(kWhole, static_cast<uint64_t>(s)) >> 32) >= tw) continue;
       std::fill(mem, mem + cfg_.site_len, INERT);
       free_[s] += n;

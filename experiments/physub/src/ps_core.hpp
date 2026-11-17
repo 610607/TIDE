@@ -9,6 +9,7 @@
 // emits intents; phase 2 resolves them in keyed-hash order, then runs diffusion, decay and
 // energy inflow. Keys use site coordinates only.
 
+#include <array>
 #include <cstdint>
 #include <string>
 #include <utility>
@@ -42,6 +43,7 @@ enum Stream : uint64_t {
   kDiffuse, kGuard, kHydro, kErode,
   kEDiffuse, kEGuard,  // appended: earlier streams keep their values
   kWhole, kRotate, kRotWall,
+  kDecayTable,  // used only to draw a per-op decay table (decay_table), never per tick
 };
 
 inline constexpr uint8_t kDirs = 4;   // N, E, S, W
@@ -127,6 +129,15 @@ struct Config {
   // site's free monomers, which ends any activation there. r = p_hydro for live sites and
   // p_dead for the others in either form; hydro_whole picks the form per class (see Whole).
   Whole hydro_whole = Whole::Off;
+  // Per-op rates for whole decay (requires hydro_whole; meant for hydro_whole=1 without
+  // p_dead). Each byte value v has op class (v - 1) % 9. Table t >= 1 marks kDecayFast
+  // classes as fast (decay_fast_classes); a fast byte decays at decay_ratio times the rate of
+  // a slow one, and the unweighted mean over the nine class rates is p_hydro. A whole site
+  // with n_f fast and n_s slow bytes decays with probability 1 - (1 - r_f)^n_f (1 - r_s)^n_s
+  // per tick, whether it is live or not. decay_ratio = 1 reproduces uniform form M exactly.
+  // 0 = off.
+  int decay_table = 0;
+  double decay_ratio = 30.0;
   // Whole-site mobility by Margolus block rotation. At the start of each tick the lattice is
   // split into 2x2 blocks, offset by (0,0) on even ticks and (1,1) on odd ticks; each block
   // rotates clockwise or counterclockwise with probability p_rot / 2 each. A rotation moves
@@ -202,6 +213,22 @@ struct Intent {
   bool paid = false;
   bool read_walled = false;  // a cross-edge read was stopped by a wall
 };
+
+// Per-op decay (decay_table): op class of a non-inert byte value, the fast classes of a
+// table (t <= 0: none), and the slow and fast rates whose unweighted class mean is r.
+inline constexpr int kDecayFast = 4;
+inline uint8_t op_class(uint8_t v) { return static_cast<uint8_t>((v - 1) % kOps); }
+std::array<bool, kOps> decay_fast_classes(int table);
+void decay_rates(double r, double ratio, double& slow, double& fast);
+// The apps accept decay_table only with hydro_whole=1 and p_dead unset, so the per-op rates
+// apply to every site whatever its activation. Returns nullptr when the settings fit.
+inline const char* decay_table_error(const Config& c) {
+  if (c.decay_table <= 0) return nullptr;
+  if (c.hydro_whole != Whole::All) return "decay_table needs hydro_whole=1";
+  if (c.p_dead >= 0.0) return "decay_table needs p_dead unset";
+  if (c.decay_ratio <= 0.0) return "decay_ratio must be positive";
+  return nullptr;
+}
 
 const std::vector<uint8_t>& ancestor();
 const std::vector<uint8_t>& polite();
@@ -284,6 +311,8 @@ private:
   uint64_t t_mut_ = 0;
   std::vector<uint64_t> t_whole_;    // hydro_whole: threshold by non-inert count, p_hydro
   std::vector<uint64_t> t_whole_dead_;  // the same for p_dead
+  std::vector<uint64_t> t_pair_;     // decay_table: threshold by (fast, slow) counts
+  std::array<bool, kOps> fast_{};    // decay_table: fast op classes
   uint64_t t_rot_ = 0;               // per rotation sense
 
   // geometry and randomness

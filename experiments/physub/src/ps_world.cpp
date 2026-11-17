@@ -43,6 +43,24 @@ std::vector<uint64_t> whole_thresholds(double r, int len) {
   return t;
 }
 
+// Per-op whole decay: thresholds by (n_f, n_s), index n_f * (len + 1) + n_s. Survival is
+// built by n_f factors of (1 - r_f) and then n_s factors of (1 - r_s), so with r_f = r_s the
+// chain of multiplications is that of whole_thresholds and the values are identical.
+std::vector<uint64_t> pair_thresholds(double rf, double rs, int len) {
+  const int w = len + 1;
+  std::vector<uint64_t> t(static_cast<size_t>(w) * w, 0);
+  double survive_f = 1.0;
+  for (int nf = 0; nf <= len; ++nf) {
+    if (nf > 0) survive_f *= 1.0 - std::min(rf, 1.0);
+    double survive = survive_f;
+    for (int ns = 0; nf + ns <= len; ++ns) {
+      if (ns > 0) survive *= 1.0 - std::min(rs, 1.0);
+      if (nf + ns > 0) t[static_cast<size_t>(nf) * w + ns] = threshold(1.0 - survive);
+    }
+  }
+  return t;
+}
+
 void fnv(uint64_t& h, uint64_t v) {
   h ^= v;
   h *= kFnvPrime;
@@ -54,10 +72,33 @@ Config sanitize(Config cfg) {
   cfg.act_cap = std::max(cfg.act_cap, 1);
   cfg.dead_quiet = std::max<int32_t>(cfg.dead_quiet, 0);
   cfg.p_rot = std::clamp(cfg.p_rot, 0.0, 1.0);
+  cfg.decay_table = std::max(cfg.decay_table, 0);
+  cfg.decay_ratio = std::max(cfg.decay_ratio, 0.0);
   return cfg;
 }
 
 } // namespace
+
+// Classes sorted by a keyed hash of the table number; the first kDecayFast are fast. The
+// draw uses its own stream id and not the run seed, so a table is the same in every run.
+std::array<bool, kOps> decay_fast_classes(int table) {
+  std::array<bool, kOps> fast{};
+  if (table <= 0) return fast;
+  const uint64_t h = mix(static_cast<uint64_t>(table) ^ (kDecayTable * kGolden));
+  std::array<uint64_t, kOps> order{};
+  for (uint64_t k = 0; k < kOps; ++k) order[k] = k;
+  std::sort(order.begin(), order.end(),
+            [h](uint64_t a, uint64_t b) { return mix(h ^ a) < mix(h ^ b); });
+  for (int i = 0; i < kDecayFast; ++i) fast[order[i]] = true;
+  return fast;
+}
+
+// slow = r * 9 / (kDecayFast * ratio + 9 - kDecayFast), fast = ratio * slow; written so that
+// ratio = 1 gives slow = fast = r exactly.
+void decay_rates(double r, double ratio, double& slow, double& fast) {
+  slow = r * (static_cast<double>(kOps) / (kDecayFast * ratio + (kOps - kDecayFast)));
+  fast = ratio * slow;
+}
 
 World::World(const Config& cfg) : cfg_(sanitize(cfg)) {
   const size_t sites = static_cast<size_t>(cfg_.width) * cfg_.height;
@@ -87,6 +128,12 @@ World::World(const Config& cfg) : cfg_(sanitize(cfg)) {
     t_whole_ = whole_thresholds(cfg_.p_hydro, cfg_.site_len);
     t_whole_dead_ = whole_thresholds(cfg_.p_dead < 0.0 ? cfg_.p_hydro : cfg_.p_dead,
                                      cfg_.site_len);
+    if (cfg_.decay_table > 0) {
+      fast_ = decay_fast_classes(cfg_.decay_table);
+      double slow = 0.0, fast = 0.0;
+      decay_rates(cfg_.p_hydro, cfg_.decay_ratio, slow, fast);
+      t_pair_ = pair_thresholds(fast, slow, cfg_.site_len);
+    }
   }
   t_rot_ = threshold(cfg_.p_rot / 2.0);
 }

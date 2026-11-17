@@ -1,0 +1,27 @@
+# v16: per-op rates for whole decay (form M). Agreed 2026-11-17 (decay-and-mobility.md, section 6):
+# two levels, fast:slow = 30:1 (Lindahl); 4 fast op classes drawn by decay_table 1-4; the
+# unweighted mean of the nine class rates is p_hydro = 1.95e-6 (slow 1.404e-7, fast 4.212e-6).
+#   t<T>      decay_table=T, decay_ratio 30
+#   m195      uniform form M (v14/v15 control), with the same class measures
+#   r1_t<T>   decay_table=T, decay_ratio 1: must reproduce v15 m195 output byte for byte
+# Everything else as v15: ext_write fill, p_mut 0.003, 96x96, 100k ticks, seeds 1-2, census,
+# no rotation. classes=1,2,3,4 prints the class shares under every table in every run, so
+# each table's control is m195 measured with that table.
+t1_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 decay_table=1 seed=1 ext_write=fill census=1 classes=1,2,3,4
+t1_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 decay_table=1 seed=2 ext_write=fill census=1 classes=1,2,3,4
+t2_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 decay_table=2 seed=1 ext_write=fill census=1 classes=1,2,3,4
+t2_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 decay_table=2 seed=2 ext_write=fill census=1 classes=1,2,3,4
+t3_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 decay_table=3 seed=1 ext_write=fill census=1 classes=1,2,3,4
+t3_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 decay_table=3 seed=2 ext_write=fill census=1 classes=1,2,3,4
+t4_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 decay_table=4 seed=1 ext_write=fill census=1 classes=1,2,3,4
+t4_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 decay_table=4 seed=2 ext_write=fill census=1 classes=1,2,3,4
+m195_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill census=1 classes=1,2,3,4
+m195_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=2 ext_write=fill census=1 classes=1,2,3,4
+r1_t1_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 decay_table=1 decay_ratio=1 seed=1 ext_write=fill census=1
+r1_t1_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 decay_table=1 decay_ratio=1 seed=2 ext_write=fill census=1
+r1_t2_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 decay_table=2 decay_ratio=1 seed=1 ext_write=fill census=1
+r1_t2_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 decay_table=2 decay_ratio=1 seed=2 ext_write=fill census=1
+r1_t3_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 decay_table=3 decay_ratio=1 seed=1 ext_write=fill census=1
+r1_t3_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 decay_table=3 decay_ratio=1 seed=2 ext_write=fill census=1
+r1_t4_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 decay_table=4 decay_ratio=1 seed=1 ext_write=fill census=1
+r1_t4_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 decay_table=4 decay_ratio=1 seed=2 ext_write=fill census=1

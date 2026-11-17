@@ -2,6 +2,7 @@
 // differences, child lifespan and child fertility. Observation only.
 // Usage: ps_probe ticks=N seed=S p_mut=X p_hydro=Y rival=0|1 [mass0=M] [census=0|1]
 //        [hydro_whole=0|1|live|dead] [p_rot=P] [physics=0|1]
+//        [decay_table=T decay_ratio=R] [classes=T1,T2,...]
 
 #include "ps_core.hpp"
 
@@ -9,6 +10,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <map>
+#include <sstream>
 #include <string>
 
 using namespace ps;
@@ -175,6 +177,7 @@ constexpr uint64_t kSpanTicks = 500;
 struct TrialResult {
   bool replicator = false;
   int ip_span = -1;
+  uint64_t op_mask = 0;  // offsets where the founder executed an instruction (bit k = offset k)
 };
 
 TrialResult run_trial(const Config& run_cfg, const std::string& key) {
@@ -194,10 +197,12 @@ TrialResult run_trial(const Config& run_cfg, const std::string& key) {
   for (int v : kVolatile) program[v] = polite()[v];
   const int32_t center = t.site_index(kTrialSize / 2, kTrialSize / 2);
   if (!t.seed_program(kTrialSize / 2, kTrialSize / 2, program)) return r;
-  t.run(kTrialTicks - kSpanTicks);
   std::vector<bool> visited(c.site_len, false);
-  for (uint64_t k = 0; k < kSpanTicks; ++k) {
+  for (uint64_t k = 0; k < kTrialTicks; ++k) {
+    const int at = t.first_ip(center);  // the instruction this tick executes
+    if (at >= 0) r.op_mask |= uint64_t{1} << at;
     t.run(1);
+    if (k < kTrialTicks - kSpanTicks) continue;
     const int ip = t.first_ip(center);
     if (ip >= 0) visited[ip] = true;
   }
@@ -257,6 +262,115 @@ void print_census(const World& w, const std::vector<Record>& recs,
             << mean(span[0], spanned[0]) << " trials=" << cache.size() << std::endl;
 }
 
+// Per-op decay classes (classes=...): for each listed table, the share of non-inert bytes in
+// fast classes and the hazard h(x) = n_f r_f + n_s r_s at the run's p_hydro and decay_ratio,
+// for replicators and non-replicators (census verdicts) and for all code. Replicator bytes are
+// split into opcode bytes (offsets where the census founder executed an instruction) and the
+// others (operands and data). Observation only; tables need not be the run's decay_table.
+struct ClassSums {
+  uint64_t sites = 0, bytes = 0, fast = 0, op = 0, op_fast = 0, data = 0, data_fast = 0;
+  double h = 0.0;
+};
+
+// Substitutions in replicators at polite's own offsets, by polite's role of the offset
+// (opcode or other) and by direction between the table's classes.
+enum Dir { kF2S = 0, kS2F, kF2F, kS2S, kToInert, kFromInert, kDirsN };
+constexpr const char* kDirName[kDirsN] = {"f2s", "s2f", "f2f", "s2s", "to_inert", "from_inert"};
+constexpr std::array<int, 13> kPoliteOps = {0, 3, 6, 8, 11, 13, 15, 18, 20, 22, 24, 26, 28};
+
+std::string pct(uint64_t a, uint64_t b) {
+  std::ostringstream o;
+  o.precision(4);
+  o << (b ? 100.0 * static_cast<double>(a) / static_cast<double>(b) : 0.0);
+  return o.str();
+}
+
+void print_classes(const World& w, const std::map<std::string, TrialResult>& cache,
+                   const std::vector<int>& tables) {
+  const Config& c = w.config();
+  const int32_t n = c.width * c.height;
+  const auto& ref = polite();
+  uint64_t polite_op = 0;
+  for (int k : kPoliteOps) polite_op |= uint64_t{1} << k;
+  for (int table : tables) {
+    const auto fast = decay_fast_classes(table);
+    double rs = 0.0, rf = 0.0;
+    decay_rates(c.p_hydro, c.decay_ratio, rs, rf);
+    ClassSums sum[2], all;  // [0] non-replicators, [1] replicators (active sites only)
+    uint64_t subst[2][kDirsN] = {};  // [0] polite data offsets, [1] polite opcode offsets
+    int pfx_sites = 0;
+    for (int32_t s = 0; s < n; ++s) {
+      const uint8_t* b = w.bytes_at(s);
+      ClassSums x;
+      for (int k = 0; k < c.site_len; ++k) {
+        if (b[k] == INERT) continue;
+        x.bytes += 1;
+        x.fast += fast[op_class(b[k])];
+      }
+      if (x.bytes == 0) continue;
+      all.sites += 1;
+      all.bytes += x.bytes;
+      all.fast += x.fast;
+      if (!w.site_active(s)) continue;
+      const auto it = cache.find(masked(w, s));
+      if (it == cache.end()) continue;
+      const bool rep = it->second.replicator;
+      ClassSums& g = sum[rep];
+      g.sites += 1;
+      g.bytes += x.bytes;
+      g.fast += x.fast;
+      g.h += static_cast<double>(x.fast) * rf + static_cast<double>(x.bytes - x.fast) * rs;
+      if (!rep) continue;
+      for (int k = 0; k < c.site_len; ++k) {
+        if (b[k] == INERT) continue;
+        const bool f = fast[op_class(b[k])];
+        if (it->second.op_mask >> k & 1) {
+          g.op += 1;
+          g.op_fast += f;
+        } else {
+          g.data += 1;
+          g.data_fast += f;
+        }
+      }
+      pfx_sites += 1;
+      for (int k = 0; k < static_cast<int>(ref.size()); ++k) {
+        if (is_volatile(k) || b[k] == ref[k]) continue;
+        const int role = polite_op >> k & 1;
+        Dir d;
+        if (b[k] == INERT) d = kToInert;
+        else if (ref[k] == INERT) d = kFromInert;
+        else {
+          const bool f0 = fast[op_class(ref[k])], f1 = fast[op_class(b[k])];
+          d = f0 ? (f1 ? kF2F : kF2S) : (f1 ? kS2F : kS2S);
+        }
+        subst[role][d] += 1;
+      }
+    }
+    auto mean = [](double a, uint64_t b) { return b ? a / static_cast<double>(b) : 0.0; };
+    std::cout << "# classes tick=" << w.tick() << " table=" << table
+              << " rep_sites=" << sum[1].sites << " rep_len=" << mean(sum[1].bytes, sum[1].sites)
+              << " rep_fast%=" << pct(sum[1].fast, sum[1].bytes)
+              << " rep_op_fast%=" << pct(sum[1].op_fast, sum[1].op)
+              << " rep_op_len=" << mean(sum[1].op, sum[1].sites)
+              << " rep_data_fast%=" << pct(sum[1].data_fast, sum[1].data)
+              << " rep_data_len=" << mean(sum[1].data, sum[1].sites)
+              << " rep_h=" << mean(sum[1].h, sum[1].sites)
+              << " nonrep_sites=" << sum[0].sites << " nonrep_len=" << mean(sum[0].bytes, sum[0].sites)
+              << " nonrep_fast%=" << pct(sum[0].fast, sum[0].bytes)
+              << " nonrep_h=" << mean(sum[0].h, sum[0].sites)
+              << " code_sites=" << all.sites << " code_fast%=" << pct(all.fast, all.bytes)
+              << std::endl;
+    std::cout << "# subst tick=" << w.tick() << " table=" << table << " rep_sites=" << pfx_sites;
+    for (int role = 1; role >= 0; --role) {
+      std::cout << (role ? " op:" : " data:");
+      for (int d = 0; d < kDirsN; ++d) {
+        std::cout << ' ' << kDirName[d] << '=' << mean(subst[role][d], pfx_sites);
+      }
+    }
+    std::cout << std::endl;
+  }
+}
+
 // Cumulative counters of the optional physics (hydro_whole, p_rot).
 void print_physics(const World& w) {
   const Stats& s = w.stats();
@@ -293,6 +407,7 @@ int main(int argc, char** argv) {
   bool census = false;
   bool physics = false;  // print the physics counters even with hydro_whole and p_rot off
   uint64_t interval = 10000;
+  std::vector<int> class_tables;  // classes=...: per-op class measures (needs census=1)
   for (int i = 1; i < argc; ++i) {
     const std::string a = argv[i];
     const auto eq = a.find('=');
@@ -314,6 +429,13 @@ int main(int argc, char** argv) {
       }
     }
     else if (k == "p_rot") cfg.p_rot = std::atof(v.c_str());
+    else if (k == "decay_table") cfg.decay_table = std::atoi(v.c_str());
+    else if (k == "decay_ratio") cfg.decay_ratio = std::atof(v.c_str());
+    else if (k == "classes") {
+      std::stringstream list(v);
+      std::string item;
+      while (std::getline(list, item, ',')) class_tables.push_back(std::atoi(item.c_str()));
+    }
     else if (k == "mass0") cfg.mass0 = std::atoi(v.c_str());
     else if (k == "rival") rival = v == "1";
     else if (k == "census") census = v == "1";
@@ -341,6 +463,14 @@ int main(int argc, char** argv) {
       std::cerr << "unknown key: " << k << '\n';
       return 1;
     }
+  }
+  if (const char* e = decay_table_error(cfg)) {
+    std::cerr << e << '\n';
+    return 1;
+  }
+  if (!class_tables.empty() && !census) {
+    std::cerr << "classes needs census=1\n";
+    return 1;
   }
   World w(cfg);
   const int ax = rival ? cfg.width / 4 : cfg.width / 2;
@@ -411,7 +541,10 @@ int main(int argc, char** argv) {
       const int c = current[s];
       if (c >= 0 && recs[c].died == 0 && !w.site_active(static_cast<int32_t>(s))) recs[c].died = w.tick();
     }
-    if (census && w.tick() % interval == 0) print_census(w, recs, current, census_cache);
+    if (census && w.tick() % interval == 0) {
+      print_census(w, recs, current, census_cache);
+      if (!class_tables.empty()) print_classes(w, census_cache, class_tables);
+    }
     if (physics_line && w.tick() % interval == 0) print_physics(w);
   }
   Group g[2][kKinds];

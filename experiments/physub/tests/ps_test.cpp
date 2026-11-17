@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <cstdlib>
 #include <iostream>
 #include <vector>
@@ -436,6 +437,81 @@ void test_whole_decay_split() {
             << " the live site only\n";
 }
 
+// Per-op whole decay (decay_table): the documented tables, the class-mean rate, ratio 1
+// equal to uniform form M bit for bit, and fast-class programs clearing faster.
+void test_decay_table() {
+  const char* kExpected[] = {"", "mov dec rnd unwall", "jmp ignite wall unwall",
+                             "dec jmp rnd unwall", "mov inc jmp wall"};
+  const char* kNames[kOps] = {"mov", "inc", "dec", "jz", "jmp", "rnd", "ignite", "wall", "unwall"};
+  for (int t = 0; t <= 4; ++t) {
+    const auto fast = decay_fast_classes(t);
+    std::string got;
+    for (int k = 0; k < kOps; ++k) {
+      if (!fast[k]) continue;
+      if (!got.empty()) got += ' ';
+      got += kNames[k];
+    }
+    assert(got == kExpected[t]);
+  }
+  double slow = 0.0, fast = 0.0;
+  decay_rates(1.95e-6, 30.0, slow, fast);
+  assert(std::abs(slow - 1.404e-7) < 1e-12 && std::abs(fast - 4.212e-6) < 1e-12);
+  const double classes = kOps;
+  assert(std::abs((kDecayFast * fast + (classes - kDecayFast) * slow) / classes - 1.95e-6) < 1e-15);
+  decay_rates(1.95e-6, 1.0, slow, fast);
+  assert(slow == 1.95e-6 && fast == 1.95e-6);
+
+  // Ratio 1 is uniform form M, bit for bit, with mutation and whole decays happening.
+  Config base = small_config();
+  base.hydro_whole = Whole::All;
+  base.p_hydro = 2e-5;
+  base.p_mut = 0.01;
+  Config one = base;
+  one.decay_table = 1;
+  one.decay_ratio = 1.0;
+  Config thirty = base;
+  thirty.decay_table = 1;
+  World u(base), a(one), b(thirty);
+  for (World* x : {&u, &a, &b}) assert(x->seed_program(8, 8, polite()));
+  const uint64_t kTicks = 4000;
+  for (uint64_t t = 0; t < kTicks; ++t) {
+    b.run(1);
+    assert(b.ledger_ok());
+  }
+  u.run(kTicks);
+  a.run(kTicks);
+  assert(u.digest() == a.digest() && u.stats().whole_decays > 0);
+  assert(b.digest() != u.digest());
+
+  // Inactive programs of one class each: 32 fast-class bytes or 32 slow-class bytes.
+  Config cfg = small_config();
+  cfg.hydro_whole = Whole::All;
+  cfg.p_hydro = 1e-3;  // slow 7.2e-5, fast 2.16e-3 per byte
+  cfg.p_erode = 0.0;
+  cfg.decay_table = 1;
+  World w(cfg);
+  const auto fc = decay_fast_classes(1);
+  uint8_t fast_v = 0, slow_v = 0;
+  for (int v = 1; v <= 9; ++v) {
+    if (fc[op_class(static_cast<uint8_t>(v))] && !fast_v) fast_v = static_cast<uint8_t>(v);
+    if (!fc[op_class(static_cast<uint8_t>(v))] && !slow_v) slow_v = static_cast<uint8_t>(v);
+  }
+  const int32_t sites = cfg.width * cfg.height;
+  for (int32_t s = 0; s < sites; ++s) {
+    w.set_free_mass(s, 64);
+    assert(w.place_bytes(s, std::vector<uint8_t>(32, s % 2 ? slow_v : fast_v)));
+  }
+  w.run(10);
+  int cleared[2] = {0, 0};  // [0] fast, [1] slow
+  for (int32_t s = 0; s < sites; ++s) cleared[s % 2] += non_inert(w.site_bytes(s)) == 0;
+  // Expected after 10 ticks: fast about 128 x 0.5 = 64, slow about 128 x 0.023 = 3.
+  assert(cleared[0] > 30 && cleared[0] > 4 * cleared[1]);
+  assert(w.ledger_ok());
+  std::cout << "[ps test 16] decay tables match; ratio 1 equals uniform M over " << kTicks
+            << " ticks (decays=" << u.stats().whole_decays << "); cleared fast/slow "
+            << cleared[0] << '/' << cleared[1] << " of 128 each\n";
+}
+
 // Every activation points at a non-inert byte of its own site's code.
 bool activations_on_code(const World& w) {
   const int32_t n = w.config().width * w.config().height;
@@ -517,6 +593,7 @@ int main() {
   test_whole_decay();
   test_block_rotation();
   test_whole_decay_split();
+  test_decay_table();
   std::cout << "all physub tests passed\n";
   return 0;
 }
