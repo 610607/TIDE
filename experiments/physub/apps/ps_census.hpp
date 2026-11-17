@@ -119,10 +119,12 @@ inline bool ref_inert_filled(const uint8_t* bytes, const Reference& ref) {
 // copy births by the founder; founder_exact: those whose child carries the tested key. A
 // strict replicator is a replicator all of whose founder copies are exact (the two-carrier
 // test alone passes a program whose first copy is exact and later ones are not).
-// Seeding draws the founder's bytes from the center site's free monomers (mass0), so a key
-// with more than mass0 non-inert bytes after the volatile reset cannot be seeded: seeded is
-// false and the verdict is a non-replicator. top_up (an observer check, not used for the
-// census verdict) first raises the center's free monomers to that byte count.
+// Seeding draws the founder's bytes from the center site's free monomers (mass0). With top_up
+// (the default) the center's free monomers are first raised to the key's non-inert byte count
+// after the volatile reset, so every key can be seeded; this adds monomers to the trial world
+// only, and changes nothing for a key of at most mass0 bytes. Without top_up a key past mass0
+// bytes cannot be seeded: seeded is false and the verdict is a non-replicator (the seed-limited
+// verdict used for v13-v22 as first recorded).
 constexpr int kTrialSize = 9;
 constexpr uint64_t kTrialTicks = 2000;
 constexpr uint64_t kSpanTicks = 500;
@@ -153,8 +155,18 @@ inline int trial_bytes(const std::string& key, const Reference& ref) {
   return n;
 }
 
+// Seeds the trial founder at the center of a trial world (see run_trial on top_up).
+inline bool seed_founder(World& t, const std::string& key, const Reference& ref, bool top_up) {
+  const int32_t center = t.site_index(kTrialSize / 2, kTrialSize / 2);
+  if (top_up) {
+    const int need = trial_bytes(key, ref);
+    if (need > t.free_mass(center)) t.set_free_mass(center, need);
+  }
+  return t.seed_program(kTrialSize / 2, kTrialSize / 2, trial_program(key, ref));
+}
+
 inline TrialResult run_trial(const Config& run_cfg, const std::string& key,
-                             const Reference& ref, bool top_up = false) {
+                             const Reference& ref, bool top_up = true) {
   Config c = run_cfg;
   c.width = kTrialSize;
   c.height = kTrialSize;
@@ -167,13 +179,8 @@ inline TrialResult run_trial(const Config& run_cfg, const std::string& key,
   c.seed = 1;
   World t(c);
   TrialResult r;
-  const std::vector<uint8_t> program = trial_program(key, ref);
   const int32_t center = t.site_index(kTrialSize / 2, kTrialSize / 2);
-  if (top_up) {
-    const int need = trial_bytes(key, ref);
-    if (need > t.free_mass(center)) t.set_free_mass(center, need);
-  }
-  if (!t.seed_program(kTrialSize / 2, kTrialSize / 2, program)) return r;
+  if (!seed_founder(t, key, ref, top_up)) return r;
   r.seeded = true;
   std::vector<bool> visited(c.site_len, false);
   std::vector<int> gen(kTrialSize * kTrialSize, 0);

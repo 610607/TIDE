@@ -1,0 +1,29 @@
+# v23: v17-v22 recomputed with the topped-up census verdict (census_topup=1, now the
+# default). Measurement only: the trial founder's site is topped up to the key's byte count,
+# so keys past mass0 (48) non-inert bytes are tested instead of being counted as
+# non-replicators (v22). Run dynamics are unchanged; every census-based line can change.
+# One run per distinct dynamics, carrying every observer line that v17-v22 used:
+#   zero_m195_s1/s2: v17-v19 m195, v21 zero_s1 and v22 zero_s1/s2 (inert_operand=zero);
+#   fail_m195_s1/s2: v20-v22 m195 (inert_operand=fail);
+#   zero_nomut_s1/s2: v18-v19 nomut; fail_nomut_s1/s2: v20-v21 nomut;
+#   t1-t4 s1/s2: v17 tables (t2_s1 and t3_s1 with v18's fidelity lines);
+#   anc_s1/s2: v18's short-ancestor control (the ps_run jobs of v18 have no census).
+# ps_scan then reads the # fidtop lines of zero_m195_s1/s2 and anc_s1/s2 as in v18.
+zero_m195_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000 fate=1 trace=1
+zero_m195_s2 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=2 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000 fate=1 trace=1
+fail_m195_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000 fate=1 inert_operand=fail trace=1
+fail_m195_s2 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=2 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000 fate=1 inert_operand=fail trace=1
+zero_nomut_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill census=1 fidelity=5000 fate=1 trace=1
+zero_nomut_s2 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0 p_hydro=1.95e-6 hydro_whole=1 seed=2 ext_write=fill census=1 fidelity=5000 fate=1 trace=1
+fail_nomut_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill census=1 fidelity=5000 fate=1 inert_operand=fail trace=1
+fail_nomut_s2 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0 p_hydro=1.95e-6 hydro_whole=1 seed=2 ext_write=fill census=1 fidelity=5000 fate=1 inert_operand=fail trace=1
+t2_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 decay_table=2 seed=1 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000
+t3_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 decay_table=3 seed=1 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000
+t1_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 decay_table=1 seed=1 ext_write=fill census=1 classes=1,2,3,4
+t1_s2 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 decay_table=1 seed=2 ext_write=fill census=1 classes=1,2,3,4
+t2_s2 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 decay_table=2 seed=2 ext_write=fill census=1 classes=1,2,3,4
+t3_s2 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 decay_table=3 seed=2 ext_write=fill census=1 classes=1,2,3,4
+t4_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 decay_table=4 seed=1 ext_write=fill census=1 classes=1,2,3,4
+t4_s2 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 decay_table=4 seed=2 ext_write=fill census=1 classes=1,2,3,4
+anc_s1 ps_probe anc=copier width=96 height=96 ticks=500000 interval=5000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill census=1 fidelity=5000
+anc_s2 ps_probe anc=copier width=96 height=96 ticks=500000 interval=5000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=2 ext_write=fill census=1 fidelity=5000

@@ -606,17 +606,20 @@ void test_census_trial() {
     assert(census::run_trial(cfg, filled_key, ref).strict());
   }
   // Seeding limit: the founder's bytes come from the center's mass0 free monomers. Polite
-  // (40 bytes after the volatile reset) with 8 tail fills seeds and stays strict; with 9 it
-  // cannot be seeded and is a non-replicator, but strict once the founder site is topped up.
+  // (40 bytes after the volatile reset) with 8 tail fills seeds and stays strict either way;
+  // with 9 it cannot be seeded without top-up (a non-replicator), and is strict with the
+  // default top-up of the founder site.
   std::string long_key = key;
   for (int k = 0; k < 8; ++k) long_key[46 + k] = static_cast<char>(7 + 9 * k);
   assert(census::trial_bytes(long_key, ref) == cfg.mass0);
-  assert(census::run_trial(cfg, long_key, ref).seeded);
-  assert(census::run_trial(cfg, long_key, ref).strict());
+  for (bool top_up : {false, true}) {
+    const census::TrialResult r = census::run_trial(cfg, long_key, ref, top_up);
+    assert(r.seeded && r.strict());
+  }
   long_key[54] = static_cast<char>(7);
-  const census::TrialResult unseeded = census::run_trial(cfg, long_key, ref);
+  const census::TrialResult unseeded = census::run_trial(cfg, long_key, ref, false);
   assert(!unseeded.seeded && !unseeded.replicator && unseeded.op_mask == 0);
-  const census::TrialResult topped = census::run_trial(cfg, long_key, ref, true);
+  const census::TrialResult topped = census::run_trial(cfg, long_key, ref);
   assert(topped.seeded && topped.strict());
   assert(!census::ref_inert_filled(polite().data(), ref));
   std::vector<uint8_t> filled = polite();

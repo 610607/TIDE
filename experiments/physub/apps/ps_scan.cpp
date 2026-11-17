@@ -9,12 +9,14 @@
 //   knockouts: every non-inert, non-volatile byte set to INERT, as ps_knockout does, with the
 //     census verdict instead of ps_knockout's functional count.
 //   substitutions: `subs` values per such byte, drawn as copy errors are (1 + h % 255).
+//   census_topup: as ps_probe's; it applies to the census verdicts and to the founder of the
+//     first copies (a key past mass0 bytes is seeded only when topped up).
 //   pred: the strict share expected from text substitutions alone, to first order:
 //     (1-u)^m + u (1-u)^(m-1) sum_k s_k, with m non-inert non-volatile bytes and s_k the share
 //     of substitutions at k that leave a strict replicator. Copy errors in the program's own
 //     bookkeeping moves (counter set-up, probe) are not in pred but are in the first copies.
 // Usage: ps_scan [anc=polite|copier] [first=200] [subs=4] [label=NAME] [p_mut=0.003]
-//                [mass0=48] [ext_write=fill] < probe.tsv
+//                [mass0=48] [ext_write=fill] [census_topup=1|0] < probe.tsv
 
 #include "ps_census.hpp"
 #include "ps_core.hpp"
@@ -61,7 +63,7 @@ struct First {
 };
 
 First first_copy(const Config& run_cfg, const std::string& key, const Reference& ref,
-                 uint64_t seed) {
+                 uint64_t seed, bool top_up) {
   Config c = run_cfg;
   c.width = kTrialSize;
   c.height = kTrialSize;
@@ -72,11 +74,9 @@ First first_copy(const Config& run_cfg, const std::string& key, const Reference&
   c.p_rot = 0.0;
   c.seed = seed;
   World t(c);
-  std::vector<uint8_t> program(key.begin(), key.end());
-  for (int v : ref.volatile_offsets) program[v] = (*ref.program)[v];
   const int32_t center = t.site_index(kTrialSize / 2, kTrialSize / 2);
   First f;
-  if (!t.seed_program(kTrialSize / 2, kTrialSize / 2, program)) return f;
+  if (!seed_founder(t, key, ref, top_up)) return f;
   for (uint64_t k = 0; k < kTrialTicks && t.active_count() > 0; ++k) {
     t.run(1);
     for (const auto& b : t.births_this_tick()) {
@@ -98,6 +98,7 @@ int main(int argc, char** argv) {
   cfg.p_mut = 0.003;
   cfg.ext_write = ExtWrite::FillOnly;
   int first = 200, subs = 4;
+  bool top_up = true;
   std::string label = "-";
   const Reference* ref = reference_named("polite");
   for (int i = 1; i < argc; ++i) {
@@ -111,6 +112,7 @@ int main(int argc, char** argv) {
     else if (k == "p_mut") cfg.p_mut = std::atof(v.c_str());
     else if (k == "mass0") cfg.mass0 = std::atoi(v.c_str());
     else if (k == "ext_write" && parse_ext_write(v, cfg.ext_write)) {}
+    else if (k == "census_topup") top_up = v == "1";
     else {
       std::cerr << "bad argument: " << a << '\n';
       return 1;
@@ -123,7 +125,7 @@ int main(int argc, char** argv) {
   std::map<std::string, TrialResult> cache;
   auto verdict = [&](const std::string& key) -> const TrialResult& {
     auto it = cache.find(key);
-    if (it == cache.end()) it = cache.emplace(key, run_trial(cfg, key, *ref)).first;
+    if (it == cache.end()) it = cache.emplace(key, run_trial(cfg, key, *ref, top_up)).first;
     return it->second;
   };
   std::cout << "label\ttick\trank\tstatus\trun_births\trun_child_strict%\tlen\tm"
@@ -137,7 +139,7 @@ int main(int argc, char** argv) {
     if (static_cast<int>(key.size()) != cfg.site_len) continue;
     int born = 0, strict = 0, cls[kDiffClasses] = {};
     for (int s = 1; s <= first; ++s) {
-      const First f = first_copy(cfg, key, *ref, static_cast<uint64_t>(s));
+      const First f = first_copy(cfg, key, *ref, static_cast<uint64_t>(s), top_up);
       if (!f.born) continue;
       born += 1;
       cls[f.cls] += 1;

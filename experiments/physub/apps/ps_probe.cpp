@@ -4,7 +4,7 @@
 // Usage: ps_probe ticks=N seed=S p_mut=X p_hydro=Y rival=0|1 [mass0=M] [census=0|1]
 //        [hydro_whole=0|1|live|dead] [p_rot=P] [physics=0|1]
 //        [decay_table=T decay_ratio=R] [classes=T1,T2,...] [anc=polite|copier]
-//        [fidelity=W] [fate=1] [trace=1] [inert_operand=zero|fail]
+//        [fidelity=W] [fate=1] [trace=1] [inert_operand=zero|fail] [census_topup=1|0]
 
 #include "ps_census.hpp"
 #include "ps_core.hpp"
@@ -163,9 +163,13 @@ void print_window(const World& w, const Window& win, const Stats& prev) {
 
 // Replicator census (census=1): every distinct active program is tested alone in a trial
 // world (census::run_trial in ps_census.hpp). Trial worlds never touch the run's world, so
-// the run's dynamics and digest are unchanged. Results are cached by text.
+// the run's dynamics and digest are unchanged. Results are cached by text. census_topup=1
+// (the default) tops up the trial founder's site so that keys past mass0 bytes can be
+// seeded; census_topup=0 gives the earlier seed-limited verdict.
+bool g_census_topup = true;
+
 TrialResult run_trial(const Config& run_cfg, const std::string& key) {
-  return census::run_trial(run_cfg, key, *g_ref);
+  return census::run_trial(run_cfg, key, *g_ref, g_census_topup);
 }
 
 // Kind of the activation now running at a site; seeded founders count as self.
@@ -996,9 +1000,11 @@ private:
     return census::trial_bytes(key, *g_ref) <= w_.config().mass0;
   }
 
-  // Verdict of a trial whose founder site is topped up to the key's byte count; a separate
-  // cache, so the census cache and its trial counts are untouched.
+  // Verdict of a trial whose founder site is topped up to the key's byte count. Under
+  // census_topup=1 that is the census verdict; otherwise a separate cache, so the census
+  // cache and its trial counts are untouched.
   int topped_status(const std::string& key) {
+    if (g_census_topup) return status_of(trial_of(key));
     auto it = topped_.find(key);
     if (it == topped_.end()) {
       it = topped_.emplace(key, status_of(census::run_trial(w_.config(), key, *g_ref, true)))
@@ -1343,6 +1349,7 @@ int main(int argc, char** argv) {
     else if (k == "fidelity") fidelity = std::max<long long>(0, std::atoll(v.c_str()));
     else if (k == "fate") fate = v == "1";
     else if (k == "trace") trace = v == "1";
+    else if (k == "census_topup") g_census_topup = v == "1";
     else if (k == "anc") {
       g_ref = census::reference_named(v);
       if (!g_ref) {
