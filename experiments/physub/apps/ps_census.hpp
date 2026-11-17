@@ -119,11 +119,16 @@ inline bool ref_inert_filled(const uint8_t* bytes, const Reference& ref) {
 // copy births by the founder; founder_exact: those whose child carries the tested key. A
 // strict replicator is a replicator all of whose founder copies are exact (the two-carrier
 // test alone passes a program whose first copy is exact and later ones are not).
+// Seeding draws the founder's bytes from the center site's free monomers (mass0), so a key
+// with more than mass0 non-inert bytes after the volatile reset cannot be seeded: seeded is
+// false and the verdict is a non-replicator. top_up (an observer check, not used for the
+// census verdict) first raises the center's free monomers to that byte count.
 constexpr int kTrialSize = 9;
 constexpr uint64_t kTrialTicks = 2000;
 constexpr uint64_t kSpanTicks = 500;
 
 struct TrialResult {
+  bool seeded = false;
   bool replicator = false;
   int ip_span = -1;
   uint64_t op_mask = 0;
@@ -135,8 +140,21 @@ struct TrialResult {
   }
 };
 
+// The program a trial seeds: the key with the volatile offsets reset to the reference's values.
+inline std::vector<uint8_t> trial_program(const std::string& key, const Reference& ref) {
+  std::vector<uint8_t> program(key.begin(), key.end());
+  for (int v : ref.volatile_offsets) program[v] = (*ref.program)[v];
+  return program;
+}
+
+inline int trial_bytes(const std::string& key, const Reference& ref) {
+  int n = 0;
+  for (uint8_t b : trial_program(key, ref)) n += b != INERT;
+  return n;
+}
+
 inline TrialResult run_trial(const Config& run_cfg, const std::string& key,
-                             const Reference& ref) {
+                             const Reference& ref, bool top_up = false) {
   Config c = run_cfg;
   c.width = kTrialSize;
   c.height = kTrialSize;
@@ -149,10 +167,14 @@ inline TrialResult run_trial(const Config& run_cfg, const std::string& key,
   c.seed = 1;
   World t(c);
   TrialResult r;
-  std::vector<uint8_t> program(key.begin(), key.end());
-  for (int v : ref.volatile_offsets) program[v] = (*ref.program)[v];
+  const std::vector<uint8_t> program = trial_program(key, ref);
   const int32_t center = t.site_index(kTrialSize / 2, kTrialSize / 2);
+  if (top_up) {
+    const int need = trial_bytes(key, ref);
+    if (need > t.free_mass(center)) t.set_free_mass(center, need);
+  }
   if (!t.seed_program(kTrialSize / 2, kTrialSize / 2, program)) return r;
+  r.seeded = true;
   std::vector<bool> visited(c.site_len, false);
   std::vector<int> gen(kTrialSize * kTrialSize, 0);
   for (uint64_t k = 0; k < kTrialTicks; ++k) {

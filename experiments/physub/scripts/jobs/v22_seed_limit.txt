@@ -1,0 +1,11 @@
+# v22: measurement only (trace=1 with the # tracekey line). Found while tracing v21: the
+# census trial seeds the founder from the center site's mass0 (48) free monomers, so a key
+# with more than 48 non-inert bytes after the volatile reset cannot be seeded and is counted
+# as a non-replicator (other). This checks how many active sites and in-place strict losses
+# sit past that limit, and their verdict when the founder site is topped up to the key's byte
+# count. Settings as v20 m195_s1/s2 (inert_operand=fail) and v19 m195_s1/s2
+# (inert_operand=zero); runs and output identical to v21 apart from the added lines.
+m195_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000 fate=1 inert_operand=fail trace=1
+m195_s2 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=2 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000 fate=1 inert_operand=fail trace=1
+zero_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000 fate=1 trace=1
+zero_s2 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=2 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000 fate=1 trace=1

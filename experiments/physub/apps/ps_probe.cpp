@@ -16,6 +16,7 @@
 #include <memory>
 #include <iostream>
 #include <map>
+#include <set>
 #include <sstream>
 #include <string>
 
@@ -612,6 +613,16 @@ struct TraceTally {
   uint64_t re[2][kEnds] = {};
   uint64_t re_life[2] = {};
   uint64_t re_copies[2] = {};
+  // Census seeding limit: a key with more than mass0 non-inert bytes after the volatile reset
+  // cannot be seeded in the trial (census::run_trial). Strict -> not strict in place by
+  // writer [self, foreign]; those whose new key cannot be seeded; and the topped-up verdict
+  // of those keys.
+  uint64_t lo_n[2] = {};
+  uint64_t lo_unseeded[2] = {};
+  uint64_t lo_topped[2][kStatuses] = {};
+  // Copy births by any parent, and by a parent whose key cannot be seeded; with the child
+  // carrying the parent's key.
+  uint64_t cp_n = 0, cp_same = 0, cp_unseeded = 0, cp_unseeded_same = 0;
 };
 
 struct FateTally {
@@ -836,6 +847,7 @@ private:
   const World& w_;
   const std::map<std::string, TrialResult>& census_;
   std::map<std::string, TrialResult> cache_;
+  std::map<std::string, int> topped_;  // trace: topped-up verdicts (seed limit check)
   const int len_;
   const int32_t sites_;
   const int src_ptr_;
@@ -921,6 +933,7 @@ private:
       t_.change_writer[before][wc] += 1;
       if (before == kRep && after != kRep) {
         if (trace_ && wc != kWSelf) trace_foreign(s, old, now, mask, foreign, wc);
+        if (trace_) trace_unseeded(masked(w_, s), wc != kWSelf);
         f.converted = true;
         t_.out_writer[wc] += 1;
         t_.out_to[after][wc] += 1;
@@ -979,6 +992,28 @@ private:
     return m;
   }
 
+  bool seedable(const std::string& key) const {
+    return census::trial_bytes(key, *g_ref) <= w_.config().mass0;
+  }
+
+  // Verdict of a trial whose founder site is topped up to the key's byte count; a separate
+  // cache, so the census cache and its trial counts are untouched.
+  int topped_status(const std::string& key) {
+    auto it = topped_.find(key);
+    if (it == topped_.end()) {
+      it = topped_.emplace(key, status_of(census::run_trial(w_.config(), key, *g_ref, true)))
+               .first;
+    }
+    return it->second;
+  }
+
+  void trace_unseeded(const std::string& key, bool foreign) {
+    x_.lo_n[foreign] += 1;
+    if (seedable(key)) return;
+    x_.lo_unseeded[foreign] += 1;
+    x_.lo_topped[foreign][topped_status(key)] += 1;
+  }
+
   // A strict activation lost strict status by a change credited to a foreign writer.
   void trace_foreign(int32_t s, const uint8_t* old, const uint8_t* now, uint64_t mask,
                      int32_t writer, int wc) {
@@ -1021,6 +1056,16 @@ private:
     Fate& c = fate_[b.child];
     c.kind = kind;
     const bool off = c.start_ip != 0;
+    if (kind == kCopy && parent.on) {
+      const std::string pk = masked(w_, b.parent);
+      const bool same = masked(w_, b.child) == pk;
+      x_.cp_n += 1;
+      x_.cp_same += same;
+      if (!seedable(pk)) {
+        x_.cp_unseeded += 1;
+        x_.cp_unseeded_same += same;
+      }
+    }
     x_.all_births += 1;
     x_.all_off += off;
     if (kind == kCopy && parent.on && parent.status == kRep) {
@@ -1125,7 +1170,44 @@ private:
     o << " inactive_sites=" << dead_sites << " inactive_bytes=" << dead_bytes
       << " inactive_open0=" << dead_open0 << " inactive_strict_key=" << dead_strict
       << " inactive_strict_bytes=" << dead_strict_bytes << std::endl;
+    print_seed_limit(o, tick);
     x_ = TraceTally{};
+  }
+
+  // Active sites by status and by the non-inert bytes their key seeds in a trial; the sites
+  // whose key exceeds mass0 (not seedable, so the census calls them non-replicators) with
+  // their topped-up verdict; strict losses in place and copy births against the same limit.
+  void print_seed_limit(std::ostream& o, uint64_t tick) {
+    constexpr int kBins = 7;  // <=40, 41-44, 45-48, 49-52, 53-56, 57-60, 61-64
+    uint64_t need[kStatuses][kBins] = {}, unseeded[kStatuses] = {};
+    uint64_t topped[kStatuses] = {};
+    std::set<std::string> keys;
+    for (int32_t s = 0; s < sites_; ++s) {
+      if (!w_.site_active(s) || !fate_[s].on) continue;
+      const std::string key = masked(w_, s);
+      const int st = fate_[s].status;
+      const int n = census::trial_bytes(key, *g_ref);
+      need[st][n <= 40 ? 0 : std::min(kBins - 1, (n - 41) / 4 + 1)] += 1;
+      if (n <= w_.config().mass0) continue;
+      unseeded[st] += 1;
+      keys.insert(key);
+      topped[topped_status(key)] += 1;
+    }
+    o << "# tracekey tick=" << tick << " mass0=" << w_.config().mass0
+      << " bins=<=40,41-44,45-48,49-52,53-56,57-60,61-64";
+    for (int st = 0; st < kStatuses; ++st) {
+      o << ' ' << kStatusName[st] << "_bytes=";
+      for (int k = 0; k < kBins; ++k) o << (k ? "/" : "") << need[st][k];
+    }
+    o << " unseeded_sites(rep/loose/prop/other)=";
+    for (int st = 0; st < kStatuses; ++st) o << (st ? "/" : "") << unseeded[st];
+    o << " unseeded_keys=" << keys.size() << " unseeded_topped(rep/loose/prop/other)=";
+    for (int st = 0; st < kStatuses; ++st) o << (st ? "/" : "") << topped[st];
+    o << " loss(self/foreign)=" << x_.lo_n[0] << '/' << x_.lo_n[1] << " loss_unseeded="
+      << x_.lo_unseeded[0] << '/' << x_.lo_unseeded[1] << " loss_unseeded_topped_rep="
+      << x_.lo_topped[0][kRep] << '/' << x_.lo_topped[1][kRep] << " copies=" << x_.cp_n
+      << " copies_same=" << x_.cp_same << " copies_unseeded=" << x_.cp_unseeded
+      << " copies_unseeded_same=" << x_.cp_unseeded_same << std::endl;
   }
 
   // A copy by a converted activation: is the child strict, a copy of the parent, or a copy of

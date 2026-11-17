@@ -605,6 +605,19 @@ void test_census_trial() {
     filled_key[off] = static_cast<char>(192);
     assert(census::run_trial(cfg, filled_key, ref).strict());
   }
+  // Seeding limit: the founder's bytes come from the center's mass0 free monomers. Polite
+  // (40 bytes after the volatile reset) with 8 tail fills seeds and stays strict; with 9 it
+  // cannot be seeded and is a non-replicator, but strict once the founder site is topped up.
+  std::string long_key = key;
+  for (int k = 0; k < 8; ++k) long_key[46 + k] = static_cast<char>(7 + 9 * k);
+  assert(census::trial_bytes(long_key, ref) == cfg.mass0);
+  assert(census::run_trial(cfg, long_key, ref).seeded);
+  assert(census::run_trial(cfg, long_key, ref).strict());
+  long_key[54] = static_cast<char>(7);
+  const census::TrialResult unseeded = census::run_trial(cfg, long_key, ref);
+  assert(!unseeded.seeded && !unseeded.replicator && unseeded.op_mask == 0);
+  const census::TrialResult topped = census::run_trial(cfg, long_key, ref, true);
+  assert(topped.seeded && topped.strict());
   assert(!census::ref_inert_filled(polite().data(), ref));
   std::vector<uint8_t> filled = polite();
   filled[36] = 192;
