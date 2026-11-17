@@ -1,0 +1,10 @@
+# v14c: first-copy cut probability under block rotation. ps_copycut seeds polite alone in a
+# 16x16 world (no mutation, decay or erosion; ext_write fill) and follows its first copy over
+# 400 seeds. Estimate to compare: 1 - (1 - q)^d with d the copy duration and q between p_rot
+# (parent and target in one block) and 2 p_rot (in two blocks).
+copycut_0 ps_copycut p_rot=0 seeds=400
+copycut_1e-5 ps_copycut p_rot=1e-5 seeds=400
+copycut_1e-4 ps_copycut p_rot=1e-4 seeds=400
+copycut_1e-3 ps_copycut p_rot=1e-3 seeds=400
+copycut_3e-3 ps_copycut p_rot=3e-3 seeds=400
+copycut_1e-2 ps_copycut p_rot=1e-2 seeds=400

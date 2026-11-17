@@ -1,7 +1,7 @@
 // Birth probe: classifies every birth of a polite-seeded run by parent integrity, copy
 // differences, child lifespan and child fertility. Observation only.
 // Usage: ps_probe ticks=N seed=S p_mut=X p_hydro=Y rival=0|1 [mass0=M] [census=0|1]
-//        [hydro_whole=0|1] [p_rot=P]
+//        [hydro_whole=0|1] [p_rot=P] [physics=0|1]
 
 #include "ps_core.hpp"
 
@@ -291,6 +291,7 @@ int main(int argc, char** argv) {
   uint64_t ticks = 20000;
   bool rival = false;
   bool census = false;
+  bool physics = false;  // print the physics counters even with hydro_whole and p_rot off
   uint64_t interval = 10000;
   for (int i = 1; i < argc; ++i) {
     const std::string a = argv[i];
@@ -311,6 +312,7 @@ int main(int argc, char** argv) {
     else if (k == "mass0") cfg.mass0 = std::atoi(v.c_str());
     else if (k == "rival") rival = v == "1";
     else if (k == "census") census = v == "1";
+    else if (k == "physics") physics = v == "1";
     else if (k == "e_erase") cfg.e_erase = std::atoi(v.c_str());
     else if (k == "e_ignite") cfg.e_ignite = std::atoi(v.c_str());
     else if (k == "e_max") cfg.e_max = std::atoi(v.c_str());
@@ -350,7 +352,7 @@ int main(int argc, char** argv) {
   std::map<std::string, TrialResult> census_cache;  // program text -> trial (census=1)
   std::cout << "tick\tactive\tbirths\texact%\tintact_parent%\ttop_count\ttop_dist\tdistinct"
                "\tcopies\treignites\tintact_copies\tblank\topen0\tdead\tpfx_active\tpfx_copies\text_erased\tstalls\tstarved\tenergy\n";
-  const bool physics_line = cfg.hydro_whole || cfg.p_rot > 0.0;
+  const bool physics_line = physics || cfg.hydro_whole || cfg.p_rot > 0.0;
   std::vector<int> moved(current.size(), -1);
   while (w.tick() < ticks && w.active_count() > 0) {
     w.run(1);

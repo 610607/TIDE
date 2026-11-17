@@ -6,13 +6,13 @@
 #
 # Mechanism check: mutation off, polite alone, 48x48, 20k ticks; counts cut copies and
 # inexact births.
-chk_rot0_s1 ps_probe width=48 height=48 ticks=20000 interval=2000 p_mut=0 p_hydro=3e-6 seed=1 ext_write=fill
+chk_rot0_s1 ps_probe width=48 height=48 ticks=20000 interval=2000 p_mut=0 p_hydro=3e-6 seed=1 ext_write=fill physics=1
 chk_rot1e-5_s1 ps_probe width=48 height=48 ticks=20000 interval=2000 p_mut=0 p_hydro=3e-6 seed=1 ext_write=fill p_rot=1e-5
 chk_rot1e-4_s1 ps_probe width=48 height=48 ticks=20000 interval=2000 p_mut=0 p_hydro=3e-6 seed=1 ext_write=fill p_rot=1e-4
 chk_rot1e-3_s1 ps_probe width=48 height=48 ticks=20000 interval=2000 p_mut=0 p_hydro=3e-6 seed=1 ext_write=fill p_rot=1e-3
 chk_rot3e-3_s1 ps_probe width=48 height=48 ticks=20000 interval=2000 p_mut=0 p_hydro=3e-6 seed=1 ext_write=fill p_rot=3e-3
 chk_rot1e-2_s1 ps_probe width=48 height=48 ticks=20000 interval=2000 p_mut=0 p_hydro=3e-6 seed=1 ext_write=fill p_rot=1e-2
-chk_rot0_s2 ps_probe width=48 height=48 ticks=20000 interval=2000 p_mut=0 p_hydro=3e-6 seed=2 ext_write=fill
+chk_rot0_s2 ps_probe width=48 height=48 ticks=20000 interval=2000 p_mut=0 p_hydro=3e-6 seed=2 ext_write=fill physics=1
 chk_rot1e-5_s2 ps_probe width=48 height=48 ticks=20000 interval=2000 p_mut=0 p_hydro=3e-6 seed=2 ext_write=fill p_rot=1e-5
 chk_rot1e-4_s2 ps_probe width=48 height=48 ticks=20000 interval=2000 p_mut=0 p_hydro=3e-6 seed=2 ext_write=fill p_rot=1e-4
 chk_rot1e-3_s2 ps_probe width=48 height=48 ticks=20000 interval=2000 p_mut=0 p_hydro=3e-6 seed=2 ext_write=fill p_rot=1e-3
