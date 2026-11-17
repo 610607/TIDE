@@ -561,86 +561,93 @@ do not alter the dynamics: the v9 baseline is byte-identical to v8.
 
 - **v17** (v16 run to 500k ticks; dynamics of revision 84092a3, job list
   `v17_long_per_op_decay.txt`; one census and class point every 50k ticks; 10 runs in 46
-  minutes on 4 cores). The census and class lines at 50k and 100k equal those of v16, apart
-  from the cached trial count. Each table's control is `m195` of the same seed, measured
-  under that table.
+  minutes on 4 cores; counts recomputed in v23). Under the seed-limited census, the census
+  and class lines at 50k and 100k equal those of v16, apart from the cached trial count.
+  The tables below use the topped-up census (v23 runs `t1_s1` to `t4_s2` and, as controls,
+  `zero_m195_s1/s2`, whose rows equal v17's). Each table's control is `m195` of the same
+  seed, measured under that table.
 
   Replicator data bytes: fast share, treatment minus control (percentage points):
 
   | tick | t1_s1 | t1_s2 | t2_s1 | t2_s2 | t3_s1 | t3_s2 | t4_s1 | t4_s2 | mean |
   | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-  | 50k | +0.18 | -0.19 | -0.15 | +0.19 | -0.18 | -0.09 | -0.11 | -0.30 | -0.08 |
-  | 100k | -0.59 | -0.38 | -0.17 | -0.16 | -1.04 | -0.44 | -0.52 | -0.72 | -0.50 |
-  | 150k | -1.27 | -0.46 | -0.44 | -0.35 | -1.41 | -0.64 | -0.83 | -0.84 | -0.78 |
-  | 200k | -1.43 | -1.06 | -0.27 | -0.50 | -1.75 | -0.94 | -1.58 | -1.05 | -1.07 |
-  | 250k | -1.30 | -0.94 | -0.54 | -0.92 | -1.47 | -0.77 | -1.98 | -1.33 | -1.16 |
-  | 300k | -1.13 | -0.89 | -0.12 | -1.20 | -1.13 | -1.85 | -1.84 | -1.26 | -1.18 |
-  | 350k | -1.75 | -0.12 | -0.38 | -1.77 | -0.65 | -1.10 | -2.19 | -1.19 | -1.14 |
-  | 400k | -1.71 | -0.26 | -0.08 | -1.99 | -1.08 | -1.71 | -1.04 | -1.06 | -1.12 |
-  | 450k | -1.38 | -0.03 | -0.47 | -2.85 | -0.51 | -1.25 | -1.40 | -1.32 | -1.15 |
-  | 500k | -1.65 | -1.64 | -0.99 | -3.99 | -1.22 | -2.41 | -1.04 | -2.13 | -1.88 |
+  | 50k | +0.17 | -0.22 | -0.18 | +0.02 | -0.16 | -0.20 | -0.20 | -0.50 | -0.16 |
+  | 100k | -0.67 | -0.46 | -0.32 | -0.49 | -0.99 | -0.55 | -0.53 | -0.93 | -0.62 |
+  | 150k | -1.33 | -0.92 | -0.62 | -0.47 | -1.55 | -1.07 | -1.08 | -1.41 | -1.06 |
+  | 200k | -1.57 | -1.25 | -0.56 | -0.85 | -1.53 | -0.78 | -1.69 | -1.88 | -1.26 |
+  | 250k | -1.97 | -1.48 | -0.59 | -1.29 | -1.48 | -0.82 | -2.59 | -1.96 | -1.52 |
+  | 300k | -2.08 | -1.75 | -0.44 | -2.05 | -0.55 | -1.51 | -3.14 | -1.66 | -1.65 |
+  | 350k | -3.08 | -1.66 | -0.80 | -2.76 | -0.99 | -1.92 | -3.50 | -2.20 | -2.11 |
+  | 400k | -3.50 | -1.19 | -0.73 | -3.05 | -1.53 | -2.54 | -3.32 | -1.59 | -2.18 |
+  | 450k | -3.87 | -0.54 | -0.95 | -3.06 | -2.11 | -2.06 | -4.33 | -2.17 | -2.39 |
+  | 500k | -4.05 | -1.64 | -1.54 | -3.78 | -1.99 | -2.46 | -4.27 | -2.41 | -2.77 |
 
   Replicator hazard, treatment over control minus 1 (%):
 
   | tick | t1_s1 | t1_s2 | t2_s1 | t2_s2 | t3_s1 | t3_s2 | t4_s1 | t4_s2 | mean |
   | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-  | 50k | +0.2 | -0.1 | -0.1 | +0.4 | -0.4 | +0.6 | -0.2 | -0.5 | -0.01 |
-  | 100k | -0.4 | +0.1 | -0.3 | -0.2 | -0.8 | +0.4 | -0.8 | -1.3 | -0.43 |
-  | 150k | -1.0 | -0.1 | -0.5 | -1.0 | -0.9 | -0.1 | -1.3 | -1.8 | -0.83 |
-  | 200k | -1.6 | -1.2 | -0.8 | -0.8 | -1.1 | -0.6 | -2.4 | -1.7 | -1.26 |
-  | 250k | -1.8 | -1.4 | -0.8 | -1.6 | -1.4 | -0.4 | -2.8 | -2.0 | -1.52 |
-  | 300k | -2.2 | -1.5 | +0.8 | -2.0 | -1.2 | -1.4 | -2.7 | -1.7 | -1.49 |
-  | 350k | -2.5 | -1.1 | +0.3 | -2.7 | -1.4 | -0.8 | -3.7 | -1.8 | -1.72 |
-  | 400k | -3.0 | -1.8 | +0.9 | -3.4 | -2.1 | -3.6 | -2.5 | -2.2 | -2.22 |
-  | 450k | -2.9 | -2.0 | -0.4 | -4.1 | -1.7 | -3.2 | -3.7 | -2.0 | -2.49 |
-  | 500k | -2.8 | -3.6 | -0.6 | -5.9 | -2.5 | -3.8 | -2.4 | -2.8 | -3.05 |
+  | 50k | -0.4 | -0.1 | -0.2 | -0.5 | -0.4 | +0.4 | -0.4 | -1.2 | -0.34 |
+  | 100k | -0.3 | +0.9 | -0.9 | -1.3 | -0.5 | +0.6 | -1.0 | -1.8 | -0.55 |
+  | 150k | -0.6 | +2.0 | -1.8 | -1.4 | -0.2 | +0.6 | -2.3 | -2.8 | -0.81 |
+  | 200k | -2.0 | +1.2 | -2.3 | -2.3 | -0.6 | +0.4 | -3.2 | -3.1 | -1.49 |
+  | 250k | -4.0 | +0.8 | -2.7 | -2.4 | -1.9 | -0.1 | -4.7 | -3.4 | -2.29 |
+  | 300k | -5.4 | +0.1 | -2.4 | -2.3 | -2.2 | +0.6 | -5.4 | -3.0 | -2.51 |
+  | 350k | -6.8 | -0.0 | -3.8 | -3.4 | -3.7 | +0.1 | -6.0 | -3.7 | -3.41 |
+  | 400k | -8.4 | +0.7 | -3.2 | -2.8 | -4.4 | -0.3 | -5.4 | -2.3 | -3.25 |
+  | 450k | -8.8 | +1.2 | -2.5 | -2.9 | -4.1 | +0.8 | -6.0 | -2.9 | -3.15 |
+  | 500k | -8.6 | -0.7 | -3.6 | -4.1 | -3.9 | +0.1 | -6.3 | -3.1 | -3.77 |
 
-  Uniform form M (`m195`) over 500k. Births are per 50k-tick window; re-ignitions are births into code already present:
+  Uniform form M (`m195`) over 500k. Births are per 50k-tick window; re-ignitions are births
+  into code already present:
 
   | tick | replicators s1 / s2 | polite region intact | copy-born non-rep (% of active) | exact births % | re-ignitions (% of births) | replicator length |
   | --- | --- | --- | --- | --- | --- | --- |
-  | 50k | 6338 / 6045 | 3234 / 2740 | 12% / 14% | 43 / 39 | 54% / 57% | 41.2 / 41.2 |
-  | 100k | 5396 / 5473 | 1752 / 1642 | 15% / 16% | 24 / 24 | 72% / 69% | 41.8 / 41.7 |
-  | 150k | 4474 / 4639 | 749 / 757 | 21% / 21% | 16 / 19 | 78% / 74% | 42.5 / 42.6 |
-  | 200k | 3376 / 3298 | 258 / 254 | 29% / 31% | 12 / 11 | 80% / 82% | 43.5 / 43.4 |
-  | 250k | 2231 / 2390 | 82 / 146 | 42% / 41% | 9 / 8 | 82% / 84% | 44.1 / 44.1 |
-  | 300k | 1548 / 1915 | 48 / 103 | 51% / 45% | 8 / 8 | 83% / 84% | 44.6 / 44.5 |
-  | 350k | 1200 / 1621 | 22 / 93 | 57% / 51% | 8 / 8 | 84% / 84% | 44.8 / 44.9 |
-  | 400k | 997 / 1309 | 17 / 57 | 59% / 56% | 7 / 8 | 85% / 84% | 45.1 / 45.4 |
-  | 450k | 890 / 1083 | 38 / 26 | 63% / 60% | 8 / 7 | 84% / 83% | 45.6 / 45.5 |
-  | 500k | 671 / 979 | 48 / 6 | 65% / 61% | 6 / 7 | 86% / 84% | 45.3 / 45.4 |
+  | 50k | 6567 / 6430 | 3270 / 2895 | 10% / 11% | 43 / 39 | 54% / 57% | 41.8 / 42.2 |
+  | 100k | 5878 / 6060 | 1785 / 1746 | 11% / 11% | 24 / 24 | 72% / 69% | 42.9 / 43.1 |
+  | 150k | 5463 / 5552 | 776 / 803 | 12% / 13% | 16 / 19 | 78% / 74% | 44.8 / 44.8 |
+  | 200k | 4838 / 4632 | 283 / 277 | 15% / 18% | 12 / 11 | 80% / 82% | 47.1 / 46.8 |
+  | 250k | 3978 / 3941 | 96 / 162 | 20% / 21% | 9 / 8 | 82% / 84% | 49.1 / 48.5 |
+  | 300k | 3491 / 3702 | 51 / 115 | 24% / 21% | 8 / 8 | 83% / 84% | 50.7 / 49.7 |
+  | 350k | 3363 / 3695 | 37 / 98 | 25% / 22% | 8 / 8 | 84% / 84% | 52.0 / 50.8 |
+  | 400k | 3301 / 3521 | 28 / 65 | 23% / 22% | 7 / 8 | 85% / 84% | 53.0 / 51.6 |
+  | 450k | 3381 / 3256 | 41 / 28 | 24% / 25% | 8 / 7 | 84% / 83% | 53.5 / 52.4 |
+  | 500k | 3013 / 3301 | 54 / 6 | 26% / 24% | 6 / 7 | 86% / 84% | 54.0 / 52.9 |
 
   - **Data-byte shift.**
-    - The mean over the eight runs grows from -0.08 points at 50k to -1.07 at 200k. It
-      holds at -1.1 to -1.2 through 450k and is -1.88 at 500k (runs: -1.0 to -4.0).
+    - The mean over the eight runs grows from -0.16 points at 50k to -1.06 at 150k, -1.65
+      at 300k and -2.77 at 500k (runs: -1.5 to -4.3). Under the seed-limited census it held
+      at -1.1 to -1.2 from 200k to 450k; that plateau does not appear here.
     - From 100k on, every run is below its control at every point.
-    - After 200k single runs move by up to 1.6 points from one point to the next; for
-      example, t1_s2 is -1.06 at 200k, -0.03 at 450k and -1.64 at 500k.
+    - After 200k single runs move by up to 1.1 points from one point to the next; for
+      example, t1_s2 is -0.54 at 450k and -1.64 at 500k.
   - **The control drifts too.** Under uniform rates, the data-byte fast share drifts toward
     the share in random bytes (44-45%). From 50k to 500k:
-    - table 1: 50.3-50.6% to 45.6-47.0%;
-    - table 2: 41.3-41.9% to 43.3-44.7%;
-    - table 3: 61.3-61.4% to 56.8-57.2%;
-    - table 4: 30.7-30.8% to 34.5-35.4%.
+    - table 1: 50.1-50.4% to 46.0-48.1%;
+    - table 2: 41.5-42.0% to 42.7-44.1%;
+    - table 3: 60.8-60.9% to 53.0-53.5%;
+    - table 4: 31.1-31.6% to 37.5-38.6%.
 
     The treatment stays below the control whichever way the control drifts.
   - **Replicator hazard against the control.**
-    - The mean gap is -0.4% at 100k, -1.3% at 200k, -1.5% at 300k, -2.2% at 400k and -3.1% at
-      500k (runs: -0.6 to -5.9%).
-    - All eight runs are below their controls at 150-250k and at 450-500k. The one exception
-      in between is t2_s1, at +0.3 to +0.9% from 300k to 400k.
-  - **Absolute hazard rises.** From 50k to 500k it rises in seven treatment runs by 0.2-12.7%
-    (t1_s2 is unchanged) and in every control by 3.5-16.6%. In both, replicators lengthen
-    from 41.2 to 45.0-45.7 non-inert bytes, and their composition drifts toward that of
+    - The mean gap is -0.6% at 100k, -1.5% at 200k, -2.5% at 300k, -3.3% at 400k and -3.8%
+      at 500k (runs: -8.6 to +0.1%).
+    - Six runs are below their controls at every point; t1_s1 is furthest (-8.6% at 500k).
+      The other two are not: t1_s2 is above its control at 100-300k and 400-450k (up to
+      +2.0%), and t3_s2 stays within -0.3 to +0.8% of its control at every point.
+  - **Absolute hazard rises.** From 50k to 500k it rises in every treatment run by
+    15.6-29.4% and in every control by 16.8-37.5%. In both, replicators lengthen from
+    41.6-42.4 to 52.7-54.7 non-inert bytes, and their composition drifts toward that of
     random bytes.
-  - **Opcode bytes** show no consistent shift. After 300k single runs depart by up to 1.8
-    points in both directions (t2_s2 +1.79 and t3_s2 +1.29 at 500k; t3_s1 -1.20 at 350k).
+  - **Opcode bytes** show no consistent shift: the mean over the eight runs stays within
+    -0.08 to +0.07 points. After 300k single runs depart by up to 0.8 points in both
+    directions (t3_s1 -0.76 at 450k; t2_s2 +0.64 at 500k).
   - **Population.**
-    - Replicators fall in treatment and control alike: from 5.9-6.7k at 50k to 500-1014 at
-      500k, against 671-979 in the controls.
-    - Copy-born non-replicators make up 60-68% of active sites at 500k, against 61-65% in
+    - Replicators fall in treatment and control alike: from 6.3-6.9k at 50k to 2,983-3,290
+      at 500k, against 3,013 and 3,301 in the controls.
+    - Copy-born non-replicators make up 24-27% of active sites at 500k, against 24-26% in
       the controls.
-    - Polite's region is intact in 0-28 replicators per run at 500k (controls: 6-48).
+    - Polite's region is intact in 0-39 replicators per run at 500k (controls: 6-54).
+
 - **v18** (copy fidelity under form M to 500k ticks; revision 80f9fcf, job list
   `v18_fidelity.txt`; 12 jobs in 22 minutes on 4 cores; counts recomputed in v23). Four runs
   repeat v17 `m195_s1`, `m195_s2`, `t2_s1` and `t3_s1` with `fidelity=5000`: every copy
@@ -759,8 +766,9 @@ do not alter the dynamics: the v9 baseline is byte-identical to v8.
   Short-ancestor control: `ancestor()` (35 bytes, `anc=copier`) in place of polite,
   otherwise as `m195`. Probes `anc_s1` and `anc_s2` report every 5k ticks (census counts
   recomputed in v23 from the runs of the same names; already at 5k a site holding the
-  ancestor plus residue can be past 48 bytes); `ps_run` repeats seeds 1-6 to 100k ticks. For seeds 1 and 2 the probe and `ps_run` end at the same tick.
-  Under the same settings polite has 7.7-7.9k active sites at 50k.
+  ancestor plus residue can be past 48 bytes); `ps_run` repeats seeds 1-6 to 100k ticks.
+  For seeds 1 and 2 the probe and `ps_run` end at the same tick. Under the same settings
+  polite has 7.7-7.9k active sites at 50k.
 
   | seed | end | peak active (10k points) | births | `ps_run` digest |
   | --- | --- | --- | --- | --- |
@@ -1154,6 +1162,26 @@ do not alter the dynamics: the v9 baseline is byte-identical to v8.
     census removes those and adds the losses of strict sites already past 48, which the
     seed-limited census did not follow as strict.
 
+- **v23** (v17-v22 recomputed with the topped-up census; measurement only; revision b4b4ea1,
+  job list `v23_census_topup.txt`; 18 jobs in 2 hours 37 minutes on 4 cores). Since b4b4ea1
+  the census trial tops up the founder site to the key's non-inert byte count (v22), so a
+  key past 48 bytes is tested instead of being counted as `other`. Run dynamics are
+  unchanged; every census-based line can change. One run per distinct dynamics of v17-v22
+  carries every observer line those versions used; the job list maps runs to versions.
+  - **Checks.** The data rows and `# physics` lines of all 18 runs equal those of the
+    earlier runs (v22 `m195_s1/s2` and `zero_s1/s2`, the `nomut` runs of v19-v21, the
+    table runs of v17 and v18, and v18 `anc_s1/s2`). With `census_topup=0`, `ps_probe` at
+    b4b4ea1 gives the same output as c207f47 byte for byte (v20 `m195_s1` settings, checked
+    to 50k).
+  - **What was recomputed.** The v17-v22 tables and readings above, marked "recomputed in
+    v23". `ps_scan` re-read the `# fidtop` lines of `zero_m195_s1/s2`, `t2_s1`, `t3_s1` and
+    `anc_s1/s2`. The seed-limited tables are at c207f47. v13-v16 keep the seed-limited
+    counts and were not recomputed; how many of their sites were past 48 was not measured.
+  - **Effect.** In the `m195` runs the strict counts rise by 4-6% at 50k and 3.4-4.9-fold
+    at 500k (v22). The short-ancestor control changes from 5k, where a site with the
+    ancestor and residue can be past 48. Counts that do not use the census (births,
+    re-ignitions, exact births, active sites, decays) are unchanged.
+
 Working interpretation (v13 and code inspection): saturation starts the decline in every
 run, and the space then fills with activations that no longer replicate. An activation ends
 only when the byte at its ip decays (`check_wicks`; no run recorded a starvation death).
@@ -1167,13 +1195,12 @@ decay (form M) almost removes the decline: 12-16% below the peak at 100k against
 under form P. Under M a replicator cannot turn into a non-replicator where it stands, and a
 non-replicator decays at the same per-byte rate as a replicator. Form M also clears corpses
 about 26 times sooner, so v14 alone does not show which of the two changes matters; v15
-separates them (below). Block
-rotation without binding does not clear non-replicating sites. (v17 shows that the decline
-returns under form M after 100k; the statements here hold to 100k.) Up to 1e-4 it has no clear
-effect. From 1e-3 it cuts a third or more of all copies, replicators fall further than
-under `dead0`, and non-replicators shift from copy-born to re-ignited. A cut copy ends by
-igniting a site the parent wrote only in part, which fits that shift but was not measured
-directly.
+separates them (below). Block rotation without binding does not clear non-replicating
+sites. (v17 shows that the decline returns under form M after 100k, about 2-fold by 500k;
+the statements here hold to 100k.) Up to 1e-4 it has no clear effect. From 1e-3 it cuts a
+third or more of all copies, replicators fall further than under `dead0`, and
+non-replicators shift from copy-born to re-ignited. A cut copy ends by igniting a site the
+parent wrote only in part, which fits that shift but was not measured directly.
 
 v15 reading (counts from executed runs; the mechanism is inference). Most of the effect of
 form M comes from ending in-place damage. When a live program decays as a whole, a
@@ -1201,24 +1228,27 @@ v16 reading (counts from executed runs; mechanisms and estimates are inference):
   The table where polite is most fragile (3) has the largest share and relative age of
   non-replicators.
 
-v17 reading (counts from executed runs; mechanisms are inference):
+v17 reading (counts from executed runs, recomputed in v23 with the topped-up census;
+mechanisms are inference):
 
-- **The data-byte shift grows, then levels off.** It grows over the first 200k ticks to
-  about 1 point below the uniform-rate control. It then stays there with a wider spread
-  between runs, and the last point is the largest (-1.9).
+- **The data-byte shift keeps growing.** It grows over the whole 500k ticks: about 1 point
+  below the uniform-rate control by 150k and 2.8 points by 500k, with a wide spread between
+  runs (1.5-4.3). The plateau from 200k to 450k seen under the seed-limited census came from
+  leaving out the replicators past 48 bytes.
 - **Only data bytes shift.** Opcode bytes show no consistent shift over 500k. This fits the
   synonym inference in the design note: selection reaches data bytes and leaves opcodes.
-  The shift is small next to the control's own mutational drift, which is 1.4-5.0 points
-  over the same span.
-- **The hazard falls only against the control.** The replicator hazard falls relative to
-  the control, and the gap keeps widening to 500k (-3.1% on average). In absolute terms it
-  rises: replicators lengthen and drift toward the composition of random bytes under both
-  rates, and the per-op rates only slow the rise.
-- **The decline returns under uniform form M.** The v14 statement that form M almost
-  removes the decline, and the v15 non-replicator shares, hold to 100k only. In `m195`
-  from 50k to 500k:
-  - replicators fall 6-9x;
-  - copy-born non-replicators grow from 12-14% to 61-65% of active sites;
+  The control's own mutational drift over the same span is 0.8-7.9 points.
+- **The hazard falls against the control in six runs of eight.** The mean gap widens to
+  -3.8% at 500k, but t1_s2 and t3_s2 stay at or above their controls at most points. In
+  absolute terms the hazard rises in every run: replicators lengthen from about 42 to 53-55
+  non-inert bytes and drift toward the composition of random bytes under both rates, and
+  where the per-op rates help, they only slow the rise.
+- **The decline returns under uniform form M, about 2-fold.** The v14 statement that form M
+  almost removes the decline, and the v15 non-replicator shares, hold to 100k only. In
+  `m195` from 50k to 500k:
+  - replicators fall from 6.4-6.6k to 3.0-3.3k (the seed-limited census showed a 6-9x fall,
+    because it counted the long replicators as non-replicators);
+  - copy-born non-replicators grow from 10-11% to 24-26% of active sites;
   - exact births fall from 39-43% to 6-7%;
   - re-ignitions rise from 54-57% to 84-86% of births, while copy births stay near
     24-31k per 50k ticks.
