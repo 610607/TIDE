@@ -853,6 +853,103 @@ do not alter the dynamics: the v9 baseline is byte-identical to v8.
     activations end by wick in 88-92% and 87-88% with copy error. The strict decay share falls
     late, to 57-83% at 450-500k, as wick ends rise.
 
+- **v20** (inert operands fail under form M to 500k ticks; revision 857bf01, job list
+  `v20_inert_operand.txt`; 4 jobs in 39 minutes on 4 cores). The runs repeat v19 `m195_s1`,
+  `m195_s2`, `nomut_s1` and `nomut_s2` with one change, `inert_operand=fail`; v19 is the
+  baseline. At 857bf01 the default `zero` reproduces v19 `m195_s1` line for line to 50k
+  (census trial counts and the physics line included), and `ps_test` keeps its digest. At all
+  40 v20 checkpoints the strict balance equals the strict count, and the census mismatch,
+  untracked, stale and replaced counts are 0. Instructions that failed on an inert operand:
+  144k by 50k and 10.2-11.8 million by 500k with copy error; 37-38k by 50k and 67-73k by 500k
+  without.
+
+  Choice of split. INERT has four roles: it embodies no monomer (an empty byte, which `fill`
+  lets other sites write), it is the own-site direction of a pointer, it is the value 0 of
+  data and counters, and as an operand byte it names offset 0. v19 tied the self-overwrite
+  route to the last role and the fills of 30, 36, 38 and 40 to the first two together. Two
+  splits were considered:
+  - A separate empty code or a non-inert own-site direction. Polite's own-site direction
+    bytes (30, 34, 36, 38, 40) would become non-inert, so each copy would take five more
+    monomers, polite's whole-decay hazard would rise with 5 more of its 37 non-inert bytes,
+    and the decoding of neighbor directions or of 0 as data would change. This changes the
+    ledger and other rules, so it was not implemented.
+  - Inert operands fail (chosen). Only the operand role changes: no mass, decay, direction,
+    data or ancestor change. Polite executes no inert operand, so alone it runs bit for bit
+    as before (`ps_test`). This targets the self-overwrite route only; the own-site direction
+    role, and with it the fills of 30, 36, 38 and 40, stays.
+
+  Strict sites (v19 / v20):
+
+  | tick | m195_s1 | m195_s2 | nomut_s1 | nomut_s2 |
+  | --- | --- | --- | --- | --- |
+  | 50k | 6294 / 6401 | 6008 / 6188 | 8672 / 8720 | 8664 / 8700 |
+  | 100k | 5369 / 5383 | 5437 / 5313 | 8652 / 8679 | 8630 / 8692 |
+  | 150k | 4454 / 4176 | 4612 / 4075 | 8606 / 8654 | 8595 / 8660 |
+  | 200k | 3364 / 2622 | 3275 / 2579 | 8576 / 8681 | 8565 / 8624 |
+  | 250k | 2220 / 1823 | 2372 / 1718 | 8475 / 8613 | 8523 / 8622 |
+  | 300k | 1535 / 1377 | 1903 / 1163 | 8397 / 8596 | 8383 / 8624 |
+  | 350k | 1194 / 1043 | 1607 / 938 | 8369 / 8612 | 8121 / 8657 |
+  | 400k | 992 / 840 | 1303 / 877 | 8206 / 8574 | 7595 / 8632 |
+  | 450k | 889 / 663 | 1079 / 842 | 8008 / 8601 | 7008 / 8574 |
+  | 500k | 670 / 626 | 976 / 649 | 7670 / 8582 | 6306 / 8601 |
+
+  Strict activations after 150k (windows ending 200k-500k), v19 / v20. Self-written and
+  foreign-written split the in-place losses by writer (attribution as in v19). Offsets 36,
+  38, 40 and 47-53 count foreign-written losses that changed the offset, from the top 8
+  offsets per window, so they are lower bounds:
+
+  | run | net | copy births | re-ignitions | decay | wick | lost in place: self-written | foreign-written | self-written at offset 0 | neighbor fill of 30 | 36, 38, 40 | 47-53 | in place, net | births off offset 0 |
+  | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+  | m195_s1 | -3784 / -3550 | 46493 / 39759 | 25163 / 77835 | 53111 / 44620 | 9453 / 66632 | 5784 / 1768 | 9047 / 8566 | 5150 / 85 | 2604 / 2314 | 1525 / 1725 | 1548 / 1265 | -12876 / -9892 | 18.6% / 58.1% |
+  | m195_s2 | -3636 / -3426 | 54800 / 40006 | 29147 / 50399 | 60622 / 44177 | 13044 / 38919 | 6702 / 3866 | 10309 / 8175 | 4863 / 47 | 3126 / 2262 | 1809 / 1440 | 1596 / 1322 | -13917 / -10735 | 20.4% / 46.4% |
+  | nomut_s1 | -936 / -72 | 146658 / 153910 | 90844 / 87821 | 236144 / 241286 | 274 / 642 | 1198 / 0 | 1026 / 98 | 901 / 0 | 437 / 67 | 112 / 17 | 275 / 10 | -2020 / +125 | 0.6% / 0.3% |
+  | nomut_s2 | -2289 / -59 | 140948 / 154378 | 86988 / 87908 | 226986 / 241889 | 433 / 611 | 1536 / 0 | 1482 / 76 | 1501 / 0 | 581 / 37 | 79 / 12 | 390 / 20 | -2806 / +155 | 0.9% / 0.3% |
+
+  The same flows per strict site per 5,000 ticks after 150k with copy error (s1 / s2):
+
+  | | copy births | decay | re-ignitions minus wick ends | self-written loss | foreign-written loss | in place, net | net |
+  | --- | --- | --- | --- | --- | --- | --- | --- |
+  | v19 | 0.364 / 0.382 | 0.416 / 0.423 | +0.123 / +0.112 | 0.045 / 0.047 | 0.071 / 0.072 | -0.101 / -0.097 | -0.030 / -0.025 |
+  | v20 | 0.369 / 0.382 | 0.414 / 0.422 | +0.104 / +0.110 | 0.016 / 0.037 | 0.080 / 0.078 | -0.092 / -0.102 | -0.033 / -0.033 |
+
+  - **The self-overwrite of offset 0 is gone.** After 150k, self-written losses that change
+    offset 0 fall from 5,150 and 4,863 to 85 and 47 with copy error, and from 901 and 1,501
+    to 0 without. Without copy error no self-written loss remains. With copy error,
+    self-written losses fall by 42-69% (21-64% per strict site). The rest come mostly from
+    the instructions at 43 (34-41%) and 33 (21-35%), and change offset 1 (706 and 1,717) or
+    offsets 4-6 (408 and 905). At 43, polite's data byte is `RND` with operand byte 44,
+    which holds the byte the target check read from a neighbor's offset 0: non-inert when
+    the neighbor is occupied, and 1 when it holds polite (code inspection).
+  - **Without copy error, foreign fills fall too, and the decline is gone to 500k.**
+    Foreign-written losses fall by 90-95%, the fill of 30 by 85-94%, and offsets 36, 38, 40
+    and the tail by 85% or more, though the write rule is unchanged. Both kinds of writer
+    write less: strict sites 40 and 36 times (v19: 495 and 615), `other` sites 57 and 40
+    times (v19: 522 and 851). `other` sites stay at
+    3-29 (v19: 623 and 1,782 at 500k). Strict sites stay at 8,574-8,720 from 50k to 500k,
+    and the net change after 150k is -72 and -59 (v19: -936 and -2,289). The net in-place
+    change is positive. Strict sites with a filled own-site pointer offset reach 21-28% at
+    500k (v19: 93-95%), and 99.4-100% of strict parents' children are strict (v19:
+    94.0-97.2% at 500k).
+  - **With copy error, foreign fills barely change.** Foreign-written losses fall by 5-21%,
+    but rise by 8-13% per strict site. The fill of 30 falls by 11% and 28%, offsets 36, 38,
+    40 show no consistent change (+13% and -20%), and the tail falls by 17-18%. `other` sites
+    are as many as in v19 or more (4,363 and 4,276 at 500k against 4,264 and 4,172).
+  - **With copy error, the decline is not smaller.** In-place losses fall by 29-30% and the
+    net in-place loss by 23%, but strict sites are lower than in v19 at every checkpoint
+    from 150k, by 6-25% in s1 and 12-42% in s2, and the net change after 150k is about the
+    same (-3,550 and -3,426 against -3,784 and -3,636). Per strict site, copy births, decay
+    and the net in-place loss are within 10% of v19, and the net decline is
+    0.033 per site per 5,000 ticks in both seeds (v19: 0.030 and 0.025).
+  - **Off-entry visits now end by wick.** With copy error, strict re-ignitions rise 1.7-3.1
+    times and strict wick ends 3.0-7.0 times; 46-58% of strict births now start off offset 0
+    (v19: 19-20%). Re-ignitions minus wick ends per strict site change little (+0.104 and
+    +0.110 against +0.123 and +0.112).
+  - **Mass runs short earlier with copy error.** Writes refused for lack of a free monomer
+    in the window before 200k: 4,985 and 5,278 (v19: 1,649 and 2,412). The cause was not
+    traced.
+  - **Copy fidelity in the run.** The strict share of strict parents' children is as in v19
+    with copy error (59-86% against 57-83%, by point).
+
 Working interpretation (v13 and code inspection): saturation starts the decline in every
 run, and the space then fills with activations that no longer replicate. An activation ends
 only when the byte at its ip decays (`check_wicks`; no run recorded a starvation death).
@@ -1055,16 +1152,61 @@ v19 reading (counts from executed runs; mechanisms marked as inference):
 - **Next steps** (proposals, not agreed).
   - Separate the meanings of INERT, for example a distinct empty value that `fill` writes
     to, as a one-mechanism comparison under form M. This changes a rule, so it needs
-    agreement first.
+    agreement first. (v20 separates the operand role.)
   - Trace off-entry ignitions of strict genotypes: who ignites them, at which offset, and
     why copy error raises their share.
+
+v20 reading (counts from executed runs; mechanisms marked as inference):
+
+- **The minimal split removes the self-overwrite route in both conditions.** An inert operand
+  no longer reaches offset 0, and self-written losses at offset 0 almost vanish.
+- **Without copy error, it also removes the decline to 500k.** The self-overwrite route was
+  then the main source of `other` sites. With the split, `other` sites stay rare, and
+  foreign-written losses fall by 90-95% from both strict and `other` writers, although the
+  write rule is unchanged. So without copy error, v19's late decline came from the operand
+  role of INERT (inference from the counts). Why strict writers also change strict sites
+  less often was not traced.
+- **With copy error, it does not change the decline.**
+  - Copy errors keep making non-replicators directly (the in-run strict share of children
+    is as in v19), so `other` sites stay as numerous and keep writing into neighbors. The
+    fills of 30, 36, 38 and 40 use the own-site direction role, which this split leaves in
+    place.
+  - Per strict site, the net in-place loss and the net decline are the same as in v19.
+    Strict sites are lower from 150k. The run diverges from v19 before 50k, and v19's two
+    seeds differ by up to 46% at a checkpoint, but v20 is lower at all 16 checkpoints from
+    150k (two seeds).
+- **Off-entry visits change their end, not their effect (inference).** An off-entry
+  activation that once overwrote offset 0, and was counted as an in-place loss, now runs
+  through the data region and ends by wick at an inert byte. It leaves intact strict code
+  that can be ignited and counted again, which fits the rise in strict re-ignitions and
+  wick ends that nearly cancel per site. Who ignites strict code off entry was not traced.
+- **Answer to the request.**
+  - The self-overwrite route disappears: offset-0 losses fall 98-100%.
+  - Foreign fills of 36, 38, 40 and 47-53 fall 85% or more without copy error, and do not
+    change consistently with it.
+  - The net in-place loss and the decline improve without copy error (the decline is gone
+    to 500k). With copy error they do not improve per strict site, and strict sites end
+    lower.
+- **Limits.**
+  - Two seeds per condition, each a single realization.
+  - The lower bounds at 36, 38, 40 and 47-53 come from the top 8 offsets per window.
+  - Census status is judged under each run's own rule, so a genotype can have a different
+    status in v19 and v20.
+  - The earlier mass shortage with copy error is not explained.
+- **Next steps** (proposals, not agreed).
+  - Split the own-site direction role as well, which addresses the fills of 30, 36, 38 and
+    40. This changes the ledger (five more monomers per polite copy, a higher whole-decay
+    hazard) and the direction decoding, so it needs agreement on the encoding first.
+  - With copy error, trace who writes the remaining foreign in-place losses, and who
+    ignites strict code off entry.
 
 ## Known issues (code inspection)
 
 1. INERT means both "empty" and "own-site pointer / value 0", so self-pointer bytes can be
    filled from outside even under `fill`. Mutation and `RND` never produce INERT. An inert
    operand byte also names offset 0, so a program that runs its own data as code overwrites
-   its first byte (v19 counts both effects as routes of in-place loss).
+   its first byte (v19 counts both effects as routes of in-place loss). `inert_operand=fail`
+   removes the second effect (v20); the own-site direction role remains.
 2. Re-ignition is cheap relative to copying, and corpse sites sit at full energy.
 3. Without `bond_store`, `e_bond` also charges in-site counter updates.
 4. Walls drop bytes during cross-edge copying while the counters still advance.
