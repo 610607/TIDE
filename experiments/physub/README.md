@@ -1069,52 +1069,67 @@ do not alter the dynamics: the v9 baseline is byte-identical to v8.
   - Without copy error, free monomers stay at 71.6-76.5k and no write is refused.
 - **v22** (the census seeding limit; measurement only; revision b56495b, job list
   `v22_seed_limit.txt`; 4 jobs in 49 minutes on 4 cores, the first 7 minutes shared with
-  v21). Found while tracing v21. The census trial draws the founder's bytes from the trial
-  center's `mass0` (48) free monomers. A key with more than 48 non-inert bytes after the
-  volatile reset therefore cannot be seeded, and the census calls it a non-replicator
-  (`other`) whatever it does in the run. Polite has 40 such bytes. With 8 tail bytes filled
-  it is still strict; with 9 it is `other`, and strict again once the founder site is topped
-  up to its byte count (`ps_test`). Alone, polite stays strict with any single fill of 34,
-  36, 38, 40 or 46-63 and is a non-replicator with any fill of 30 (all 255 values; scratch
-  check with `mass0` 48 and `inert_operand=fail`).
+  v21; tables recomputed in v23). Found while tracing v21. The census trial drew the
+  founder's bytes from the trial center's `mass0` (48) free monomers. A key with more than
+  48 non-inert bytes after the volatile reset therefore could not be seeded, and the census
+  called it a non-replicator (`other`) whatever it did in the run. Since b4b4ea1 the census
+  tops up the founder site by default. Polite has 40 such bytes. With 8 tail bytes filled
+  it is still strict; with 9 it is `other` without top-up, and strict once the founder site
+  is topped up to its byte count (`ps_test`). Alone, polite stays strict with any single
+  fill of 34, 36, 38, 40 or 46-63 and is a non-replicator with any fill of 30 (all 255
+  values; scratch check with `mass0` 48 and `inert_operand=fail`).
 
   The runs repeat v20 `m195_s1` and `m195_s2` (`fail`) and v19 `m195_s1` and `m195_s2`
   (`zero`) with `trace=1`. Apart from `# tracekey`, the outputs equal v21 and v19 `m195_s2`
   line for line. A topped-up trial is the census trial with the founder site given as many
-  free monomers as the key has bytes; nothing else changes.
+  free monomers as the key has bytes; nothing else changes. Its children are still written
+  from the target sites' own free monomers, as in the run.
+
+  The tables below are recomputed with the topped-up census (v23 runs `fail_m195_s1/s2` and
+  `zero_m195_s1/s2`, whose rows equal these runs). The seed-limited column reproduces the
+  census strict counts first recorded here; the seed-limited tables are at c207f47.
 
   Active sites, `fail` s1 / s2; `zero` s1 / s2. "Past 48": more than 48 non-inert bytes
-  after the volatile reset. "Strict + topped": census strict sites plus the sites past 48
-  whose key is strict when topped up:
+  after the volatile reset. Strict is the topped-up census; "seed-limited strict" leaves out
+  the strict sites past 48, which the seed-limited census called `other`:
 
-  | tick | census strict | `other` | `other` past 48 (%) | past 48, strict when topped up | strict + topped | copy births by parents past 48 (% of the window) |
+  | tick | strict | of which past 48 | seed-limited strict | `other` | `other` past 48 (%) | copy births by parents past 48 (% of the window) |
   | --- | --- | --- | --- | --- | --- | --- |
-  | 50k | 6,401 / 6,188; 6,294 / 6,008 | 1,320 / 1,493; 1,398 / 1,625 | 47 / 55; 45 / 54 | 255 / 379; 228 / 377 | 6,656 / 6,567; 6,522 / 6,385 | 2 / 6; 2 / 5 |
-  | 100k | 5,383 / 5,313; 5,369 / 5,437 | 2,065 / 2,124; 1,958 / 1,969 | 54 / 64; 55 / 61 | 463 / 705; 481 / 577 | 5,846 / 6,018; 5,850 / 6,014 | 8 / 12; 8 / 12 |
-  | 150k | 4,176 / 4,075; 4,454 / 4,612 | 2,852 / 2,881; 2,559 / 2,456 | 77 / 78; 75 / 74 | 1,239 / 1,280; 979 / 903 | 5,415 / 5,355; 5,433 / 5,515 | 18 / 22; 18 / 15 |
-  | 200k | 2,622 / 2,579; 3,364 / 3,275 | 3,539 / 3,619; 3,180 / 3,213 | 84 / 85; 83 / 81 | 1,597 / 1,727; 1,455 / 1,320 | 4,219 / 4,306; 4,819 / 4,595 | 37 / 37; 34 / 26 |
-  | 250k | 1,823 / 1,718; 2,220 / 2,372 | 3,877 / 3,816; 3,578 / 3,436 | 90 / 91; 87 / 86 | 1,945 / 1,976; 1,733 / 1,531 | 3,768 / 3,694; 3,953 / 3,903 | 55 / 56; 49 / 42 |
-  | 300k | 1,377 / 1,163; 1,535 / 1,903 | 4,031 / 4,035; 3,917 / 3,712 | 93 / 93; 91 / 89 | 2,150 / 2,146; 1,927 / 1,760 | 3,527 / 3,309; 3,462 / 3,663 | 62 / 65; 58 / 53 |
-  | 350k | 1,043 / 938; 1,194 / 1,607 | 4,152 / 4,279; 4,116 / 3,928 | 94 / 96; 93 / 92 | 2,267 / 2,460; 2,135 / 2,046 | 3,310 / 3,398; 3,329 / 3,653 | 73 / 75; 67 / 57 |
-  | 400k | 840 / 877; 992 / 1,303 | 4,130 / 4,210; 4,128 / 4,043 | 96 / 95; 95 / 94 | 2,284 / 2,330; 2,288 / 2,191 | 3,124 / 3,207; 3,280 / 3,494 | 78 / 77; 74 / 65 |
-  | 450k | 663 / 842; 889 / 1,079 | 4,368 / 4,204; 4,301 / 4,071 | 97 / 97; 95 / 94 | 2,535 / 2,436; 2,476 / 2,156 | 3,198 / 3,278; 3,365 / 3,235 | 82 / 79; 77 / 73 |
-  | 500k | 626 / 649; 670 / 976 | 4,363 / 4,276; 4,264 / 4,172 | 97 / 97; 97 / 95 | 2,449 / 2,443; 2,314 / 2,304 | 3,075 / 3,092; 2,984 / 3,280 | 85 / 83; 81 / 76 |
+  | 50k | 6,656 / 6,567; 6,522 / 6,385 | 255 / 379; 228 / 377 | 6,401 / 6,188; 6,294 / 6,008 | 1,033 / 1,074; 1,143 / 1,194 | 32 / 38; 32 / 37 | 2 / 6; 2 / 5 |
+  | 100k | 5,846 / 6,018; 5,850 / 6,014 | 463 / 705; 481 / 577 | 5,383 / 5,313; 5,369 / 5,437 | 1,557 / 1,366; 1,450 / 1,349 | 39 / 45; 39 / 43 | 8 / 12; 8 / 12 |
+  | 150k | 5,415 / 5,355; 5,433 / 5,515 | 1,239 / 1,280; 979 / 903 | 4,176 / 4,075; 4,454 / 4,612 | 1,573 / 1,548; 1,540 / 1,506 | 59 / 59; 58 / 58 | 18 / 22; 18 / 15 |
+  | 200k | 4,219 / 4,306; 4,819 / 4,595 | 1,597 / 1,727; 1,455 / 1,320 | 2,622 / 2,579; 3,364 / 3,275 | 1,888 / 1,830; 1,681 / 1,827 | 70 / 70; 68 / 67 | 37 / 37; 34 / 26 |
+  | 250k | 3,768 / 3,694; 3,953 / 3,903 | 1,945 / 1,976; 1,733 / 1,531 | 1,823 / 1,718; 2,220 / 2,372 | 1,869 / 1,787; 1,782 / 1,835 | 79 / 81; 74 / 74 | 55 / 56; 49 / 42 |
+  | 300k | 3,527 / 3,309; 3,462 / 3,663 | 2,150 / 2,146; 1,927 / 1,760 | 1,377 / 1,163; 1,535 / 1,903 | 1,808 / 1,807; 1,913 / 1,865 | 84 / 85; 81 / 79 | 62 / 65; 58 / 53 |
+  | 350k | 3,310 / 3,398; 3,329 / 3,653 | 2,267 / 2,460; 2,135 / 2,046 | 1,043 / 938; 1,194 / 1,607 | 1,805 / 1,722; 1,894 / 1,791 | 87 / 90; 85 / 82 | 73 / 75; 67 / 57 |
+  | 400k | 3,124 / 3,207; 3,280 / 3,494 | 2,284 / 2,330; 2,288 / 2,191 | 840 / 877; 992 / 1,303 | 1,759 / 1,814; 1,755 / 1,759 | 90 / 89; 88 / 87 | 78 / 77; 74 / 65 |
+  | 450k | 3,198 / 3,278; 3,365 / 3,235 | 2,535 / 2,436; 2,476 / 2,156 | 663 / 842; 889 / 1,079 | 1,751 / 1,702; 1,747 / 1,828 | 92 / 92; 88 / 87 | 82 / 79; 77 / 73 |
+  | 500k | 3,075 / 3,092; 2,984 / 3,280 | 2,449 / 2,443; 2,314 / 2,304 | 626 / 649; 670 / 976 | 1,820 / 1,754; 1,849 / 1,776 | 94 / 93; 92 / 88 | 85 / 83; 81 / 76 |
 
-  - Strict sites move up to the limit: at 50k, 80-86% hold 40 bytes or fewer; at 500k,
-    49-63% hold 45-48. Of the `other` sites past 48, 74-88% hold 53-64 bytes.
-  - At 500k, 54-57% of all `other` sites are strict replicators once topped up.
+  - Strict sites grow past the limit: at 50k, 75-83% hold 40 bytes or fewer and 3-6% are
+    past 48; at 500k, 70-80% are past 48, and 79-84% of these hold 53-64 bytes.
+  - The seed-limited verdict counted 626-976 strict sites at 500k against 2,984-3,280.
+    Those it missed were 54-57% of its `other` sites at 500k.
+  - The remaining `other` sites are long too: 88-94% are past 48 at 500k, and 91-93% of
+    these hold 53-64 bytes. Alone and topped up, they do not replicate.
 
-  In-place strict losses and copy births, summed over windows:
+  In-place strict losses and copy births, summed over windows. Under the topped-up census no
+  loss is a relabel across the seeding limit; copy births do not depend on the census:
 
   | | `fail` to 150k | `fail` 150k-500k | `zero` to 150k | `zero` 150k-500k |
   | --- | --- | --- | --- | --- |
-  | foreign-written strict losses | 4,628 / 5,026 | 8,566 / 8,175 | 4,975 / 4,881 | 9,047 / 10,309 |
-  | new key past 48 (%) | 49.9 / 49.1 | 63.5 / 64.5 | 47.8 / 46.0 | 64.8 / 63.9 |
-  | of those, strict when topped up (%) | 96.1 / 95.3 | 92.3 / 92.2 | 96.6 / 96.4 | 92.1 / 92.3 |
-  | self-written strict losses (new key past 48) | 3,405 (1) / 2,142 (0) | 1,768 (10) / 3,866 (11) | 4,149 (2) / 4,257 (0) | 5,784 (7) / 6,702 (8) |
+  | foreign-written strict losses | 3,743 / 4,280 | 15,713 / 15,403 | 3,999 / 4,018 | 14,550 / 15,071 |
+  | new key past 48 (%) | 38.1 / 40.2 | 80.1 / 81.2 | 35.1 / 34.4 | 78.1 / 75.3 |
+  | self-written strict losses (new key past 48) | 3,691 (287) / 4,746 (2,604) | 3,984 (2,223) / 8,283 (4,428) | 4,373 (226) / 4,990 (733) | 12,954 (7,174) / 11,743 (5,047) |
   | copy births | 70,892 / 73,055 | 206,523 / 203,928 | 72,091 / 76,459 | 198,730 / 206,382 |
   | by parents past 48 (%) | 9.3 / 13.4 | 68.0 / 68.6 | 9.2 / 10.7 | 63.0 / 56.7 |
   | child carries the parent's key: all copies / parents past 48 (%) | 67.6 / 66.5; 42.0 / 45.3 | 41.3 / 42.9; 36.7 / 38.2 | 66.9 / 64.9; 37.5 / 42.6 | 43.6 / 43.4; 37.5 / 36.6 |
+
+  - Under the seed-limited census, foreign-written losses were 4,628 / 5,026 and 8,566 /
+    8,175 under `fail` and 4,975 / 4,881 and 9,047 / 10,309 under `zero`; 46-65% pushed the
+    key past 48, and 92-97% of those were strict once topped up (relabels). The topped-up
+    census removes those and adds the losses of strict sites already past 48, which the
+    seed-limited census did not follow as strict.
 
 Working interpretation (v13 and code inspection): saturation starts the decline in every
 run, and the space then fills with activations that no longer replicate. An activation ends
