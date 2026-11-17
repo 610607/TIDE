@@ -17,3 +17,9 @@ dq64_dead3e-4_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0
 # Reference without p_dead: hydrolysis at p_hydro for every site, active or not.
 dead0_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=1 ext_write=fill census=1
 dead0_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=2 ext_write=fill census=1
+# Size control: the same configurations on 48x48, to check whether the non-replicator share
+# converges to the 96x96 value.
+w48_dq64_dead1e-4_s1 ps_probe width=48 height=48 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=1 ext_write=fill p_dead=1e-4 dead_quiet=64 census=1
+w48_dq64_dead1e-4_s2 ps_probe width=48 height=48 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=2 ext_write=fill p_dead=1e-4 dead_quiet=64 census=1
+w48_dead0_s1 ps_probe width=48 height=48 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=1 ext_write=fill census=1
+w48_dead0_s2 ps_probe width=48 height=48 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=2 ext_write=fill census=1
