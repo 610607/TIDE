@@ -2,7 +2,8 @@
 
 Updated: 2026-11-17. Status: candidate designs for `experiments/physub/`. On 2026-11-17 the
 user agreed to run decay form M with a uniform rate and mobility option (a) as optional
-physub configurations (section 4); per-op rates and size-dependent mobility remain open.
+physub configurations (section 4), and then to two controls that separate the two effects of
+form M (section 5); per-op rates, binding (b) and size-dependent mobility remain open.
 Nothing here applies to the kernel contract.
 
 This note separates source findings, observations of the physub code, executed runs and
@@ -260,6 +261,51 @@ not separately agreed:
   copy itself.
 
 Results are in the [physub README](../../experiments/physub/README.md) (v14).
+
+## 5. Separating the two effects of form M (agreed 2026-11-17)
+
+In v14, form M with r = 1.95e-6 kept replicators near their peak, while form P (`dead0`)
+lost about 80x. M changed two things at once: no program is damaged in place, and inactive
+code clears in one event instead of byte by byte. The user agreed to two controls: (1)
+per-byte decay of live programs with whole clearance of inactive code, and (2) whole decay of
+live programs with per-byte decay of inactive code. Both use the same settings as v14:
+96x96, 100k ticks, `ext_write` fill, `p_mut` 0.003, seeds 1-2, census, no rotation.
+
+Definitions (choices made in implementing them, with reasons):
+
+- **Classes.** The split uses the existing `p_dead` classes. A live site has an activation
+  (or, with `dead_quiet`, was written recently; off here) and decays at `p_hydro`; any other
+  site decays at `p_dead`. `hydro_whole` = `live` or `dead` picks the class that decays as a
+  whole program. Reason: the classes and their rate keys already exist and are tested, so the
+  controls add only the per-class choice of form.
+- **Rates.** Each class keeps the form and rate it has in one v14 run: per byte at 3e-6 as in
+  `dead0`, or whole at 1.95e-6 per byte as in `m195`. `dead0` and `m195` are then the diagonal
+  of a 2x2 design, and each control differs from a v14 run in one class only:
+
+  | run | live sites | other sites |
+  | --- | --- | --- |
+  | `dead0` | per byte, 3e-6 | per byte, 3e-6 |
+  | `m195` | whole, 1.95e-6 | whole, 1.95e-6 |
+  | `whole_dead` (control 1) | per byte, 3e-6 | whole, 1.95e-6 |
+  | `whole_live` (control 2) | whole, 1.95e-6 | per byte, 3e-6 |
+
+  Reason: this keeps the agreed hazard match (polite's whole-program hazard under M equals
+  its replicative hazard under P) and introduces no new rate.
+- **Switching class.** A site changes class when an activation starts or ends. In
+  `whole_dead` an activation ended by a wick leaves its remaining bytes, which then clear in
+  one event at the inactive rate.
+
+Expected differences (inference, not measured):
+
+- Copies under construction have no activation, so they decay with the inactive class:
+  whole in `whole_dead`, per byte in `whole_live`. A copy takes about 320 ticks, and either
+  form hits it rarely (expected per-byte losses about 3e-6 x 32 bytes x 320 ticks = 0.03;
+  whole clearance about 1.95e-6 x 32 x 320 = 0.02).
+- In `whole_live` an activation usually ends together with its code, so wick corpses are
+  rare. Inactive code then comes mostly from abandoned or failed copies and from activations
+  ended by writes, and that code decays byte by byte.
+
+Results are in the [physub README](../../experiments/physub/README.md) (v15).
 
 ## Search record
 

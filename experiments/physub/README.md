@@ -76,6 +76,8 @@ python3 -m http.server 8765 -d viewer   # then open http://localhost:8765/?file=
   with probability `1 - (1 - r)^n` per tick over its `n` non-inert bytes, `r` = `p_hydro`
   (`p_dead` and `dead_quiet` select `r` as before). Every byte returns to the site's free
   monomers and the activation ends at the wick check. Off, each byte decays on its own.
+  `live` applies the whole form only to live sites (those that decay at `p_hydro`: active,
+  or recently written with `dead_quiet`), `dead` only to the others.
 - **Mobility** (`p_rot`, 0 = off): Margolus block rotation at the start of each tick. The
   lattice is split into 2x2 blocks offset by (0,0) on even and (1,1) on odd ticks; each block
   rotates clockwise or counterclockwise with probability `p_rot / 2` each, so a site moves
@@ -105,9 +107,9 @@ python3 -m http.server 8765 -d viewer   # then open http://localhost:8765/?file=
 | `apps/ps_probe.cpp` | Probe for polite-seeded runs (columns below) |
 | `apps/ps_knockout.cpp` | Single-byte knockout of an ancestor without mutation or decay |
 | `apps/ps_copycut.cpp` | First-copy cut probability of polite alone under block rotation |
-| `tests/ps_test.cpp` | Ledgers, replay, walls, ancestor, starvation, bond barrier, act_cap, ext_write, p_dead, energy diffusion, bond storage, dead_quiet, whole decay, block rotation |
+| `tests/ps_test.cpp` | Ledgers, replay, walls, ancestor, starvation, bond barrier, act_cap, ext_write, p_dead, energy diffusion, bond storage, dead_quiet, whole decay, block rotation, whole decay per class |
 | `viewer/index.html` | Replay viewer (layers, inspector, timeline) |
-| `scripts/run_jobs.sh`, `scripts/jobs/` | Parallel runner and the v8-v14 job lists |
+| `scripts/run_jobs.sh`, `scripts/jobs/` | Parallel runner and the v8-v15 job lists |
 
 `ps_probe` columns per interval: births, `exact%`, `intact_parent%`, top genotype, `copies`
 (child mostly written by the parent) and `reignites` (child code already present),
@@ -127,7 +129,7 @@ founder's ip visits in the trial's last 500 ticks, i.e. the bytes whose decay en
 activation by wick. Trial worlds are separate, so the interval rows are unchanged. Trials
 run without rotation, so the census tests a program's own ability to copy itself.
 
-With `hydro_whole=1`, `p_rot > 0` or `physics=1`, `ps_probe` adds a `# physics` line per
+With `hydro_whole` on, `p_rot > 0` or `physics=1`, `ps_probe` adds a `# physics` line per
 interval and at the end with cumulative counters: whole-program decays (and how many hit an
 active site), wick deaths, rotations, rotations stopped by walls, copies started, cut, ended
 in a birth, and ended in a birth after a cut.
