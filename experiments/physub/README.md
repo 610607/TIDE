@@ -112,7 +112,7 @@ rows are unchanged.
 ## Findings from executed runs
 
 All runs use 96x96 sites, `p_hydro` 3e-6 and `p_mut` 0.003 unless noted. v5-v7 ran on earlier
-revisions without job lists; v8-v12 replay from `scripts/jobs/`. Observer changes since then
+revisions without job lists; v8-v13 replay from `scripts/jobs/`. Observer changes since then
 do not alter the dynamics: the v9 baseline is byte-identical to v8.
 
 - **v5-v6** (`p_hydro` 1e-5 / 3e-6; `p_mut` down to 0.0003): the intact polite lineage is lost
@@ -140,6 +140,15 @@ do not alter the dynamics: the v9 baseline is byte-identical to v8.
   the lineage still collapses when blank sites run out. Space for offspring is the primary
   limit and fidelity is secondary. In `fill` mode, foreign writes land mostly on polite's
   inert self-pointer bytes (34, 30, 36, 38, 40).
+- **Knockouts** (`ps_knockout anc=polite`, revision 7ef36f3; 9x9, seed 1, no mutation,
+  hydrolysis or erosion, 4000 ticks): of polite's 40 non-inert bytes, 26 are lethal, 7
+  impaired and 7 neutral. 13 of the 26 lethal knockouts leave the founder running without
+  copying. Intact polite births at ticks 324 and 650 in an empty world. Losing any of 26
+  bytes ends replication, while a saturated neighbor opens as a polite target only when its
+  byte 0 decays. At equal per-byte rates an intact parent therefore gets about 4/26 = 0.15
+  openings per replicative lifetime, whatever the rate. This is consistent with v5-v12, where
+  rate changes did not rescue the lineage. With 7 neutral bytes, loss of the exact genotype
+  is not loss of replication; the v13 census measures both.
 
 Working interpretation: once space saturates, a polite replicator gets a free neighbor only
 when hydrolysis clears one, which is too rare per lifetime (R < 1). Nothing tested so far
