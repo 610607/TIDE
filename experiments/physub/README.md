@@ -61,6 +61,12 @@ python3 -m http.server 8765 -d viewer   # then open http://localhost:8765/?file=
   An unaffordable instruction waits (or fails with `stall_fail=1`). Blocked writes still pay.
 - **External writes** (`ext_write`): `allow` (default), `fill` (a neighbor may only fill
   INERT bytes), `erase` (fill, or erase to INERT for `e_erase`; no substitution).
+- **Inert operands** (`inert_operand`): `zero` (default) reads an INERT operand byte as
+  offset 0, like any other value mod `site_len`. With `fail`, an instruction with an INERT
+  byte among its operands pays `e_op`, advances `ip` by its length and does nothing else.
+  Pointer directions, data values, counters and the ledger are the same in both modes, and
+  non-inert operands that name offset 0 (64, 128, 192) still do. A program that never
+  executes an INERT operand runs bit for bit as under `zero` (`ps_test`).
 - **Energy transport and storage**, both off by default (off reproduces the model above):
   - `e_diffuse=1`: the energy field diffuses with the monomer rule; walls insulate;
     divisor `e_div` (8).
@@ -117,9 +123,9 @@ python3 -m http.server 8765 -d viewer   # then open http://localhost:8765/?file=
 | `apps/ps_scan.cpp` | Isolated first-copy fidelity, knockout and substitution scans of genotypes listed by the probe |
 | `apps/ps_knockout.cpp` | Single-byte knockout of an ancestor without mutation or decay |
 | `apps/ps_copycut.cpp` | First-copy cut probability of polite alone under block rotation |
-| `tests/ps_test.cpp` | Ledgers, replay, walls, ancestor, starvation, bond barrier, act_cap, ext_write, p_dead, energy diffusion, bond storage, dead_quiet, whole decay, block rotation, whole decay per class, per-op decay tables, census trial, copy-difference classes and writer records |
+| `tests/ps_test.cpp` | Ledgers, replay, walls, ancestor, starvation, bond barrier, act_cap, ext_write, p_dead, energy diffusion, bond storage, dead_quiet, whole decay, block rotation, whole decay per class, per-op decay tables, census trial, copy-difference classes, writer records and inert operands |
 | `viewer/index.html` | Replay viewer (layers, inspector, timeline) |
-| `scripts/run_jobs.sh`, `scripts/jobs/` | Parallel runner and the v8-v19 job lists |
+| `scripts/run_jobs.sh`, `scripts/jobs/` | Parallel runner and the v8-v20 job lists |
 
 `ps_probe` columns per interval: births, `exact%`, `intact_parent%`, top genotype, `copies`
 (child mostly written by the parent) and `reignites` (child code already present),
