@@ -14,3 +14,6 @@ dq0_dead1e-4_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.
 dq64_dead1e-4_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=2 ext_write=fill p_dead=1e-4 dead_quiet=64 census=1
 dq0_dead3e-4_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=2 ext_write=fill p_dead=3e-4 dead_quiet=0 census=1
 dq64_dead3e-4_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=2 ext_write=fill p_dead=3e-4 dead_quiet=64 census=1
+# Reference without p_dead: hydrolysis at p_hydro for every site, active or not.
+dead0_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=1 ext_write=fill census=1
+dead0_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=2 ext_write=fill census=1
