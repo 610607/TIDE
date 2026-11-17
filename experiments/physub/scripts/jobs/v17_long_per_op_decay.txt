@@ -1,0 +1,15 @@
+# v17: v16 run 5x longer. Requested 2026-11-17: does the data-byte shift against the control
+# keep growing, and does the replicator hazard fall? Settings as v16 (S1 30:1, tables 1-4,
+# N2 with p_hydro = 1.95e-6, seeds 1-2, ext_write fill, p_mut 0.003, 96x96, census, no
+# rotation), 500k ticks, one census and class point every 50k ticks. Control: uniform form M
+# (m195) over the same span, measured under all four tables.
+t1_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 decay_table=1 seed=1 ext_write=fill census=1 classes=1,2,3,4
+t1_s2 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 decay_table=1 seed=2 ext_write=fill census=1 classes=1,2,3,4
+t2_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 decay_table=2 seed=1 ext_write=fill census=1 classes=1,2,3,4
+t2_s2 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 decay_table=2 seed=2 ext_write=fill census=1 classes=1,2,3,4
+t3_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 decay_table=3 seed=1 ext_write=fill census=1 classes=1,2,3,4
+t3_s2 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 decay_table=3 seed=2 ext_write=fill census=1 classes=1,2,3,4
+t4_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 decay_table=4 seed=1 ext_write=fill census=1 classes=1,2,3,4
+t4_s2 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 decay_table=4 seed=2 ext_write=fill census=1 classes=1,2,3,4
+m195_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill census=1 classes=1,2,3,4
+m195_s2 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=2 ext_write=fill census=1 classes=1,2,3,4
