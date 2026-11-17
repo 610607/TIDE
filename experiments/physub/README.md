@@ -150,11 +150,46 @@ do not alter the dynamics: the v9 baseline is byte-identical to v8.
   openings per replicative lifetime, whatever the rate. This is consistent with v5-v12, where
   rate changes did not rescue the lineage. With 7 neutral bytes, loss of the exact genotype
   is not loss of replication; the v13 census measures both.
+- **v13** (`dead_quiet`; dynamics of revision 7ef36f3, census from 53898eb on; `ext_write`
+  fill, seeds 1-2, 100k ticks; `dead0` = no `p_dead`). Census at 100k ("copy-born" =
+  non-replicating activations that began as copies; ages are mean activation ages):
 
-Working interpretation: once space saturates, a polite replicator gets a free neighbor only
-when hydrolysis clears one, which is too rare per lifetime (R < 1). Nothing tested so far
-reclaims dead matter near living replicators without also damaging children under
-construction.
+  | run | replicator peak | active | replicators | polite region intact | non-rep copy-born | re-ignited | age rep / non-rep |
+  | --- | --- | --- | --- | --- | --- | --- | --- |
+  | dead0_s1 | 3047 (30k) | 2089 | 39 | 5 | 1731 | 319 | 53713 / 70591 |
+  | dead0_s2 | 2676 (30k) | 2009 | 33 | 2 | 1590 | 386 | 48090 / 68809 |
+  | dq0_dead3e-5_s1 | 660 (70k) | 2359 | 303 | 0 | 1547 | 509 | 17650 / 36346 |
+  | dq0_dead3e-5_s2 | 1517 (40k) | 2298 | 100 | 1 | 1619 | 579 | 26373 / 51636 |
+  | dq0_dead1e-4_s1 | 17 (10k) | 23 | 0 | 0 | 17 | 6 | - / 76461 |
+  | dq0_dead1e-4_s2 | 3 (10k) | 3 | 0 | 0 | 2 | 1 | - / 71974 |
+  | dq0_dead3e-4_s1 | - | extinct at 4768 | | | | | |
+  | dq0_dead3e-4_s2 | 1 (10k) | extinct at 78997 | | | | | |
+  | dq64_dead3e-5_s1 | 3166 (30k) | 2353 | 129 | 20 | 1835 | 389 | 32657 / 60628 |
+  | dq64_dead3e-5_s2 | 2789 (30k) | 2215 | 90 | 8 | 1654 | 471 | 31899 / 60020 |
+  | dq64_dead1e-4_s1 | 3301 (30k) | 3182 | 223 | 23 | 2365 | 594 | 23806 / 52912 |
+  | dq64_dead1e-4_s2 | 2925 (30k) | 3280 | 207 | 12 | 2416 | 657 | 19376 / 52331 |
+  | dq64_dead3e-4_s1 | 3516 (30k) | 4130 | 340 | 29 | 3039 | 751 | 19623 / 50320 |
+  | dq64_dead3e-4_s2 | 3147 (30k) | 3817 | 236 | 30 | 2822 | 759 | 24776 / 50509 |
+
+  - With `dead_quiet=0` (the v10 rule), `p_dead` 1e-4 and 3e-4 leave no replicator in any
+    run and two of the four runs go extinct. This reproduces v10.
+  - With `dead_quiet=64` all six runs reach 2.8-3.5k replicators by 30k at every `p_dead`.
+    Replicators of any genotype then fall about 10x by 100k. Without `p_dead` replicators
+    peak at the same time and level, then fall faster (33-39 at 100k).
+  - Exact-genotype counts understate replication: at 100k most replicators differ from
+    polite's program region. Yet in every surviving run 66-83% of active sites run copy-born
+    programs that do not replicate. Their mean activation age (36-71k ticks) is 1.3-2.7 times
+    the replicators'.
+  - `dead_quiet` thus removes the damage `p_dead` does to copies under construction. It
+    raises late replicator counts 2-10x over `dead0` but does not stop the decline.
+
+Working interpretation (v13 and code inspection): saturation starts the decline in every
+run, and the space then fills with activations that no longer replicate. An activation ends
+only when the byte at its ip decays (`check_wicks`; no run recorded a starvation death).
+In a 9x9 trace without decay, polite's ip visits 4 opcode bytes while it waits for a free
+neighbor and 13 over a full cycle, but replication needs 26 bytes. A replicator therefore usually loses replication
+before its activation ends, and its site stays occupied. `p_dead` acts only on inactive
+sites, so faster reclamation of corpses (v10, v13) does not reach these sites.
 
 ## Known issues (code inspection)
 
