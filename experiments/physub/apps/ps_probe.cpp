@@ -1,7 +1,7 @@
 // Birth probe: classifies every birth of a polite-seeded run by parent integrity, copy
 // differences, child lifespan and child fertility. Observation only.
 // Usage: ps_probe ticks=N seed=S p_mut=X p_hydro=Y rival=0|1 [mass0=M] [census=0|1]
-//        [hydro_whole=0|1] [p_rot=P] [physics=0|1]
+//        [hydro_whole=0|1|live|dead] [p_rot=P] [physics=0|1]
 
 #include "ps_core.hpp"
 
@@ -307,7 +307,12 @@ int main(int argc, char** argv) {
     else if (k == "p_hydro") cfg.p_hydro = std::atof(v.c_str());
     else if (k == "p_dead") cfg.p_dead = std::atof(v.c_str());
     else if (k == "dead_quiet") cfg.dead_quiet = std::atoi(v.c_str());
-    else if (k == "hydro_whole") cfg.hydro_whole = std::atoi(v.c_str()) != 0;
+    else if (k == "hydro_whole") {
+      if (!parse_whole(v, cfg.hydro_whole)) {
+        std::cerr << "bad hydro_whole: " << v << '\n';
+        return 1;
+      }
+    }
     else if (k == "p_rot") cfg.p_rot = std::atof(v.c_str());
     else if (k == "mass0") cfg.mass0 = std::atoi(v.c_str());
     else if (k == "rival") rival = v == "1";
@@ -352,7 +357,7 @@ int main(int argc, char** argv) {
   std::map<std::string, TrialResult> census_cache;  // program text -> trial (census=1)
   std::cout << "tick\tactive\tbirths\texact%\tintact_parent%\ttop_count\ttop_dist\tdistinct"
                "\tcopies\treignites\tintact_copies\tblank\topen0\tdead\tpfx_active\tpfx_copies\text_erased\tstalls\tstarved\tenergy\n";
-  const bool physics_line = physics || cfg.hydro_whole || cfg.p_rot > 0.0;
+  const bool physics_line = physics || cfg.hydro_whole != Whole::Off || cfg.p_rot > 0.0;
   std::vector<int> moved(current.size(), -1);
   while (w.tick() < ticks && w.active_count() > 0) {
     w.run(1);

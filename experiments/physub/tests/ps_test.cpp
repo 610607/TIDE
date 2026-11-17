@@ -360,7 +360,7 @@ int non_inert(const std::vector<uint8_t>& bytes) {
 // and the activation ends; with a small rate the ledger stays exact and replay holds.
 void test_whole_decay() {
   Config cfg = small_config();
-  cfg.hydro_whole = true;
+  cfg.hydro_whole = Whole::All;
   cfg.p_hydro = 1.0;
   cfg.p_erode = 0.0;
   World w(cfg);
@@ -375,7 +375,7 @@ void test_whole_decay() {
   assert(w.ledger_ok());
 
   Config slow = small_config();
-  slow.hydro_whole = true;
+  slow.hydro_whole = Whole::All;
   slow.p_hydro = 2e-5;
   slow.p_mut = 0.01;
   World a(slow), b(slow);
@@ -391,6 +391,49 @@ void test_whole_decay() {
   std::cout << "[ps test 13] whole decay cleared " << w.stats().hydrolyzed
             << " bytes in one event; 4000 ticks exact, decays=" << a.stats().whole_decays
             << " births=" << a.stats().births << "\n";
+}
+
+// Whole decay per class: with hydro_whole=dead only inactive code clears in one event and
+// the live site keeps per-byte decay; with hydro_whole=live the reverse.
+void test_whole_decay_split() {
+  for (Whole mode : {Whole::Dead, Whole::Live}) {
+    Config cfg = small_config();
+    cfg.hydro_whole = mode;
+    cfg.p_erode = 0.0;
+    cfg.p_hydro = mode == Whole::Live ? 1.0 : 0.0;  // live sites
+    cfg.p_dead = mode == Whole::Live ? 0.0 : 1.0;   // the others
+    World w(cfg);
+    const int32_t corpse = w.site_index(2, 2);
+    const int32_t live = w.site_index(8, 8);
+    assert(w.place_bytes(corpse, ancestor()));
+    assert(w.seed_program(8, 8, polite()));
+    w.run(1);
+    const bool corpse_cleared = non_inert(w.site_bytes(corpse)) == 0;
+    const bool live_cleared = non_inert(w.site_bytes(live)) == 0;
+    assert(w.stats().whole_decays == 1);
+    assert(corpse_cleared == (mode == Whole::Dead));
+    assert(live_cleared == (mode == Whole::Live));
+    assert(w.site_active(live) == (mode == Whole::Dead));
+    assert(w.stats().whole_decays_active == (mode == Whole::Live ? 1u : 0u));
+    assert(w.ledger_ok());
+  }
+  // Per-byte decay still acts on the other class: p_hydro = 1 per byte empties the live site
+  // byte by byte while hydro_whole=dead leaves the corpse to whole decay at p_dead = 0.
+  Config cfg = small_config();
+  cfg.hydro_whole = Whole::Dead;
+  cfg.p_erode = 0.0;
+  cfg.p_hydro = 1.0;
+  cfg.p_dead = 0.0;
+  World w(cfg);
+  const int32_t corpse = w.site_index(2, 2);
+  assert(w.place_bytes(corpse, ancestor()));
+  assert(w.seed_program(8, 8, polite()));
+  w.run(1);
+  assert(non_inert(w.site_bytes(w.site_index(8, 8))) == 0);
+  assert(non_inert(w.site_bytes(corpse)) == non_inert(ancestor()));
+  assert(w.stats().whole_decays == 0 && w.ledger_ok());
+  std::cout << "[ps test 15] whole decay per class: dead clears the corpse only, live clears"
+            << " the live site only\n";
 }
 
 // Every activation points at a non-inert byte of its own site's code.
@@ -473,6 +516,7 @@ int main() {
   test_dead_quiet();
   test_whole_decay();
   test_block_rotation();
+  test_whole_decay_split();
   std::cout << "all physub tests passed\n";
   return 0;
 }

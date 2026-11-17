@@ -49,6 +49,25 @@ inline constexpr uint8_t kSelf = 4;   // direction value for own site
 inline constexpr int kMinSiteLen = 8;
 inline constexpr int kMaxSiteLen = 64;
 
+// Which sites decay as whole programs (form M); the others decay byte by byte (form P).
+// The classes are those of p_dead: "live" sites are active, or (with dead_quiet) recently
+// written, and decay at p_hydro; the others decay at p_dead.
+//  Off      : every site per byte
+//  All      : every site whole
+//  Live     : live sites whole, the others per byte
+//  Dead     : the others whole, live sites per byte
+enum class Whole : uint8_t { Off, All, Live, Dead };
+
+// Parses "0" | "1" | "live" | "dead"; returns false on anything else.
+inline bool parse_whole(const std::string& s, Whole& out) {
+  if (s == "0") out = Whole::Off;
+  else if (s == "1") out = Whole::All;
+  else if (s == "live") out = Whole::Live;
+  else if (s == "dead") out = Whole::Dead;
+  else return false;
+  return true;
+}
+
 // Rule for a write that crosses into a neighbor and meets a non-inert byte.
 //  Allow     : any change (substitution or erasure)
 //  FillOnly  : only INERT bytes can be filled from outside
@@ -102,12 +121,12 @@ struct Config {
   // (copies under construction) keep p_hydro. 0 = p_dead applies to every inactive site.
   int32_t dead_quiet = 0;
   double p_erode = 1e-4;      // per wall half-edge per tick (removes one unit)
-  // Decay form. false (P): each non-inert byte becomes inert on its own with probability
-  // p_hydro per tick. true (M): a site's program decays in one event with probability
-  // 1 - (1 - r)^n per tick, n = its non-inert bytes and r = p_hydro (p_dead and dead_quiet
-  // select r as in form P); every non-inert byte returns to the site's free monomers, which
-  // ends any activation there.
-  bool hydro_whole = false;
+  // Decay form. Per byte (P): each non-inert byte becomes inert on its own with probability
+  // r per tick. Whole (M): a site's program decays in one event with probability
+  // 1 - (1 - r)^n per tick, n = its non-inert bytes; every non-inert byte returns to the
+  // site's free monomers, which ends any activation there. r = p_hydro for live sites and
+  // p_dead for the others in either form; hydro_whole picks the form per class (see Whole).
+  Whole hydro_whole = Whole::Off;
   // Whole-site mobility by Margolus block rotation. At the start of each tick the lattice is
   // split into 2x2 blocks, offset by (0,0) on even ticks and (1,1) on odd ticks; each block
   // rotates clockwise or counterclockwise with probability p_rot / 2 each. A rotation moves
@@ -304,7 +323,6 @@ private:
   void diffuse_field(std::vector<int32_t>& field, int32_t div, Stream flux_stream,
                      Stream guard_stream);
   void hydrolyze();
-  void hydrolyze_whole();
   void erode();
   void rotate_blocks();
   void move_cycle(const int32_t (&s)[4]);

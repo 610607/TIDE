@@ -86,22 +86,36 @@ void World::diffuse_field(std::vector<int32_t>& field, int32_t div, Stream flux_
   }
 }
 
+// Per byte (form P): one keyed draw per non-inert byte. Whole (form M): one keyed draw per
+// site with code, against the series threshold for its non-inert count; the activation
+// ends at the wick check. The class (live or not) picks the rate and, with hydro_whole,
+// the form; with dead_quiet a recently written inactive site counts as live.
 void World::hydrolyze() {
   if (t_hydro_ == 0 && t_dead_ == 0) return;
-  if (cfg_.hydro_whole) {
-    hydrolyze_whole();
-    return;
-  }
+  const Whole mode = cfg_.hydro_whole;
   const int32_t sites = cfg_.width * cfg_.height;
   for (int32_t s = 0; s < sites; ++s) {
-    // Same keyed draw for every site; only the threshold depends on activation and, with
-    // dead_quiet, on how recently a write reached the site.
     const bool active = site_active(s);
     const bool recent = cfg_.dead_quiet > 0 &&
         static_cast<int64_t>(tick_) - last_write_[s] <= cfg_.dead_quiet;
-    const uint64_t t = active || recent ? t_hydro_ : t_dead_;
-    if (t == 0) continue;
+    const bool live = active || recent;
     uint8_t* mem = site_ptr(s);
+    if (mode == Whole::All || (mode == Whole::Live && live) || (mode == Whole::Dead && !live)) {
+      int n = 0;
+      for (int o = 0; o < cfg_.site_len; ++o) n += mem[o] != INERT;
+      if (n == 0) continue;
+      const uint64_t tw = (live ? t_whole_ : t_whole_dead_)[n];
+      if (tw == 0 || (key(kWhole, static_cast<uint64_t>(s)) >> 32) >= tw) continue;
+      std::fill(mem, mem + cfg_.site_len, INERT);
+      free_[s] += n;
+      if (cfg_.bond_store) energy_[s] += n * cfg_.e_bond;
+      stats_.hydrolyzed += static_cast<uint64_t>(n);
+      stats_.whole_decays += 1;
+      stats_.whole_decays_active += active;
+      continue;
+    }
+    const uint64_t t = live ? t_hydro_ : t_dead_;
+    if (t == 0) continue;
     for (int o = 0; o < cfg_.site_len; ++o) {
       if (mem[o] == INERT) continue;
       if ((key(kHydro, static_cast<uint64_t>(s), static_cast<uint64_t>(o)) >> 32) < t) {
@@ -111,29 +125,6 @@ void World::hydrolyze() {
         stats_.hydrolyzed += 1;
       }
     }
-  }
-}
-
-// Form M: one keyed draw per site with code; the site's rate (p_hydro, or p_dead for an
-// inactive site) is chosen as in form P. The activation ends at the wick check.
-void World::hydrolyze_whole() {
-  const int32_t sites = cfg_.width * cfg_.height;
-  for (int32_t s = 0; s < sites; ++s) {
-    uint8_t* mem = site_ptr(s);
-    int n = 0;
-    for (int o = 0; o < cfg_.site_len; ++o) n += mem[o] != INERT;
-    if (n == 0) continue;
-    const bool active = site_active(s);
-    const bool recent = cfg_.dead_quiet > 0 &&
-        static_cast<int64_t>(tick_) - last_write_[s] <= cfg_.dead_quiet;
-    const uint64_t t = (active || recent ? t_whole_ : t_whole_dead_)[n];
-    if (t == 0 || (key(kWhole, static_cast<uint64_t>(s)) >> 32) >= t) continue;
-    std::fill(mem, mem + cfg_.site_len, INERT);
-    free_[s] += n;
-    if (cfg_.bond_store) energy_[s] += n * cfg_.e_bond;
-    stats_.hydrolyzed += static_cast<uint64_t>(n);
-    stats_.whole_decays += 1;
-    stats_.whole_decays_active += active;
   }
 }
 

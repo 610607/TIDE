@@ -1,0 +1,17 @@
+# v15: separate the two effects of decay form M. Each class of site takes the form and rate
+# it has in one of the two v14 runs: live (active) sites decay at p_hydro, the others at
+# p_dead; hydro_whole picks which class decays as a whole program.
+#   dead0      live: per byte 3e-6       others: per byte 3e-6       (v13/v14 control)
+#   m195       live: whole, 1.95e-6      others: whole, 1.95e-6      (v14 form M)
+#   whole_dead live: per byte 3e-6       others: whole, 1.95e-6      in-place damage kept
+#   whole_live live: whole, 1.95e-6      others: per byte 3e-6       corpses decay as in P
+# Everything else as v14: ext_write fill, p_mut 0.003, 96x96, 100k ticks, seeds 1-2, census,
+# no rotation.
+dead0_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=1 ext_write=fill census=1 physics=1
+dead0_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=2 ext_write=fill census=1 physics=1
+m195_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill census=1
+m195_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=2 ext_write=fill census=1
+whole_dead_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 p_dead=1.95e-6 hydro_whole=dead seed=1 ext_write=fill census=1
+whole_dead_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 p_dead=1.95e-6 hydro_whole=dead seed=2 ext_write=fill census=1
+whole_live_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=1.95e-6 p_dead=3e-6 hydro_whole=live seed=1 ext_write=fill census=1
+whole_live_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=1.95e-6 p_dead=3e-6 hydro_whole=live seed=2 ext_write=fill census=1

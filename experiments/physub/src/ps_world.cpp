@@ -83,7 +83,7 @@ World::World(const Config& cfg) : cfg_(sanitize(cfg)) {
   t_dead_ = cfg_.p_dead < 0.0 ? t_hydro_ : threshold(cfg_.p_dead);
   t_erode_ = threshold(cfg_.p_erode);
   t_mut_ = threshold(cfg_.p_mut);
-  if (cfg_.hydro_whole) {
+  if (cfg_.hydro_whole != Whole::Off) {
     t_whole_ = whole_thresholds(cfg_.p_hydro, cfg_.site_len);
     t_whole_dead_ = whole_thresholds(cfg_.p_dead < 0.0 ? cfg_.p_hydro : cfg_.p_dead,
                                      cfg_.site_len);
