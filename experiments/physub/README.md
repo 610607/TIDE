@@ -192,7 +192,7 @@ from text substitutions alone: (1-u)^m + u(1-u)^(m-1) sum_k s_k over the m non-i
 non-volatile bytes, with s_k the strict share of substitutions at k.
 
 With `census=1` and `fate=1` (no rotation), `ps_probe` follows every activation from its
-birth (or the seeding) to its end and adds six lines per interval, covering the interval since
+birth (or the seeding) to its end and adds seven lines per interval, covering the interval since
 the previous checkpoint. An activation takes the status (`rep`, `loose`, `prop`, `other`) of
 its key at birth. When a non-volatile byte of a live `rep`, `loose` or `prop` site changes
 without a birth (in place), its key is tested again. In-place changes of `other` sites are
@@ -223,6 +223,9 @@ each changed byte was written that tick and the writer records name the writing 
   (`src_names_writer`), where the closing jump then lands (polite's JMP 30 jumps to [30] mod
   64: offset 0, another opcode offset of the reference, or elsewhere), foreign writes into
   volatile offsets of strict sites (not status changes), and the most changed offsets.
+- `# fatestart`: of the strict activations lost in place (and of those written by the site
+  itself), how many were ignited at offset 0, polite's entry; strict births ignited at offset
+  0; and, for self-written losses, the offset of the instruction that ran in that tick.
 - `# fateconv`: converted activations alive, their copy births, and how many children are
   strict, equal to the parent's key, or equal to the key of the neighbor that the parent's
   source pointer names.

@@ -562,6 +562,7 @@ struct Fate {
   bool on = false;
   bool converted = false;  // was strict, lost strict status in place
   int status = kOther;
+  int start_ip = 0;        // ignition offset
 };
 
 struct FateTally {
@@ -579,6 +580,12 @@ struct FateTally {
   uint64_t out_src = 0, out_src_only = 0;  // the source-pointer direction byte among them
   uint64_t src_writer[kWriters] = {};  // who wrote that byte
   uint64_t src_names_writer = 0;       // a foreign writer, and the new direction names it
+  uint64_t out_start0 = 0;             // the lost activation was ignited at offset 0
+  // Strict losses written by the site itself: ignited at offset 0, and the offset of the
+  // instruction that executed in that tick.
+  uint64_t self_start0 = 0;
+  uint64_t self_at[64] = {};
+  uint64_t born_rep_start0 = 0;  // strict births ignited at offset 0
   uint64_t out_jump[3] = {};  // its new value v: ip after the closing jump, v mod len, is
                               // 0 / another reference opcode offset / elsewhere
   uint64_t vol_foreign_rep = 0;  // foreign writes into volatile offsets of strict sites
@@ -595,7 +602,7 @@ public:
       : w_(w), census_(census), len_(w.config().site_len),
         sites_(w.config().width * w.config().height),
         src_ptr_(g_ref->name == "polite" ? 30 : 23),
-        fate_(sites_), snap_(static_cast<size_t>(sites_) * len_) {
+        fate_(sites_), snap_(static_cast<size_t>(sites_) * len_), next_ip_(sites_, 0) {
     // The seeded founders are activations that no birth announced.
     for (int32_t s = 0; s < sites_; ++s) {
       if (w.site_active(s)) start(s);
@@ -632,6 +639,7 @@ public:
       const Fate parent = fate_[b.parent];
       start(b.child);
       t_.born[fate_[b.child].status][kind] += 1;
+      t_.born_rep_start0 += fate_[b.child].status == kRep && fate_[b.child].start_ip == 0;
       if (kind == kCopy && parent.on && parent.converted) note_converted_copy(b);
     }
     for (int32_t s = 0; s < sites_; ++s) {
@@ -644,6 +652,7 @@ public:
       uint8_t* old = &snap_[static_cast<size_t>(s) * len_];
       const uint8_t* now = w_.bytes_at(s);
       if (std::memcmp(old, now, len_) != 0) changed(s, old, now);
+      next_ip_[s] = static_cast<int16_t>(w_.first_ip(s));
     }
   }
 
@@ -728,6 +737,20 @@ public:
       o << ' ' << k << ':' << n;
     }
     o << std::endl;
+    std::multimap<uint64_t, int, std::greater<>> at;
+    uint64_t self = t_.out_writer[kWSelf];
+    for (int k = 0; k < len_; ++k) if (t_.self_at[k]) at.insert({t_.self_at[k], k});
+    uint64_t born_rep = 0;
+    for (int k = 0; k < kKinds; ++k) born_rep += t_.born[kRep][k];
+    o << "# fatestart tick=" << tick << " out_start0=" << t_.out_start0 << '/' << out
+      << " self_start0=" << t_.self_start0 << '/' << self << " born_rep_start0="
+      << t_.born_rep_start0 << '/' << born_rep << " self_instr_at:";
+    shown = 0;
+    for (auto [n, k] : at) {
+      if (shown++ == 10) break;
+      o << ' ' << k << ':' << n;
+    }
+    o << std::endl;
     uint64_t conv_alive = 0;
     for (int32_t s = 0; s < sites_; ++s) conv_alive += fate_[s].on && fate_[s].converted;
     o << "# fateconv tick=" << tick << " alive=" << conv_alive << " copies=" << t_.conv_copies
@@ -747,6 +770,7 @@ private:
   const int src_ptr_;
   std::vector<Fate> fate_;
   std::vector<uint8_t> snap_;
+  std::vector<int16_t> next_ip_;  // ip of each tracked activation for the next tick
   FateTally t_;
   uint64_t rep_prev_ = 0;
 
@@ -761,6 +785,8 @@ private:
     f.on = true;
     f.converted = false;
     f.status = status_of_key(masked(w_, s));
+    f.start_ip = w_.first_ip(s);
+    next_ip_[s] = static_cast<int16_t>(f.start_ip);
     std::memcpy(&snap_[static_cast<size_t>(s) * len_], w_.bytes_at(s), len_);
   }
 
@@ -808,6 +834,11 @@ private:
         f.converted = true;
         t_.out_writer[wc] += 1;
         t_.out_to[after][wc] += 1;
+        t_.out_start0 += f.start_ip == 0;
+        if (wc == kWSelf) {
+          t_.self_start0 += f.start_ip == 0;
+          if (next_ip_[s] >= 0) t_.self_at[next_ip_[s]] += 1;  // the instruction that ran
+        }
         for (int k = 0; k < len_; ++k) t_.out_at[k] += mask >> k & 1;
         if (mask >> src_ptr_ & 1) {
           t_.out_src += 1;
