@@ -360,8 +360,7 @@ do not alter the dynamics: the v9 baseline is byte-identical to v8.
   per `decay_table`, unweighted class mean 1.95e-6 (slow 1.404e-7, fast 4.212e-6; design in
   [decay-and-mobility.md](../../docs/research/decay-and-mobility.md), section 6). Identity
   checks:
-  - The table-1 runs with `decay_ratio=1` (seeds 1-2) reproduce v15 `m195` byte for byte.
-    The runs for tables 2-4 are still running.
+  - All eight table and seed runs with `decay_ratio=1` reproduce v15 `m195` byte for byte.
   - `m195` was rerun with `classes=1,2,3,4`. Without the `# classes` and `# subst` lines,
     it matches v15 byte for byte.
 
