@@ -20,3 +20,8 @@ anc_run_s3 ps_run anc=copier width=96 height=96 ticks=100000 interval=10000 mass
 anc_run_s4 ps_run anc=copier width=96 height=96 ticks=100000 interval=10000 mass0=48 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 ext_write=fill seed=4
 anc_run_s5 ps_run anc=copier width=96 height=96 ticks=100000 interval=10000 mass0=48 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 ext_write=fill seed=5
 anc_run_s6 ps_run anc=copier width=96 height=96 ticks=100000 interval=10000 mass0=48 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 ext_write=fill seed=6
+# No-copy-error control (added after the runs above; revision 94a6475, which only renames the
+# shift class to multi): m195 with p_mut 0. Without copy error a genotype's isolated fidelity
+# is 1, so any loss of fidelity or of replicators here comes from the environment alone.
+nomut_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill census=1 fidelity=5000
+nomut_s2 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0 p_hydro=1.95e-6 hydro_whole=1 seed=2 ext_write=fill census=1 fidelity=5000

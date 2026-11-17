@@ -547,6 +547,166 @@ do not alter the dynamics: the v9 baseline is byte-identical to v8.
     - Copy-born non-replicators make up 60-68% of active sites at 500k, against 61-65% in
       the controls.
     - Polite's region is intact in 0-28 replicators per run at 500k (controls: 6-48).
+- **v18** (copy fidelity under form M to 500k ticks; revision 80f9fcf, job list
+  `v18_fidelity.txt`; 12 jobs in 22 minutes on 4 cores). Four runs repeat v17 `m195_s1`,
+  `m195_s2`, `t2_s1` and `t3_s1` with `fidelity=5000`: every copy birth in the last 5,000
+  ticks before each 50k point is classified, and parent and child are judged by the census.
+  Their rows and their census, class, substitution and physics lines equal v17's to 500k
+  (trial counts aside). Below, a strict parent or child is one whose genotype is a strict
+  replicator in the census trial. `ps_scan` (revision 94a6475) then tested the three strict
+  genotypes with the most copies per run and point, 120 genotype-points in all
+  (`ps_scan label=RUN first=400 subs=4 < runs/v18/RUN.tsv`).
+
+  Copies by strict parents in the window / strict children among them (%):
+
+  | tick | m195_s1 | m195_s2 | t2_s1 | t3_s1 |
+  | --- | --- | --- | --- | --- |
+  | 50k | 2362 / 83.3 | 2303 / 82.2 | 2051 / 83.1 | 2578 / 84.2 |
+  | 100k | 1902 / 79.6 | 2070 / 79.9 | 1653 / 79.5 | 2169 / 78.2 |
+  | 150k | 1732 / 75.8 | 1975 / 76.6 | 1589 / 76.0 | 1805 / 74.2 |
+  | 200k | 1530 / 71.0 | 1662 / 65.3 | 1417 / 72.4 | 1657 / 68.7 |
+  | 250k | 1249 / 62.9 | 1381 / 65.6 | 1229 / 61.4 | 1266 / 62.2 |
+  | 300k | 1023 / 58.1 | 1143 / 66.5 | 985 / 59.0 | 1106 / 68.1 |
+  | 350k | 828 / 56.6 | 1013 / 62.4 | 793 / 61.2 | 881 / 64.6 |
+  | 400k | 702 / 66.5 | 875 / 64.9 | 602 / 63.0 | 769 / 64.8 |
+  | 450k | 625 / 65.8 | 792 / 60.9 | 429 / 59.7 | 581 / 64.9 |
+  | 500k | 467 / 72.0 | 673 / 65.7 | 428 / 66.8 | 507 / 69.8 |
+
+  Strict-parent copies whose child is not strict, by class, in percentage points of all
+  strict-parent copies (mean over the four runs, range in parentheses). The last two columns
+  give the differing offsets per copy written from another site / left in the target
+  (residue), as a four-run mean, and the writes refused in the window because the target
+  site had no free monomer:
+
+  | tick | point | gap | multi | env | total | foreign / residue per copy | no-mass writes |
+  | --- | --- | --- | --- | --- | --- | --- | --- |
+  | 50k | 6.3 (5.7-7.0) | 0.3 (0.2-0.5) | 3.1 (2.7-3.6) | 7.1 (6.7-7.9) | 16.8 (15.8-17.8) | 0.61 / 0.08 | 0 |
+  | 100k | 5.8 (5.6-6.4) | 0.4 (0.2-0.6) | 3.6 (2.6-4.5) | 10.9 (9.3-13.1) | 20.7 (20.1-21.9) | 1.03 / 0.10 | 0 |
+  | 150k | 5.5 (5.4-5.6) | 0.7 (0.3-1.2) | 4.6 (4.4-5.0) | 13.6 (12.6-14.6) | 24.4 (23.4-25.8) | 1.26 / 0.12 | 5-348 |
+  | 200k | 4.3 (4.0-4.6) | 3.0 (1.3-4.9) | 5.2 (4.3-6.0) | 18.2 (17.1-19.8) | 30.6 (27.6-34.7) | 1.75 / 0.20 | 924-2412 |
+  | 250k | 4.5 (3.6-5.1) | 6.6 (4.1-9.4) | 6.7 (6.4-7.0) | 19.2 (18.2-20.3) | 37.0 (34.4-38.6) | 1.64 / 0.21 | 3067-5874 |
+  | 300k | 4.6 (3.9-5.1) | 5.6 (3.2-9.1) | 7.1 (6.4-7.7) | 19.8 (16.3-22.8) | 37.1 (31.9-41.9) | 1.59 / 0.25 | 2494-6799 |
+  | 350k | 4.6 (3.7-5.3) | 5.6 (4.3-7.6) | 7.5 (7.4-7.9) | 21.1 (18.2-23.5) | 38.8 (35.4-43.4) | 1.78 / 0.19 | 3448-10266 |
+  | 400k | 5.2 (4.2-6.5) | 4.6 (3.2-6.0) | 8.2 (5.7-9.6) | 17.2 (16.7-17.7) | 35.2 (33.5-37.0) | 1.44 / 0.22 | 2518-4454 |
+  | 450k | 5.3 (4.4-5.9) | 5.8 (3.4-7.7) | 8.7 (8.4-9.0) | 17.5 (15.0-19.6) | 37.2 (34.2-40.3) | 1.35 / 0.15 | 4838-6472 |
+  | 500k | 5.2 (4.6-6.1) | 4.3 (1.9-5.6) | 7.1 (5.3-9.6) | 14.9 (12.1-16.6) | 31.4 (28.1-34.3) | 1.31 / 0.13 | 1457-7882 |
+
+  The same genotypes in the run and alone. In the run: the strict share of the children of
+  the 12 genotypes (three per run), weighted by their copies; from 250k these are 169-289
+  copies per point. Alone: 400 first copies per genotype in a 9x9 world with copy error and
+  no decay. m counts non-inert, non-volatile bytes. The sensitive length is m minus the
+  summed share of substitutions that leave a strict replicator, and pred is the first-order
+  strict share from substitutions alone:
+
+  | tick | copies | in-run strict % | alone: strict % | alone: exact % | (1-u)^m % | m | sensitive length | pred % |
+  | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+  | 50k | 5378 | 87.4 | 91.8-92.0 | 88.0-89.2 | 89.5 | 37 | 26.5-26.8 | 92.2-92.3 |
+  | 100k | 2757 | 83.6 | 91.8-93.0 | 89.0-89.2 | 89.2-89.5 | 37-38 | 23.5-26.8 | 92.2-93.1 |
+  | 150k | 1321 | 82.4 | 91.8-93.0 | 89.0-89.2 | 89.2-89.5 | 37-38 | 23.5-26.8 | 92.2-93.1 |
+  | 200k | 563 | 72.5 | 91.5-93.2 | 89.0-89.2 | 89.2-89.5 | 37-38 | 23.2-26.5 | 92.3-93.2 |
+  | 250k | 289 | 68.2 | 92.0-93.0 | 88.2-89.2 | 87.6-89.5 | 37-44 | 22.8-26.5 | 92.3-93.3 |
+  | 300k | 194 | 72.2 | 92.0-93.2 | 86.2-89.2 | 87.4-89.5 | 37-45 | 23.0-26.8 | 92.2-93.2 |
+  | 350k | 182 | 67.6 | 91.2-93.0 | 87.5-90.0 | 87.9-89.5 | 37-43 | 22.8-27.8 | 92.0-93.3 |
+  | 400k | 219 | 69.4 | 91.2-93.2 | 87.2-89.2 | 87.4-89.2 | 38-45 | 22.8-27.5 | 92.0-93.3 |
+  | 450k | 230 | 71.3 | 91.2-94.0 | 86.2-89.2 | 87.4-89.2 | 38-45 | 23.0-28.0 | 91.9-93.2 |
+  | 500k | 169 | 77.5 | 91.2-93.0 | 87.5-89.5 | 87.9-89.2 | 38-43 | 23.2-28.0 | 91.9-93.2 |
+
+  None of the 48,000 first copies alone fell in the gap, multi or env class: 86-90% were
+  exact and the rest point. Knockouts kill 25-32 of the m bytes at every point. Grouped by m
+  over the 120 genotype-points ((1-u)^m at the mean m):
+
+  | m | genotype-points | exact % | (1-u)^m % | strict % |
+  | --- | --- | --- | --- | --- |
+  | 37 | 45 | 89.2 | 89.5 | 92.0 |
+  | 38-39 | 36 | 89.0 | 89.2 | 92.7 |
+  | 40-42 | 25 | 88.5 | 88.4 | 92.9 |
+  | 43-45 | 14 | 87.5 | 87.6 | 93.1 |
+
+  Population, range over the four runs. Status `other` is a non-replicator whose trial did
+  not reach copy depth 2 (`loose` and `prop` stay below 70 sites). Filled: a reference-inert
+  offset (an own-site pointer) is non-inert. Re-ignitions are per window; their strict share
+  comes from 300 sampled re-ignitions. The last column is the median, over strict genotypes
+  with at least 10 copies, of their children's strict share:
+
+  | tick | strict sites | filled % | `other` sites | filled % | copies by `other` (strict %) | re-ignitions | re-ignited strict % | genotype median strict % |
+  | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+  | 50k | 6008-6378 | 10-12 | 1398-1625 | 60-62 | 153-244 (2.6-5.1) | 4662-6137 | 14.0-23.0 | 83-87 |
+  | 100k | 5177-5509 | 27-34 | 1958-2158 | 67-77 | 316-615 (2.0-2.8) | 5432-10234 | 10.0-13.7 | 82-89 |
+  | 150k | 3933-4684 | 47-53 | 2456-2871 | 81-85 | 710-773 (0.6-2.3) | 8834-11611 | 4.3-17.3 | 80-86 |
+  | 200k | 2703-3534 | 64-69 | 3180-3374 | 89-92 | 995-1630 (0.6-1.5) | 9270-16766 | 5.0-12.7 | 67-83 |
+  | 250k | 1922-2372 | 69-76 | 3436-3686 | 93-95 | 1172-1581 (0.5-1.1) | 13107-19421 | 2.0-8.3 | 70-79 |
+  | 300k | 1535-1903 | 67-81 | 3712-3917 | 94-96 | 1772-2351 (0.3-0.7) | 13789-17006 | 0.7-4.0 | 67-82 |
+  | 350k | 1194-1607 | 64-81 | 3928-4116 | 95-96 | 1767-2439 (0.2-0.9) | 14757-23622 | 2.3-6.3 | 67-75 |
+  | 400k | 961-1303 | 66-84 | 4043-4244 | 94-97 | 2064-2280 (0.1-0.4) | 15522-17977 | 0.3-1.3 | 64-80 |
+  | 450k | 628-1079 | 68-81 | 4071-4405 | 95-97 | 2072-2675 (0.1-0.4) | 13001-22209 | 0.3-5.0 | 70-79 |
+  | 500k | 670-976 | 59-79 | 4172-4501 | 96-97 | 2126-3243 (0.1-0.2) | 14570-19562 | 0.7-4.0 | 69-80 |
+
+  - **Who copies.** Strict parents made 89-92% of all copy births at 50k, 50-62% at 200k and
+    14-17% at 500k. Per strict site, their copies per window rose from 0.32-0.40 to
+    0.63-0.70. Their mean length (non-inert bytes, volatile offsets excluded) grew from
+    38.3-38.5 to 42.8-43.3. v17's 41 to 45 counts the volatile offsets too.
+  - **Where the length went.** In the leading genotypes, polite's region (offsets 0-45)
+    holds 37 non-inert bytes, or 38 when an own-site pointer offset is filled (0 of 12 at
+    50k, 3-9 of 12 at later points). From 250k, 5-12 of 12 also carry 1-7 non-inert bytes
+    at offsets 46-63, which polite copies but never executes.
+  - **Mass.** Writes refused for lack of a free monomer start at 150-200k. At 500k free
+    monomers are 4.7-6.3% of the initial 442,368.
+  - **Balance (estimate).** For each 50k interval, take the strict sites at its start, add
+    strict births (copies and re-ignitions, the mean of the two bounding windows times ten)
+    and subtract the whole-program decays expected at 1.95e-6 per non-inert byte (0.40-0.45
+    per strict site per 5k ticks). The result exceeds the strict sites at the end of the
+    interval. The shortfall per strict site per 5k ticks is -0.01 to 0.16 up to 150k and
+    0.08 to 0.72 after, against 0.40-0.45 from decay.
+
+  Short-ancestor control: `ancestor()` (35 bytes, `anc=copier`) in place of polite,
+  otherwise as `m195`. Probes `anc_s1` and `anc_s2` report every 5k ticks; `ps_run` repeats
+  seeds 1-6 to 100k ticks. For seeds 1 and 2 the probe and `ps_run` end at the same tick.
+  Under the same settings polite has 7.7-7.9k active sites at 50k.
+
+  | seed | end | peak active (10k points) | births | `ps_run` digest |
+  | --- | --- | --- | --- | --- |
+  | 1 | extinct at 8,250 | - | 3 | 85d62f9bf9de8331 |
+  | 2 | extinct at 83,389 | 42 | 177 | 6894fabfc01687c0 |
+  | 3 | extinct at 97,376 | 59 | 945 | 5ddfdddbfc5a493b |
+  | 4 | 14 active at 100k | 138 | 12,830 | 64a1c85f6793b212 |
+  | 5 | 1 active at 100k | 142 | 7,506 | 8396121b1b6ca5d8 |
+  | 6 | extinct at 55,998 | 74 | 1,011 | c76036d3393260d5 |
+
+  - **Alone.** `ancestor()` and its variants in the probes (13 genotype-points, `ps_scan
+    anc=copier`) give 91.8-92.8% strict first copies. `ancestor()` itself gives 92.25% (m 28,
+    sensitive length 22.75, pred 93.4%; knockouts kill 23 of 28 bytes), against polite's
+    92.0% (m 37, 26.5, 92.3%).
+  - **In the run** (`anc_s2`):
+    - Strict parents' children are strict in 72% of 29 copies at 5k, 48% of 29 at 10k and
+      25% of 12 at 15k.
+    - Residue per copy rises from 0.17 to 0.93 to 4.5; offsets written from another site
+      rise from 0.07 to 0.66 to 2.25.
+    - Non-replicators outnumber strict replicators from the first point: 17 against 9 at 5k
+      and 34 against 8 at 10k. Of these non-replicators, 16 of 17 and 31 of 34 have a filled
+      own-site pointer offset.
+
+  No-copy-error control: `nomut_s1` and `nomut_s2` are `m195` with `p_mut` 0 (revision
+  94a6475, which only renames the shift class; 2 jobs in 13 minutes). The pairs are s1 / s2:
+
+  | tick | strict sites | `other` sites | strict sites filled % | strict children of strict parents % | env copies per window | copies by `other` (exact %) | re-ignited strict % |
+  | --- | --- | --- | --- | --- | --- | --- | --- |
+  | 50k | 8672 / 8664 | 40 / 43 | 3 / 5 | 99.6 / 99.7 | 16 / 10 | 3 / 4 | 91 / 92 |
+  | 100k | 8652 / 8630 | 32 / 50 | 7 / 9 | 99.5 / 99.3 | 16 / 26 | 5 / 3 | 95 / 96 |
+  | 200k | 8576 / 8565 | 62 / 54 | 22 / 28 | 99.3 / 99.5 | 36 / 48 | 6 / 1 | 95 / 96 |
+  | 300k | 8397 / 8383 | 122 / 172 | 50 / 56 | 98.8 / 97.2 | 67 / 83 | 11 / 17 | 91 / 93 |
+  | 400k | 8206 / 7595 | 213 / 785 | 78 / 82 | 97.4 / 94.4 | 111 / 157 | 34 / 177 | 46 / 40 |
+  | 500k | 7670 / 6306 | 623 / 1782 | 93 / 95 | 97.2 / 94.0 | 110 / 188 | 154 (71) / 780 (54) | 71 / 29 |
+
+  - **Losses.** Without copy error, strict parents lose children almost only to env and
+    multi. Gap copies number at most 2 per window. The total loss is 2.8-6.0% at 500k.
+  - **Length.** Their mean length still grows, from 38.0 to 39.9-40.6.
+  - **Mass.** Writes refused for lack of a free monomer occur only in s2's last window (20
+    writes). Free monomers are 7.5-12.3% of the initial mass at 500k.
+  - **Active sites at 500k.** 8.1-8.3k, against 4.9-5.2k with copy error.
+  - **Balance.** The balance estimate above closes in every interval: the shortfall per
+    strict site per 5k ticks is -0.01 to 0.03.
+  - **`other` copies.** With copy error, 22-43% of the copies made by `other` parents are
+    exact copies of the parent at every point (four runs).
 
 Working interpretation (v13 and code inspection): saturation starts the decline in every
 run, and the space then fills with activations that no longer replicate. An activation ends
@@ -619,7 +779,85 @@ v17 reading (counts from executed runs; mechanisms are inference):
 
   Form M has no in-place damage, so this decline has another source. The fall in exact
   births suggests that copies from evolved replicators more often yield non-replicators,
-  but copy fidelity per genotype was not measured.
+  but copy fidelity per genotype was not measured (v18 measures it).
+
+v18 reading (counts from executed runs; which mechanism fills each class is inference):
+
+- **The genotypes' own fidelity does not fall.**
+  - Alone, the leading strict genotypes give 91-94% strict first copies at every point from
+    50k to 500k. This is within about one point of the prediction from their substitution
+    scans.
+  - Their exact share falls with m as (1-u)^m, from 89.2% at m 37 to 87.5% at m 43-45. This
+    is Eigen's quality factor for precise copies, Q = q^ν
+    ([Eigen 1971](../../docs/references/pdf/eigen-1971-selforganization-of-matter.pdf#page=11),
+    journal pp. 475 and 491).
+  - Their strict share does not fall (92.0% to 93.1%), because the bytes they gained are
+    neutral: the sensitive length stays at 23-28.
+
+  Length growth costs exact copies, not replicating children.
+- **The length grew outside the copy mechanism.** In the leading genotypes the growth is a
+  filled own-site pointer offset and up to 7 bytes past polite's region, which are never
+  executed. A copy error only replaces a non-inert byte with another (`src/ps_exec.cpp`), so
+  these bytes did not come from an aligned copy of the parent. They came from other sites,
+  from residue or from a misaligned copy, and were then copied along (inference). Without
+  copy error, length grows too.
+- **The short ancestor is no help here.** Alone, `ancestor()` is no more faithful than
+  polite (92.25% against 92.0%). Under these settings it does not persist: 4 of 6 seeds are
+  extinct by 100k, and the other two are down to 14 sites and 1. It was not modified.
+  Polite's 11 extra bytes are its target check. Without the check, `ancestor()` copies into
+  occupied sites, and under `fill` the refused writes leave chimeras: residue reaches 4.5
+  offsets per copy by 15k.
+- **Fidelity in the run falls, for environmental reasons.**
+  - In the run, the same genotypes give 87% strict children at 50k and 68-78% from 200k.
+  - Over all strict parents, losses rise from 16-18 points to 31-43 at 250-350k. Point
+    losses (copy errors) stay at 4-7 points.
+  - The rise is in three classes, none of which occurs alone:
+    - env: mostly offsets written into the target by other sites;
+    - gap: in step with writes refused for lack of a free monomer;
+    - multi.
+- **Lost copies are the smaller part of the decline.** From 50k to 500k, strict children
+  per strict-parent copy fall by a factor of 1.16-1.25, while strict sites fall 6-9-fold.
+  Per strict site, copies even rise.
+  - **A further loss channel.** With copy error, the balance leaves a loss of strict sites
+    beyond whole-program decay. After 150k it reaches 0.08-0.72 per site per 5k ticks,
+    against 0.40-0.45 from decay. Without copy error the same balance closes. So the
+    missing loss needs copy error somewhere, yet it does not pass through the parent's own
+    failed copies.
+  - **One route that fits (code inspection, not measured): in-place change by outside
+    writes** (known issue 1). Offset 30 is both the direction of polite's source pointer
+    and the address its loop jumps back to. A fill there turns a live polite into a program
+    that copies from a neighbor; with `[30]=192` the census test finds a non-replicator.
+    Mutants and `other` sites write more varied bytes than polite does. This would also fit
+    two observations:
+    - 22-43% of `other` copies are exact copies of the parent, though `other` genotypes
+      make almost no copies alone;
+    - 96-97% of `other` sites carry a filled offset.
+
+    It was not measured.
+- **Copy error accelerates a process that the environment alone also starts.** Without copy
+  error, intrinsic fidelity is 1. Even so:
+  - filled offsets spread to 93-95% of strict sites;
+  - env copies rise about tenfold;
+  - `other` sites grow from about 40 to 623 and 1782;
+  - strict sites begin to fall after 300k.
+
+  With copy error, the same signs appear by 100k and are larger by an order of magnitude.
+- **Method and its limits.**
+  - Testing offspring alone follows Avida practice. A04 section 5.2 tests offspring and
+    descendant viability alone with a timeout, and notes that solitary tests miss
+    interactions ([A04, PDF pp. 21-22, as recorded in the prior-work
+    note](../../docs/research/shared-memory-prior-work.md)). Here the gap between alone and
+    in-run is that interaction, and `other` genotypes that copy themselves in the run but
+    not alone are a case of it.
+  - Knockout and substitution scans are the kind of measurement Lenski et al. 1999 made in
+    digital organisms (abstract only; see `docs/references/unavailable.md`).
+  - The test alone covers first copies only, and only the three most-copied strict
+    genotypes per run and point.
+  - The balance uses windows of 5,000 ticks to stand for intervals of 50,000. Its
+    re-ignition term comes from 300 sampled re-ignitions per window.
+- **A next measurement** (proposal, not agreed). For each active site between census
+  points, count status changes without a birth, and the offsets and writers of the changing
+  bytes. Also record how each activation ends (whole decay or wick), by status.
 
 ## Known issues (code inspection)
 
