@@ -1315,8 +1315,8 @@ mechanisms marked as inference):
   42-45% of in-place losses, 6.2-6.4% of all strict losses and 58-60% of the net in-place
   loss. The converted program does copy from the neighbor that [30] now names, but it seldom
   finishes a copy and then mostly holds its site until whole decay. At most 0.1% of its
-  children have its own genotype. (The seed-limited census put it at 18% of in-place losses; most of the
-  other losses it counted were keys pushed past 48 bytes, relabels.)
+  children have its own genotype. (The seed-limited census put it at 18% of in-place
+  losses; most of the other losses it counted were keys pushed past 48 bytes, relabels.)
 - **In-place change carries the decline (accounting, not a counterfactual).** With copy
   error, births exceed decay and wick ends in every window, and strict sites fall because
   in-place losses exceed in-place gains. Without in-place losses the population, mass and
