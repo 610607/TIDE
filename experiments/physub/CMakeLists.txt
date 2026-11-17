@@ -16,6 +16,15 @@ else()
   set(PHYSUB_WARNINGS -Wall -Wextra -Werror)
 endif()
 
+# GCC 13 false positives under -O2/-O3, silenced only in the files that trigger them:
+# - ps_physics.cpp: -Warray-bounds inside std::sort over the 4-element `outs` array,
+#   which never holds more than 4 entries.
+# - ps_run.cpp: -Wstringop-overread inside std::vector<uint8_t> comparison (std::map key).
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  set_source_files_properties(src/ps_physics.cpp PROPERTIES COMPILE_OPTIONS -Wno-array-bounds)
+  set_source_files_properties(apps/ps_run.cpp PROPERTIES COMPILE_OPTIONS -Wno-stringop-overread)
+endif()
+
 add_library(physub STATIC
   src/ps_world.cpp
   src/ps_exec.cpp
