@@ -535,7 +535,8 @@ Choices made in measuring, not separately agreed:
 - **Identity runs.** Each table and seed is run once more with `decay_ratio` = 1, and the
   output is compared byte for byte with v15 `m195`.
 
-Results are in the [physub README](../../experiments/physub/README.md) (v16).
+Results are in the [physub README](../../experiments/physub/README.md) (v16 to 100k,
+v17 to 500k).
 
 ## Search record
 
