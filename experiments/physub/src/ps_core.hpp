@@ -95,7 +95,11 @@ struct Config {
   // Diagnostic only, not a candidate rule: hydrolysis rate for bytes of sites with no
   // activation. Negative = same as p_hydro (off).
   double p_dead = -1.0;
-  double p_erode = 1e-4;       // per wall half-edge per tick (removes one unit)
+  // Diagnostic only: with dead_quiet > 0, p_dead applies only to inactive sites that no
+  // write has reached for more than dead_quiet ticks; recently written inactive sites
+  // (copies under construction) keep p_hydro. 0 = p_dead applies to every inactive site.
+  int32_t dead_quiet = 0;
+  double p_erode = 1e-4;      // per wall half-edge per tick (removes one unit)
   uint64_t seed = 1;
 };
 
@@ -212,6 +216,7 @@ private:
   std::vector<int32_t> writer_;      // observer: site whose activation last wrote each byte
   std::vector<uint64_t> written_at_; // observer: tick of that write
   std::vector<int64_t> ignited_at_;  // observer: tick of the site's last ignition, -1 if none
+  std::vector<int64_t> last_write_;  // dead_quiet: tick of the last applied write into the site
   Stats stats_;
   int64_t mass_total_ = 0;
   int64_t energy_in_ = 0;            // cumulative inflow

@@ -33,7 +33,7 @@ add_library(physub STATIC
 target_include_directories(physub PUBLIC src)
 target_compile_options(physub PRIVATE ${PHYSUB_WARNINGS})
 
-foreach(app ps_run ps_probe)
+foreach(app ps_run ps_probe ps_knockout)
   add_executable(${app} apps/${app}.cpp)
   target_link_libraries(${app} PRIVATE physub)
   target_compile_options(${app} PRIVATE ${PHYSUB_WARNINGS})

@@ -96,6 +96,7 @@ bool apply(Config& c, RunOpts& r, const std::string& k, const std::string& v) {
   else if (k == "p_mut") c.p_mut = x;
   else if (k == "p_hydro") c.p_hydro = x;
   else if (k == "p_dead") c.p_dead = x;
+  else if (k == "dead_quiet") c.dead_quiet = static_cast<int32_t>(n);
   else if (k == "p_erode") c.p_erode = x;
   else if (k == "seed") c.seed = static_cast<uint64_t>(n);
   else if (k == "act_cap") c.act_cap = static_cast<int>(n);

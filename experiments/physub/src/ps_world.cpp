@@ -15,6 +15,7 @@ constexpr uint64_t kGolden = 0x9e3779b97f4a7c15ULL;
 constexpr uint64_t kFnvOffset = 14695981039346656037ULL;
 constexpr uint64_t kFnvPrime = 1099511628211ULL;
 constexpr double kTwoPow32 = 4294967296.0;
+constexpr int64_t kNeverWritten = -(int64_t{1} << 40);
 
 uint64_t mix(uint64_t z) {
   z += kGolden;
@@ -38,6 +39,7 @@ Config sanitize(Config cfg) {
   cfg.site_len = std::clamp(cfg.site_len, kMinSiteLen, kMaxSiteLen);
   cfg.d_div = std::max<int32_t>(cfg.d_div, 2 * kDirs);
   cfg.act_cap = std::max(cfg.act_cap, 1);
+  cfg.dead_quiet = std::max<int32_t>(cfg.dead_quiet, 0);
   return cfg;
 }
 
@@ -55,6 +57,7 @@ World::World(const Config& cfg) : cfg_(sanitize(cfg)) {
   writer_.assign(code_.size(), -1);
   written_at_.assign(code_.size(), 0);
   ignited_at_.assign(sites, -1);
+  last_write_.assign(sites, kNeverWritten);
   mass_total_ = static_cast<int64_t>(sites) * cfg_.mass0;
   energy_initial_ = static_cast<int64_t>(sites) * energy_[0];
   t_hydro_ = threshold(cfg_.p_hydro);
@@ -182,6 +185,10 @@ uint64_t World::digest() const {
   for (const Activation& t : act_) {
     fnv(h, t.on);
     fnv(h, t.ip);
+  }
+  // Only dynamic state when dead_quiet is on; skipping it otherwise keeps earlier digests.
+  if (cfg_.dead_quiet > 0) {
+    for (int64_t t : last_write_) fnv(h, static_cast<uint64_t>(t));
   }
   return h;
 }

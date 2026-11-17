@@ -1,0 +1,15 @@
+# v13: diagnostic dead_quiet. p_dead applies only to inactive sites no write has reached for
+# more than 64 ticks, so copies under construction keep p_hydro. dead_quiet=0 reproduces
+# the v10 rule. One mechanism changes; everything else matches v10 with ext_write=fill.
+dq0_dead3e-5_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=1 ext_write=fill p_dead=3e-5 dead_quiet=0
+dq64_dead3e-5_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=1 ext_write=fill p_dead=3e-5 dead_quiet=64
+dq0_dead1e-4_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=1 ext_write=fill p_dead=1e-4 dead_quiet=0
+dq64_dead1e-4_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=1 ext_write=fill p_dead=1e-4 dead_quiet=64
+dq0_dead3e-4_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=1 ext_write=fill p_dead=3e-4 dead_quiet=0
+dq64_dead3e-4_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=1 ext_write=fill p_dead=3e-4 dead_quiet=64
+dq0_dead3e-5_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=2 ext_write=fill p_dead=3e-5 dead_quiet=0
+dq64_dead3e-5_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=2 ext_write=fill p_dead=3e-5 dead_quiet=64
+dq0_dead1e-4_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=2 ext_write=fill p_dead=1e-4 dead_quiet=0
+dq64_dead1e-4_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=2 ext_write=fill p_dead=1e-4 dead_quiet=64
+dq0_dead3e-4_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=2 ext_write=fill p_dead=3e-4 dead_quiet=0
+dq64_dead3e-4_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=2 ext_write=fill p_dead=3e-4 dead_quiet=64

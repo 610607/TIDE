@@ -194,6 +194,7 @@ int main(int argc, char** argv) {
     else if (k == "p_mut") cfg.p_mut = std::atof(v.c_str());
     else if (k == "p_hydro") cfg.p_hydro = std::atof(v.c_str());
     else if (k == "p_dead") cfg.p_dead = std::atof(v.c_str());
+    else if (k == "dead_quiet") cfg.dead_quiet = std::atoi(v.c_str());
     else if (k == "mass0") cfg.mass0 = std::atoi(v.c_str());
     else if (k == "rival") rival = v == "1";
     else if (k == "e_erase") cfg.e_erase = std::atoi(v.c_str());

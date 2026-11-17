@@ -18,7 +18,7 @@ cmake --build experiments/physub/build -j
 ctest --test-dir experiments/physub/build --output-on-failure
 ```
 
-`ps_test` runs 11 mechanism tests. Under the default configuration test 2 prints the replay
+`ps_test` runs 12 mechanism tests. Under the default configuration test 2 prints the replay
 digest `6fb0e06a3160cc24`; CTest fails if it changes, because that means the default dynamics
 changed.
 
@@ -29,6 +29,7 @@ From `experiments/physub/`:
 ```sh
 build/ps_run   key=value ...   # TSV per interval; frames=<file.psv> every=N writes a replay
 build/ps_probe key=value ...   # births, space census and copy errors of a polite-seeded run
+build/ps_knockout anc=polite   # single-byte knockouts: which bytes stop replication
 scripts/run_jobs.sh scripts/jobs/v11_energy.txt runs/v11 8   # a job list, 8 in parallel
 python3 -m http.server 8765 -d viewer   # then open http://localhost:8765/?file=data/<name>.psv
 ```
@@ -66,8 +67,10 @@ python3 -m http.server 8765 -d viewer   # then open http://localhost:8765/?file=
     by a write or by hydrolysis, pays the barrier `e_act` (1; `e_erase` for an external
     erasure in `erase` mode) and releases `e_bond` to the byte's site. A failed write
     dissipates what it paid. Ledger: field + bonds = initial + inflow - dissipation.
-- **Diagnostic only** (not a candidate rule): `p_dead` sets the hydrolysis rate of sites
-  without an activation; negative means off.
+- **Diagnostic only** (not candidate rules): `p_dead` sets the hydrolysis rate of sites
+  without an activation; negative means off. `dead_quiet=N` (0 = off) limits `p_dead` to
+  inactive sites that no write has reached for more than N ticks, so copies under
+  construction keep `p_hydro`; when on, the per-site last-write tick enters the digest.
 - **Ancestors.** `ancestor()`: a 35-byte copier that overwrites neighbors. `polite()`: a
   46-byte copier that copies all 64 bytes, and only into a neighbor whose byte 0 is INERT.
   Runs use `site_len` 64 and `mass0` 48.
@@ -85,9 +88,10 @@ python3 -m http.server 8765 -d viewer   # then open http://localhost:8765/?file=
 | `src/ps_world.cpp` | Construction, ledger, digest, ancestors, disassembler |
 | `apps/ps_run.cpp` | Runner: TSV per interval, PSV replay frames |
 | `apps/ps_probe.cpp` | Probe for polite-seeded runs (columns below) |
-| `tests/ps_test.cpp` | Ledgers, replay, walls, ancestor, starvation, bond barrier, act_cap, ext_write, p_dead, energy diffusion, bond storage |
+| `apps/ps_knockout.cpp` | Single-byte knockout of an ancestor without mutation or decay |
+| `tests/ps_test.cpp` | Ledgers, replay, walls, ancestor, starvation, bond barrier, act_cap, ext_write, p_dead, energy diffusion, bond storage, dead_quiet |
 | `viewer/index.html` | Replay viewer (layers, inspector, timeline) |
-| `scripts/run_jobs.sh`, `scripts/jobs/` | Parallel runner and the v8-v12 job lists |
+| `scripts/run_jobs.sh`, `scripts/jobs/` | Parallel runner and the v8-v13 job lists |
 
 `ps_probe` columns per interval: births, `exact%`, `intact_parent%`, top genotype, `copies`
 (child mostly written by the parent) and `reignites` (child code already present),

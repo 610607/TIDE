@@ -159,6 +159,7 @@ void World::apply_writes(std::vector<Intent>& intents) {
       if (old != INERT) energy_[it.site] += cfg_.e_bond;  // broken bond releases in place
     }
     slot = it.byte;
+    last_write_[it.site] = static_cast<int64_t>(tick_);
     stats_.writes += 1;
     const size_t at = static_cast<size_t>(it.site) * cfg_.site_len + it.offset;
     writer_[at] = it.origin_site;

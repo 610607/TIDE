@@ -231,6 +231,47 @@ void test_dead_hydrolysis() {
             << " corpse bytes; live site intact\n";
 }
 
+// Births whose child matches polite() outside its volatile bytes, with p_dead = 1. A
+// never-written corpse must clear in every case.
+int intact_births_with_dead_quiet(int32_t quiet) {
+  Config cfg = small_config();
+  cfg.p_hydro = 0.0;
+  cfg.p_erode = 0.0;
+  cfg.p_dead = 1.0;
+  cfg.dead_quiet = quiet;
+  World w(cfg);
+  const int32_t corpse = w.site_index(2, 2);
+  assert(w.place_bytes(corpse, ancestor()));
+  assert(w.seed_program(8, 8, polite()));
+  int intact = 0;
+  for (int t = 0; t < 2000; ++t) {
+    w.run(1);
+    assert(w.ledger_ok());
+    for (const auto& b : w.births_this_tick()) {
+      const std::vector<uint8_t> child = w.site_bytes(b.child);
+      bool same = true;
+      for (int k = 0; k < static_cast<int>(polite().size()); ++k) {
+        const bool volatile_byte = k == 31 || k == 32 || k == 33 || k == 44;
+        same = same && (volatile_byte || child[k] == polite()[k]);
+      }
+      intact += same;
+    }
+  }
+  for (uint8_t b : w.site_bytes(corpse)) assert(b == INERT);
+  return intact;
+}
+
+// Diagnostic dead_quiet: p_dead spares an inactive site while writes keep reaching it, so a
+// copy under construction survives; without it every copy decays before ignition.
+void test_dead_quiet() {
+  const int off = intact_births_with_dead_quiet(0);
+  const int on = intact_births_with_dead_quiet(64);
+  assert(off == 0);
+  assert(on > 0);
+  std::cout << "[ps test 12] p_dead=1 intact births dead_quiet 0/64: " << off << "/" << on
+            << "\n";
+}
+
 // Energy diffusion conserves energy, keeps the field non-negative, and walls insulate.
 int64_t energy_leaked_after(bool walled, bool diffuse) {
   Config cfg = small_config();
@@ -324,6 +365,7 @@ int main() {
   test_dead_hydrolysis();
   test_energy_diffusion();
   test_bond_store();
+  test_dead_quiet();
   std::cout << "all physub tests passed\n";
   return 0;
 }

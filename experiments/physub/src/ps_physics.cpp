@@ -90,8 +90,12 @@ void World::hydrolyze() {
   if (t_hydro_ == 0 && t_dead_ == 0) return;
   const int32_t sites = cfg_.width * cfg_.height;
   for (int32_t s = 0; s < sites; ++s) {
-    // Same keyed draw for every site; only the threshold depends on activation.
-    const uint64_t t = site_active(s) ? t_hydro_ : t_dead_;
+    // Same keyed draw for every site; only the threshold depends on activation and, with
+    // dead_quiet, on how recently a write reached the site.
+    const bool active = site_active(s);
+    const bool recent = cfg_.dead_quiet > 0 &&
+        static_cast<int64_t>(tick_) - last_write_[s] <= cfg_.dead_quiet;
+    const uint64_t t = active || recent ? t_hydro_ : t_dead_;
     if (t == 0) continue;
     uint8_t* mem = site_ptr(s);
     for (int o = 0; o < cfg_.site_len; ++o) {
