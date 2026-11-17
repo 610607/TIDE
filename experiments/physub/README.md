@@ -182,6 +182,14 @@ do not alter the dynamics: the v9 baseline is byte-identical to v8.
     the replicators'.
   - `dead_quiet` thus removes the damage `p_dead` does to copies under construction. It
     raises late replicator counts 2-10x over `dead0` but does not stop the decline.
+  - The census ip span (revision f3810da) is similar for both groups: 5-8 offsets throughout,
+    and at 100k 6.3-7.8 for replicators and 5.0-5.7 for non-replicators. Non-replicators do
+    not owe their age to much smaller loops; both loops are far smaller than the 26 bytes
+    replication needs.
+  - Size control (`w48_*`, 48x48): non-replicating copy-born shares at 100k are 75-78%
+    (`dq64_dead1e-4`) and 88% (`dead0`), against 74% and 79-83% at 96x96; replicator density
+    per site is similar (2.4-3.1% vs 2.2-2.4%; 0.3% vs 0.4%). The small world saturates
+    earlier, so it is further along at the same tick.
 
 Working interpretation (v13 and code inspection): saturation starts the decline in every
 run, and the space then fills with activations that no longer replicate. An activation ends
@@ -204,6 +212,9 @@ sites, so faster reclamation of corpses (v10, v13) does not reach these sites.
 
 ## Open proposals (none agreed)
 
+- **Per-op decay and whole-site mobility** (requested 2026-11-17): sources, code observations
+  and candidate designs are in [the decay and mobility note](../../docs/research/decay-and-mobility.md).
+  Not implemented.
 - **Bond release to the actor**: an external write that breaks a bond releases `e_bond` at
   the writer's site instead of the byte's site, so clearing dead code pays the clearer.
 - **Reclaiming ancestor**: a seeded replicator that clears its target before copying.

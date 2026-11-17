@@ -1,8 +1,8 @@
 # Cached Research References
 
-Retrieved and verified: 2026-11-15.
+Retrieved and verified: 2026-11-15; decay and mobility additions 2026-11-17.
 
-The cache contains **39 distinct PDFs**. Read local copies before downloading again. The [manifest](manifest.json) records source URLs, versions, byte counts, page counts, and SHA-256 hashes. Original downloaded bytes are preserved.
+The cache contains **60 distinct PDFs**. Read local copies before downloading again. The [manifest](manifest.json) records source URLs, versions, byte counts, page counts, and SHA-256 hashes. Original downloaded bytes are preserved.
 
 Reference PDFs are local-only and ignored by Git. Public availability is not treated as a redistribution license. The generated review PDF is a separate authored artifact.
 
@@ -60,6 +60,39 @@ The boundary, conservation, and individuality pass added eleven original PDFs: n
 - [Individuality measurement report](../research/individuality-measures.md)
 
 The 1993 SFI AlChemy working paper is the full text read for the later 1994 article. COT mechanisms are read in the 2005v1 short preprint; the longer 2007 journal full text was not retrieved. The COT PDF body date differs from its arXiv version history; original bytes are retained. Failed links and successful alternatives are recorded in [access notes](unavailable.md).
+
+## Decay and mobility additions (2026-11-17)
+
+Sources for two candidate `experiments/physub` mechanisms, a per-op decay rate and whole-site
+mobility, added 21 original PDFs. Findings and the candidate designs are in the
+[decay and mobility note](../research/decay-and-mobility.md). The Boerlijst and Hogeweg 1991
+and Takeuchi and Hogeweg 2009 copies were restored and match the manifest. A fresh Stringmol
+2021 download differs in hash only through a regenerated cover page (`restore_note` in the
+manifest).
+
+| Reference | Cached version | Pages | Online source |
+| --- | --- | --- | --- |
+| [Selforganization of matter and the evolution of biological macromolecules](pdf/eigen-1971-selforganization-of-matter.pdf) | Published article scan, Die Naturwissenschaften 58(10):465-523; DOI 10.1007/BF00623322 | 59 | [Source](https://www.mit.edu/~kardar/research/seminars/HIV/articles/Eigen.pdf) |
+| [Toward a general theory of evolution: Extending Darwinian theory to inanimate matter](pdf/pross-2011-general-theory-of-evolution.pdf) | Published article, Journal of Systems Chemistry 2:1; open access | 14 | [Source](https://link.springer.com/content/pdf/10.1186/1759-2208-2-1.pdf) |
+| [Towards an evolutionary theory of the origin of life based on kinetics and thermodynamics](pdf/pascal-pross-sutherland-2013-evolutionary-theory-origin-of-life.pdf) | Published review, Open Biology 3:130156; DOI 10.1098/rsob.130156; CC BY | 9 | [Source](https://pmc-oa-opendata.s3.amazonaws.com/PMC3843823.1/PMC3843823.1.pdf) |
+| [Stability and its manifestation in the chemical and biological worlds](pdf/pascal-pross-2015-stability-chemical-biological-worlds.pdf) | Published article, Chemical Communications 51:16160; CC BY 3.0; HAL copy with one cover page | 7 | [Source](https://hal.science/hal-03541098/document) |
+| [The Intrinsic Fragility of DNA (Nobel Lecture)](pdf/lindahl-2015-nobel-lecture-intrinsic-fragility-of-dna.pdf) | Nobel lecture text, December 8, 2015, nobelprize.org | 12 | [Source](https://www.nobelprize.org/uploads/2018/06/lindahl-lecture.pdf) |
+| [The Intrinsic Fragility of DNA (Nobel Lecture slides)](pdf/lindahl-2015-nobel-lecture-slides.pdf) | Official lecture slides, December 8, 2015, nobelprize.org | 18 | [Source](https://www.nobelprize.org/uploads/2018/06/lindahl-lecture-slides.pdf) |
+| [The Reliability Theory of Aging and Longevity](pdf/gavrilov-gavrilova-2001-reliability-theory-of-aging.pdf) | Published article, Journal of Theoretical Biology 213:527-545; DOI 10.1006/jtbi.2001.2430; author-hosted copy | 19 | [Source](http://longevity-science.org/JTB-01.pdf) |
+| [NIST/SEMATECH e-Handbook of Statistical Methods, Chapter 8: Assessing Product Reliability](pdf/nist-sematech-2012-handbook-ch8-product-reliability.pdf) | Handbook chapter PDF, 2012 edition | 202 | [Source](https://www.itl.nist.gov/div898/handbook/toolaids/pff/apr.pdf) |
+| [The Origin of Life by Means of Autocatalytic Sets of Biopolymers](pdf/wu-2012-phd-thesis-autocatalytic-sets-of-biopolymers.pdf) | PhD thesis, McMaster University; chapter 2 reports the Wu and Higgs 2009 model | 198 | [Source](https://macsphere.mcmaster.ca/bitstream/11375/12403/1/fulltext.pdf) |
+| [Spontaneous emergence of autocatalytic information-coding polymers](pdf/tkachenko-maslov-2015-autocatalytic-information-coding-polymers.pdf) | Published article, Journal of Chemical Physics 143:045102; DOI 10.1063/1.4922545; author-hosted copy | 9 | [Source](https://maslov.web.engr.illinois.edu/Origins_of_Life_JCP_2015.pdf) |
+| [Universal Sequence Replication, Reversible Polymerization and Early Functional Biopolymers: A Model for the Initiation of Prebiotic Sequence Evolution](pdf/walker-grover-hud-2012-universal-sequence-replication.pdf) | Published article, PLoS ONE 7(4):e34166; CC BY | 15 | [Source](https://pmc-oa-opendata.s3.amazonaws.com/PMC3320909.1/PMC3320909.1.pdf) |
+| [Tag mechanism as a strategy for the RNA replicase to resist parasites in the RNA world](pdf/wu-et-al-2017-tag-mechanism-rna-replicase.pdf) | Published article, PLoS ONE 12(3):e0172702; CC BY | 20 | [Source](https://pmc-oa-opendata.s3.amazonaws.com/PMC5333815.1/PMC5333815.1.pdf) |
+| [Text S1: Supporting Information for Multilevel Selection in Models of Prebiotic Evolution II](pdf/takeuchi-hogeweg-2009-text-s1.pdf) | Published supplement S1 to PLoS Computational Biology 5(10):e1000542 | 7 | [Source](https://journals.plos.org/ploscompbiol/article/file?type=supplementary&id=10.1371/journal.pcbi.1000542.s001) |
+| [Analytical Description of the Diffusion in a Cellular Automaton with the Margolus Neighbourhood in Terms of the Two-Dimensional Markov Chain](pdf/kulagin-shapovalov-2023-margolus-diffusion.pdf) | Published article, Mathematics 11:584; open access | 18 | [Source](https://mdpi-res.com/d_attachment/mathematics/mathematics-11-00584/article_deploy/mathematics-11-00584.pdf) |
+| [Prebiotic replicase evolution in a surface-bound metabolic system: parasites as a source of adaptive evolution](pdf/konnyu-czaran-szathmary-2008-replicase-evolution.pdf) | Published article, BMC Evolutionary Biology 8:267; open access | 13 | [Source](https://bmcecolevol.biomedcentral.com/counter/pdf/10.1186/1471-2148-8-267) |
+| [Metabolically Coupled Replicator Systems: Overview of an RNA-world model concept of prebiotic evolution on mineral surfaces](pdf/czaran-konnyu-szathmary-2015-mcrs-overview.pdf) | Author manuscript (submission PDF) of Journal of Theoretical Biology 381:39-54 | 39 | [Source](https://real.mtak.hu/33422/1/Czaran_et_at_JTB_2015.pdf) |
+| [Evolvable Self-Replicating Molecules in an Artificial Chemistry](pdf/hutton-2002-evolvable-self-replicating-molecules.pdf) | Author manuscript of Artificial Life 8(4):341-356; third-party course-page copy | 20 | [Source](https://faculty.cc.gatech.edu/~turk/bio_sim/articles/hutton_rep_molecules.pdf) |
+| [Theory of Polymer Dynamics](pdf/padding-2005-theory-of-polymer-dynamics.pdf) | Lecture notes, Han-sur-Lesse winter school 2005 | 56 | [Source](https://www-thphys.physics.ox.ac.uk/people/ArdLouis/padding/PolymerDynamics_Padding.pdf) |
+| [Macromolecular Dynamics: An introductory lecture](pdf/wuttke-2011-macromolecular-dynamics.pdf) | Lecture notes, arXiv:1103.4238v1 | 26 | [Source](https://arxiv.org/pdf/1103.4238) |
+| [Accurate estimate of the critical exponent nu for self-avoiding walks via a fast implementation of the pivot algorithm](pdf/clisby-2010-saw-critical-exponent-nu.pdf) | Preprint arXiv:1002.0494v1; published as Physical Review Letters 104:055702 | 5 | [Source](https://arxiv.org/pdf/1002.0494) |
+| [Scale-free center-of-mass displacement correlations in polymer melts without topological constraints and momentum conservation: A bond-fluctuation model study](pdf/wittmer-et-al-2011-bfm-com-displacement.pdf) | Preprint arXiv:1102.4962v2; published DOI 10.1063/1.3601918 | 27 | [Source](https://arxiv.org/pdf/1102.4962) |
 
 ## Reading notes
 

@@ -35,6 +35,8 @@ Separate from the literature streams, [a shared-memory probe](coreworld-shared-m
 
 The requested follow-up [compares those failures with original Coreworld, Tierra, Avida, and Stringmol methods](shared-memory-prior-work.md). A [read-only audit](probe-output-audit.md) of 140 stored output files found 130 distinct seed/configuration tuples and corrected the probe's counting, metric definitions, death attribution, and incomplete-digest claims. The illustrated review includes a separate appendix plotting all ten mutation-on records from the ownership comparison; no new simulations were run for it.
 
+A [decay and mobility note](decay-and-mobility.md) (2026-11-17) collects sources and candidate designs for two `experiments/physub` mechanisms: decay rates fixed per op class and whole-site mobility. None is agreed.
+
 Tierra successors (direction 1) and the full implementation survey (direction 2) are deferred. The first pass does not exhaust Tier 1. GPU frameworks, controllers, and product precedents remain later-stage work.
 
 ## Evidence and integration rules
