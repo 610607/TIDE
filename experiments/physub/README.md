@@ -355,6 +355,74 @@ do not alter the dynamics: the v9 baseline is byte-identical to v8.
     `dead0` and 1.6x over `whole_live`, and it raises the number of active sites (4.1-4.7k
     to 7.4-7.5k).
 
+- **v16** (per-op rates in form M; revision 84092a3, job list `v16_per_op_decay.txt`;
+  settings as v15, no rotation). Two rate levels, fast : slow = 30 : 1, four fast op classes
+  per `decay_table`, unweighted class mean 1.95e-6 (slow 1.404e-7, fast 4.212e-6; design in
+  [decay-and-mobility.md](../../docs/research/decay-and-mobility.md), section 6). Identity
+  checks:
+  - The table-1 runs with `decay_ratio=1` (seeds 1-2) reproduce v15 `m195` byte for byte.
+    The runs for tables 2-4 are still running.
+  - `m195` was rerun with `classes=1,2,3,4`. Without the `# classes` and `# subst` lines,
+    it matches v15 byte for byte.
+
+  Census at 100k:
+
+  | run | polite hazard vs M | replicator peak | active | replicators | polite region intact | non-rep copy-born (% of active) | re-ignited | age rep / non-rep | replicator genotypes |
+  | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+  | t1_s1 | 1.06 | 6660 (40k) | 7574 | 5466 | 1390 | 1215 (16%) | 893 | 11743 / 11052 | 1226 |
+  | t1_s2 | 1.06 | 6270 (40k) | 7549 | 5297 | 1717 | 1303 (17%) | 949 | 11431 / 10505 | 1130 |
+  | t2_s1 | 0.85 | 6552 (40k) | 7574 | 5542 | 1995 | 1177 (16%) | 855 | 13918 / 14537 | 1026 |
+  | t2_s2 | 0.85 | 6245 (60k) | 7686 | 5640 | 2315 | 1185 (15%) | 861 | 13891 / 13356 | 1029 |
+  | t3_s1 | 1.17 | 6595 (40k) | 7414 | 5212 | 1364 | 1344 (18%) | 858 | 10734 / 12179 | 1215 |
+  | t3_s2 | 1.17 | 6074 (30k) | 7275 | 5094 | 1854 | 1346 (19%) | 835 | 10425 / 11544 | 1040 |
+  | t4_s1 | 0.96 | 6765 (40k) | 7664 | 5680 | 1758 | 1065 (14%) | 919 | 12541 / 11294 | 1133 |
+  | t4_s2 | 0.96 | 6422 (40k) | 7628 | 5605 | 2060 | 1139 (15%) | 884 | 12628 / 11388 | 981 |
+  | m195_s1 | 1 | 6452 (40k) | 7390 | 5396 | 1752 | 1119 (15%) | 875 | 12051 / 10945 | 1082 |
+  | m195_s2 | 1 | 6254 (30k) | 7479 | 5473 | 1642 | 1211 (16%) | 795 | 11982 / 10440 | 1081 |
+
+  Composition at 100k, each table's run (T) against `m195` of the same seed measured with that
+  table (C). Shares are of non-inert bytes in the table's fast classes. Opcode bytes are the
+  offsets the census founder executed; the volatile counters fall among the data bytes. The
+  hazard is in units of 1e-5 per tick:
+
+  | table | seed | replicator data bytes, T / C | replicator opcode bytes, T / C | replicator hazard, T / C | non-replicators, T / C | all code, T / C |
+  | --- | --- | --- | --- | --- | --- | --- |
+  | 1 | 1 | 48.8 / 49.4 | 38.7 / 38.7 | 8.39 / 8.42 | 43.4 / 45.1 | 44.7 / 45.5 |
+  | 1 | 2 | 49.3 / 49.7 | 38.7 / 38.7 | 8.45 / 8.44 | 43.6 / 44.8 | 45.0 / 45.6 |
+  | 2 | 1 | 42.4 / 42.6 | 30.5 / 30.3 | 7.16 / 7.18 | 36.4 / 39.8 | 38.3 / 39.4 |
+  | 2 | 2 | 42.1 / 42.2 | 30.6 / 30.4 | 7.12 / 7.13 | 37.2 / 40.3 | 38.3 / 39.4 |
+  | 3 | 1 | 59.2 / 60.2 | 30.2 / 30.2 | 9.18 / 9.25 | 43.8 / 48.1 | 48.0 / 49.9 |
+  | 3 | 2 | 60.3 / 60.7 | 30.4 / 30.2 | 9.32 / 9.29 | 44.5 / 48.3 | 48.6 / 50.2 |
+  | 4 | 1 | 31.4 / 32.0 | 69.0 / 69.0 | 7.90 / 7.97 | 44.1 / 45.6 | 43.4 / 44.0 |
+  | 4 | 2 | 31.0 / 31.7 | 68.9 / 68.9 | 7.82 / 7.92 | 43.0 / 45.9 | 42.8 / 44.1 |
+
+  - **Population.**
+    - Replicators number 5.1-5.7k against 5.4-5.5k under uniform M, with peaks of 6.1-6.8k
+      against 6.3-6.5k.
+    - Mean replicator age follows polite's hazard under the table: 13.9k ticks for table 2
+      (0.85 of M), 10.4-10.7k for table 3 (1.17), and 12.0k in `m195`. 12.0k / 0.85 = 14.1k
+      and 12.0k / 1.17 = 10.3k.
+    - Table 3 has the most copy-born non-replicators (18-19% of active against 15-16%), and
+      only there do non-replicators outlive replicators (age ratio 1.11-1.13 against
+      0.87-0.91 in `m195`).
+  - **Opcode bytes do not move.** Their fast share stays within 0.25 points of the control
+    in every run. Substitutions at polite's opcode offsets stay below 0.02 per replicator in
+    treatment and control.
+  - **Data bytes.**
+    - At 100k, replicator data bytes have a lower fast share than the control in all eight
+      runs, by 0.16-1.04 points. At 50k the sign is mixed (-0.30 to +0.19).
+    - The replicator hazard is within 1.3% of the control: lower in six runs and slightly
+      higher in t1_s2 and t3_s2, where replicators are 0.2-0.3 bytes longer.
+    - Substitution counts at polite's data offsets are dominated by a few variants carried
+      by large clades, in the controls too. For example, the table-3 control on seed 1 has
+      0.27 fast-to-slow substitutions per replicator.
+    - Slow-to-fast data substitutions are lower than or equal to the control in seven of
+      eight runs, while fast-to-slow ones are higher only in t3_s1. These counts do not
+      separate selection from clade structure.
+  - **Non-replicators and all code.** At 100k their fast share is 1.2-4.3 points below the
+    control for non-replicators and 0.6-1.9 points below for all code. The non-replicator
+    gap is already present at 10k in all eight runs.
+
 Working interpretation (v13 and code inspection): saturation starts the decline in every
 run, and the space then fills with activations that no longer replicate. An activation ends
 only when the byte at its ip decays (`check_wicks`; no run recorded a starvation death).
@@ -381,6 +449,25 @@ replicator cannot lose replication and keep its site, so copy-born non-replicato
 15-18% of active sites, as under M. Clearing inactive code in one event raises replicator
 numbers in either case but leaves the non-replicator share where per-byte decay of live
 programs puts it.
+
+v16 reading (counts from executed runs; mechanisms and estimates are inference):
+
+- **Replicators barely change.** Per-op rates with a 30:1 spread change replicators very
+  little within 100k ticks. Opcode bytes stay fixed.
+- **Data bytes shift only weakly and late.** The only movement is in data bytes: by 100k
+  their fast share is 0.2-1.0 points below the uniform-rate control in all eight runs. The
+  shift is absent at 50k, and the replicator hazard did not fall. So data bytes are the only
+  place selection shows, but the runs do not establish that selection replaces data bytes
+  first.
+- **A strong shift was not expected (estimate).** One fast-to-slow data substitution lowers
+  polite's hazard by about (r_f - r_s) / h = 4.1e-6 / 8e-5, or 5%. 100k ticks are about eight
+  replicator lifetimes.
+- **The larger shift is in non-replicators.** The standing stock of non-replicators and
+  inactive code shifts more, since decay filters it directly. Non-replicators do not
+  reproduce, so this is survivorship, not heritable change.
+- **The table sets lifetimes.** Polite's hazard under each table sets replicator lifetimes.
+  The table where polite is most fragile (3) has the largest share and relative age of
+  non-replicators.
 
 ## Known issues (code inspection)
 
