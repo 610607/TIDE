@@ -119,13 +119,13 @@ python3 -m http.server 8765 -d viewer   # then open http://localhost:8765/?file=
 | `src/ps_world.cpp` | Construction, ledger, digest, ancestors, disassembler |
 | `apps/ps_run.cpp` | Runner: TSV per interval, PSV replay frames |
 | `apps/ps_probe.cpp` | Probe for runs seeded with polite or `ancestor()` (columns below) |
-| `apps/ps_census.hpp` | Census trial (with its seeding limit and the `top_up` check), strict-replicator test and copy-difference classes, shared by the probe and the scan |
+| `apps/ps_census.hpp` | Census trial (founder top-up by default, or the seed-limited trial), strict-replicator test and copy-difference classes, shared by the probe and the scan |
 | `apps/ps_scan.cpp` | Isolated first-copy fidelity, knockout and substitution scans of genotypes listed by the probe |
 | `apps/ps_knockout.cpp` | Single-byte knockout of an ancestor without mutation or decay |
 | `apps/ps_copycut.cpp` | First-copy cut probability of polite alone under block rotation |
 | `tests/ps_test.cpp` | Ledgers, replay, walls, ancestor, starvation, bond barrier, act_cap, ext_write, p_dead, energy diffusion, bond storage, dead_quiet, whole decay, block rotation, whole decay per class, per-op decay tables, census trial and its seeding limit, copy-difference classes, writer records and inert operands |
 | `viewer/index.html` | Replay viewer (layers, inspector, timeline) |
-| `scripts/run_jobs.sh`, `scripts/jobs/` | Parallel runner and the v8-v22 job lists |
+| `scripts/run_jobs.sh`, `scripts/jobs/` | Parallel runner and the v8-v23 job lists |
 
 `ps_probe` columns per interval: births, `exact%`, `intact_parent%`, top genotype, `copies`
 (child mostly written by the parent) and `reignites` (child code already present),
@@ -144,9 +144,13 @@ polite's program region intact, non-replicators by how their activation began
 founder's ip visits in the trial's last 500 ticks, i.e. the bytes whose decay ends the
 activation by wick. Trial worlds are separate, so the interval rows are unchanged. Trials
 run without rotation, so the census tests a program's own ability to copy itself. The
-founder's bytes are drawn from the trial center's `mass0` free monomers, so a program with
-more than `mass0` (48) non-inert bytes after the volatile reset cannot be seeded and counts as
-a non-replicator, whatever it does in the run (v22).
+founder's bytes are drawn from the trial center's `mass0` free monomers. By default
+(`census_topup=1`, from revision b4b4ea1) the center is first topped up to the program's
+non-inert byte count after the volatile reset, so every program can be seeded; this adds
+monomers to the trial world only and changes nothing for programs of at most `mass0` bytes.
+With `census_topup=0` a program with more than `mass0` (48) non-inert bytes cannot be seeded
+and counts as a non-replicator, whatever it does in the run (v22). That seed-limited verdict
+is the one v13-v22 first recorded.
 
 With `census=1` and `classes=1,2,...`, `ps_probe` adds two lines per interval and listed
 table, whether or not the table is the run's `decay_table`. `# classes` gives the share of
@@ -198,7 +202,8 @@ replicators among the founder's first copies in 9x9 worlds with copy error but n
 the program's own copying), counts knockouts (byte set to inert, as `ps_knockout`) and random
 substitutions (`subs` per byte) that are not strict replicators, and predicts the strict share
 from text substitutions alone: (1-u)^m + u(1-u)^(m-1) sum_k s_k over the m non-inert,
-non-volatile bytes, with s_k the strict share of substitutions at k.
+non-volatile bytes, with s_k the strict share of substitutions at k. Its `census_topup`
+option works as the probe's and also applies to the founder of the first copies.
 
 With `census=1` and `fate=1` (no rotation), `ps_probe` follows every activation from its
 birth (or the seeding) to its end and adds seven lines per interval, covering the interval since
@@ -271,9 +276,11 @@ unchanged). The age of an activation is the ticks since its ignition, in buckets
 - `# tracekey`: the census seeding limit. Active sites by status and by the non-inert bytes
   their key seeds in a trial (bins up to 40, 41-44, ..., 61-64); the sites whose key exceeds
   `mass0`, the number of such keys, and their verdict in a trial whose founder site is first
-  topped up to the key's byte count (`census::run_trial` with `top_up`; a separate cache, so
-  the census and its `trials` count are unchanged). Then strict losses in place (self /
-  foreign writer), those whose new key exceeds `mass0`, and those strict once topped up; and
+  topped up to the key's byte count. Under the default `census_topup=1` that is the census
+  verdict; under `census_topup=0` it comes from a separate cache, so the census and its
+  `trials` count are unchanged. Then strict losses in place (self / foreign writer), those
+  whose new key exceeds `mass0`, and those strict once topped up (none by construction under
+  `census_topup=1`); and
   copy births, those whose child carries the parent's key, and both again for parents whose
   key exceeds `mass0`.
 
