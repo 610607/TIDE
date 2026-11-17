@@ -757,8 +757,9 @@ do not alter the dynamics: the v9 baseline is byte-identical to v8.
     is -0.02 to 0.22 up to 150k and 0.06 to 0.54 after, against 0.41-0.52 from decay.
 
   Short-ancestor control: `ancestor()` (35 bytes, `anc=copier`) in place of polite,
-  otherwise as `m195`. Probes `anc_s1` and `anc_s2` report every 5k ticks; `ps_run` repeats
-  seeds 1-6 to 100k ticks. For seeds 1 and 2 the probe and `ps_run` end at the same tick.
+  otherwise as `m195`. Probes `anc_s1` and `anc_s2` report every 5k ticks (census counts
+  recomputed in v23 from the runs of the same names; already at 5k a site holding the
+  ancestor plus residue can be past 48 bytes); `ps_run` repeats seeds 1-6 to 100k ticks. For seeds 1 and 2 the probe and `ps_run` end at the same tick.
   Under the same settings polite has 7.7-7.9k active sites at 50k.
 
   | seed | end | peak active (10k points) | births | `ps_run` digest |
@@ -770,18 +771,19 @@ do not alter the dynamics: the v9 baseline is byte-identical to v8.
   | 5 | 1 active at 100k | 142 | 7,506 | 8396121b1b6ca5d8 |
   | 6 | extinct at 55,998 | 74 | 1,011 | c76036d3393260d5 |
 
-  - **Alone.** `ancestor()` and its variants in the probes (13 genotype-points, `ps_scan
-    anc=copier`) give 91.8-92.8% strict first copies. `ancestor()` itself gives 92.25% (m 28,
-    sensitive length 22.75, pred 93.4%; knockouts kill 23 of 28 bytes), against polite's
-    92.0% (m 37, 26.5, 92.3%).
+  - **Alone.** `ancestor()` and its variants in the probes (12 genotype-points, `ps_scan
+    anc=copier`) give 91.8-93.8% strict first copies; the highest is a 62-byte site (m 60)
+    whose extra bytes are residue. `ancestor()` itself gives 92.25% (m 28, sensitive length
+    22.75, pred 93.4%; knockouts kill 23 of 28 bytes), against polite's 92.0% (m 37, 26.5,
+    92.3%).
   - **In the run** (`anc_s2`):
-    - Strict parents' children are strict in 72% of 29 copies at 5k, 48% of 29 at 10k and
-      25% of 12 at 15k.
-    - Residue per copy rises from 0.17 to 0.93 to 4.5; offsets written from another site
-      rise from 0.07 to 0.66 to 2.25.
-    - Non-replicators outnumber strict replicators from the first point: 17 against 9 at 5k
-      and 34 against 8 at 10k. Of these non-replicators, 16 of 17 and 31 of 34 have a filled
-      own-site pointer offset.
+    - Strict parents' children are strict in 70% of 33 copies at 5k, 44% of 32 at 10k and
+      18% of 17 at 15k.
+    - Residue per copy rises from 0.33 to 1.03 to 4.65; offsets written from another site
+      rise from 0.36 to 0.84 to 2.18.
+    - Non-replicators are 12 against 14 strict replicators at 5k and outnumber them from
+      10k: 30 against 12, and 23 against 5 at 15k. Of these non-replicators, 11 of 12 and 28
+      of 30 have a filled own-site pointer offset.
 
   No-copy-error control: `nomut_s1` and `nomut_s2` are `m195` with `p_mut` 0 (revision
   94a6475, which only renames the shift class; 2 jobs in 13 minutes; counts recomputed in
@@ -1250,7 +1252,7 @@ mechanism fills each class is inference):
   polite (92.25% against 92.0%). Under these settings it does not persist: 4 of 6 seeds are
   extinct by 100k, and the other two are down to 14 sites and 1. It was not modified.
   Polite's 11 extra bytes are its target check. Without the check, `ancestor()` copies into
-  occupied sites, and under `fill` the refused writes leave chimeras: residue reaches 4.5
+  occupied sites, and under `fill` the refused writes leave chimeras: residue reaches 4.6
   offsets per copy by 15k.
 - **Fidelity in the run falls, for environmental reasons.**
   - In the run, the same genotypes give 88% strict children at 50k and 50-77% from 200k.
