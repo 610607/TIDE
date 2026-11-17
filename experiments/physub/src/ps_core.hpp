@@ -21,7 +21,9 @@ namespace ps {
 // value v decodes as opcode (v - 1) % kOps. Operands are the following bytes, each read as
 // an offset (mod site_len) into the executing site. A pointer is the byte pair at an
 // offset: [p] is the direction (INERT = own site, v > 0 = neighbor (v - 1) % 4) and [p+1]
-// is the offset there. Activations carry only ip; all other state lives in bytes.
+// is the offset there. Activations carry only ip; all other state lives in bytes. An INERT
+// operand byte names offset 0 by default; with inert_operand=fail it makes the instruction
+// fail (see InertOperand).
 enum Op : uint8_t {
   MOV = 0,    // MOV p q : byte at pointer p -> pointer q          (3 bytes)
   INC = 1,    // INC x   : [x] += 1 (mod 256)                       (2 bytes)
@@ -86,6 +88,23 @@ inline bool parse_ext_write(const std::string& s, ExtWrite& out) {
   return true;
 }
 
+// What an INERT operand byte (one of the bytes after the opcode) means.
+//  Zero : offset 0 of the executing site, like any byte value read mod site_len
+//  Fail : no offset; the instruction fails. It pays e_op, advances ip by its length and has
+//         no other effect: no write, skip, jump, ignition or wall. Pointer directions, data
+//         values and counters still read INERT as the own site and 0.
+// Non-inert operand bytes (including 64, 128, 192, which name offset 0) behave the same in
+// both modes, so a program none of whose executed operands is INERT runs identically.
+enum class InertOperand : uint8_t { Zero, Fail };
+
+// Parses "zero" | "fail"; returns false on anything else.
+inline bool parse_inert_operand(const std::string& s, InertOperand& out) {
+  if (s == "zero") out = InertOperand::Zero;
+  else if (s == "fail") out = InertOperand::Fail;
+  else return false;
+  return true;
+}
+
 struct Config {
   int width = 48;
   int height = 48;
@@ -102,6 +121,7 @@ struct Config {
   int32_t e_bond = 1;          // bond_store off: extra price to change a non-inert byte;
                                // bond_store on: energy held by each non-inert byte
   ExtWrite ext_write = ExtWrite::Allow;
+  InertOperand inert_operand = InertOperand::Zero;
   int32_t e_erase = 1;         // FillErase: price of erasing a neighbor's byte (replaces
                                // e_bond, or e_act under bond_store)
   // Energy transport and storage; both off reproduce the earlier model exactly.
@@ -171,6 +191,7 @@ struct Stats {
   uint64_t ext_blocked = 0;      // neighbor write refused by ext_write
   uint64_t ext_erasures = 0;     // neighbor byte erased from outside
   uint64_t reads_walled = 0;
+  uint64_t operand_inert = 0;    // inert_operand=fail: paid instructions failed on an INERT operand
   uint64_t walls_built = 0;
   uint64_t hydrolyzed = 0;
   uint64_t eroded = 0;
@@ -212,6 +233,7 @@ struct Intent {
   uint64_t key = 0;
   bool paid = false;
   bool read_walled = false;  // a cross-edge read was stopped by a wall
+  bool operand_inert = false;  // inert_operand=fail: failed on an INERT operand
 };
 
 // Per-op decay (decay_table): op class of a non-inert byte value, the fast classes of a

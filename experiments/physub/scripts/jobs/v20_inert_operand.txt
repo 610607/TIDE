@@ -1,0 +1,9 @@
+# v20: inert operands fail (inert_operand=fail) under form M to 500k ticks. Requested
+# 2026-11-17 as a one-rule comparison with v19: an INERT operand byte no longer names offset
+# 0; the instruction pays e_op, advances ip and does nothing else. Pointer directions, data
+# values and the ledger are unchanged. Settings as v19 (m195 and nomut, seeds 1-2, fate=1);
+# the baseline is runs/v19.
+m195_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000 fate=1 inert_operand=fail
+m195_s2 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=2 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000 fate=1 inert_operand=fail
+nomut_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill census=1 fidelity=5000 fate=1 inert_operand=fail
+nomut_s2 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0 p_hydro=1.95e-6 hydro_whole=1 seed=2 ext_write=fill census=1 fidelity=5000 fate=1 inert_operand=fail

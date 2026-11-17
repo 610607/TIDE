@@ -108,6 +108,7 @@ bool apply(Config& c, RunOpts& r, const std::string& k, const std::string& v) {
   else if (k == "w_max") c.w_max = static_cast<uint8_t>(n);
   else if (k == "e_erase") c.e_erase = static_cast<int32_t>(n);
   else if (k == "ext_write") return parse_ext_write(v, c.ext_write);
+  else if (k == "inert_operand") return parse_inert_operand(v, c.inert_operand);
   else if (k == "anc") r.anc = v;
   else if (k == "frames") r.frames = v;
   else if (k == "every") r.every = std::max<long long>(n, 1);

@@ -655,6 +655,61 @@ void test_census_trial() {
             << " writers recorded\n";
 }
 
+// inert_operand=fail: an instruction with an INERT operand byte pays e_op, advances ip and
+// does nothing else, for every op. Under the default the same RND writes offset 0. Polite,
+// whose executed operands are never INERT, runs bit-identically in both modes, and its
+// census trial is still strict.
+World operand_world(InertOperand mode, uint8_t opcode, Config cfg = small_config()) {
+  cfg.p_hydro = 0.0;
+  cfg.inert_operand = mode;
+  World w(cfg);
+  // opcode with INERT operands, then JMP 10 with [10] INERT: back to offset 0.
+  std::vector<uint8_t> prog(cfg.site_len, INERT);
+  const int len = op_length(opcode);
+  prog[0] = opcode;
+  prog[len] = 5;       // JMP
+  prog[len + 1] = 10;  // [10] is INERT, so ip = 0
+  assert(w.seed_program(8, 8, prog));
+  return w;
+}
+
+void test_inert_operand() {
+  for (uint8_t opcode = 1; opcode <= kOps; ++opcode) {
+    World w = operand_world(InertOperand::Fail, opcode);
+    const int32_t site = w.site_index(8, 8);
+    const std::vector<uint8_t> before = w.site_bytes(site);
+    w.run(200);
+    const Stats& s = w.stats();
+    assert(w.site_bytes(site) == before && w.active_count() == 1 && w.ledger_ok());
+    assert(s.writes == 0 && s.births == 0 && s.ignite_fail == 0 && s.walls_built == 0);
+    assert(s.operand_inert == s.instructions / 2 && s.operand_inert >= 90);
+  }
+  World zero = operand_world(InertOperand::Zero, 6);  // RND with INERT operand
+  zero.run(1);
+  assert(zero.stats().writes == 1 && zero.site_bytes(zero.site_index(8, 8))[0] != INERT);
+  assert(zero.stats().operand_inert == 0);
+
+  Config cfg = small_config();
+  cfg.p_hydro = 0.0;
+  cfg.mass0 = 48;
+  cfg.ext_write = ExtWrite::FillOnly;
+  Config fail_cfg = cfg;
+  fail_cfg.inert_operand = InertOperand::Fail;
+  World a(cfg), b(fail_cfg);
+  assert(a.seed_program(8, 8, polite()) && b.seed_program(8, 8, polite()));
+  a.run(3000);
+  b.run(3000);
+  assert(b.stats().operand_inert == 0 && a.digest() == b.digest() && a.stats().births > 3);
+
+  const census::Reference& ref = *census::reference_named("polite");
+  std::string key(fail_cfg.site_len, 0);
+  for (size_t k = 0; k < polite().size(); ++k) key[k] = static_cast<char>(polite()[k]);
+  for (int v : ref.volatile_offsets) key[v] = 0;
+  assert(census::run_trial(fail_cfg, key, ref).strict());
+  std::cout << "[ps test 18] inert_operand=fail: all 9 ops fail on an INERT operand; polite"
+            << " unchanged (births " << b.stats().births << ") and strict\n";
+}
+
 } // namespace
 
 int main() {
@@ -675,6 +730,7 @@ int main() {
   test_whole_decay_split();
   test_decay_table();
   test_census_trial();
+  test_inert_operand();
   std::cout << "all physub tests passed\n";
   return 0;
 }

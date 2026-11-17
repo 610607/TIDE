@@ -88,6 +88,14 @@ Intent World::plan(int32_t slot) const {
   const uint8_t byte = at(site, ip);
   it.next.ip = wrap(ip + op_length(byte));
   if (byte == INERT) return it; // unreachable: wick check ends such activations
+  if (cfg_.inert_operand == InertOperand::Fail) {
+    for (int k = 1; k < op_length(byte); ++k) {
+      if (at(site, ip + k) == INERT) {
+        it.operand_inert = true;
+        return it;
+      }
+    }
+  }
   const int x = at(site, ip + 1);
   switch (decode(byte)) {
     case MOV: plan_mov(site, ip, it); break;

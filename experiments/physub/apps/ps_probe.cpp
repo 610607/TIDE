@@ -4,7 +4,7 @@
 // Usage: ps_probe ticks=N seed=S p_mut=X p_hydro=Y rival=0|1 [mass0=M] [census=0|1]
 //        [hydro_whole=0|1|live|dead] [p_rot=P] [physics=0|1]
 //        [decay_table=T decay_ratio=R] [classes=T1,T2,...] [anc=polite|copier]
-//        [fidelity=W] [fate=1]
+//        [fidelity=W] [fate=1] [inert_operand=zero|fail]
 
 #include "ps_census.hpp"
 #include "ps_core.hpp"
@@ -921,7 +921,11 @@ void print_physics(const World& w) {
             << " rotations=" << s.rotations << " rot_walled=" << s.rot_walled
             << " copies_started=" << s.copies_started << " copies_cut=" << s.copies_cut
             << " copies_born=" << s.copies_born << " copies_born_cut=" << s.copies_born_cut
-            << " births=" << s.births << std::endl;
+            << " births=" << s.births;
+  if (w.config().inert_operand == InertOperand::Fail) {
+    std::cout << " operand_inert=" << s.operand_inert;
+  }
+  std::cout << std::endl;
 }
 
 void print_top_programs(const World& w) {
@@ -994,6 +998,12 @@ int main(int argc, char** argv) {
     else if (k == "e_act") cfg.e_act = std::atoi(v.c_str());
     else if (k == "e_diffuse") cfg.e_diffuse = std::atoi(v.c_str()) != 0;
     else if (k == "bond_store") cfg.bond_store = std::atoi(v.c_str()) != 0;
+    else if (k == "inert_operand") {
+      if (!parse_inert_operand(v, cfg.inert_operand)) {
+        std::cerr << "bad inert_operand: " << v << '\n';
+        return 1;
+      }
+    }
     else if (k == "ext_write") {
       if (!parse_ext_write(v, cfg.ext_write)) {
         std::cerr << "bad ext_write: " << v << '\n';

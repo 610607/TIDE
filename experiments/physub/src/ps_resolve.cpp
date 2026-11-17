@@ -100,6 +100,7 @@ void World::pay_energy(std::vector<Intent>& intents) {
     it.paid = true;
     stats_.instructions += 1;
     if (it.read_walled) stats_.reads_walled += 1;
+    if (it.operand_inert) stats_.operand_inert += 1;
   }
 }
 
