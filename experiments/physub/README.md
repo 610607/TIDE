@@ -754,6 +754,99 @@ do not alter the dynamics: the v9 baseline is byte-identical to v8.
   - **`other` copies.** With copy error, 22-43% of the copies made by `other` parents are
     exact copies of the parent at every point (four runs).
 
+- **v19** (activation fates under form M to 500k ticks; revision 2280ebf, job list
+  `v19_fate.txt`; 4 jobs in 43 minutes on 4 cores). The runs repeat v18 `m195_s1`,
+  `m195_s2`, `nomut_s1` and `nomut_s2` with `fate=1`. Every other line equals v18's to 500k
+  (v18's m195 outputs print `multi` as `shift`). At all 40 checkpoints the strict balance
+  equals the strict count, and the census mismatch, untracked, stale and replaced counts are
+  0. Earlier runs of the same jobs at 8368700 and 9cc7ff8, before the start and fill counts
+  were added, gave the same counts on every shared line. Below, "strict" is the census
+  status; "in place" means without a birth.
+
+  Strict activations per 50k window with copy error (s1 / s2). Births are copy births plus
+  re-ignitions (no self-ignitions occurred). A neighbor's fill of 30 is an in-place loss
+  whose only non-volatile change is offset 30, written by another site:
+
+  | tick | strict at end | births | ended: decay | ended: wick | lost in place | of which neighbor fill of 30 | gained in place | births - ends | in place, net |
+  | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+  | 50k | 6294 / 6008 | 24390 / 24487 | 16358 / 15395 | 305 / 1203 | 1851 / 2271 | 476 / 534 | 417 / 389 | +7727 / +7889 | -1434 / -1882 |
+  | 100k | 5369 / 5437 | 26090 / 25134 | 23459 / 22948 | 970 / 681 | 3658 / 2540 | 715 / 640 | 1072 / 464 | +1661 / +1505 | -2586 / -2076 |
+  | 150k | 4454 / 4612 | 24218 / 23543 | 19910 / 20740 | 2453 / 379 | 3615 / 4327 | 721 / 756 | 845 / 1078 | +1855 / +2424 | -2770 / -3249 |
+  | 200k | 3364 / 3275 | 20376 / 19495 | 16035 / 16567 | 2808 / 1531 | 3205 / 3603 | 675 / 792 | 582 / 869 | +1533 / +1397 | -2623 / -2734 |
+  | 250k | 2220 / 2372 | 14639 / 14879 | 11252 / 11733 | 2018 / 1391 | 2736 / 3410 | 518 / 659 | 223 / 752 | +1369 / +1755 | -2513 / -2658 |
+  | 300k | 1535 / 1903 | 10221 / 11867 | 7990 / 8971 | 677 / 1313 | 2371 / 2161 | 452 / 508 | 132 / 109 | +1554 / +1583 | -2239 / -2052 |
+  | 350k | 1194 / 1607 | 8639 / 10586 | 5966 / 7664 | 1188 / 1266 | 2155 / 2508 | 317 / 377 | 329 / 556 | +1485 / +1656 | -1826 / -1952 |
+  | 400k | 992 / 1303 | 6329 / 9294 | 4613 / 6241 | 592 / 1987 | 1406 / 1559 | 253 / 311 | 80 / 189 | +1124 / +1066 | -1326 / -1370 |
+  | 450k | 889 / 1079 | 6617 / 8496 | 4047 / 5055 | 1518 / 2189 | 1341 / 1677 | 208 / 246 | 186 / 201 | +1052 / +1252 | -1155 / -1476 |
+  | 500k | 670 / 976 | 4835 / 9330 | 3208 / 4391 | 652 / 3367 | 1617 / 2093 | 181 / 233 | 423 / 418 | +975 / +1572 | -1194 / -1675 |
+
+  Totals after 150k (windows ending 200k-500k). Percentages are shares of all strict
+  activations that ended or were lost in place:
+
+  | run | net | births | decay | wick | lost in place | neighbor fill of 30 | gained in place | births - ends | in place, net |
+  | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+  | m195_s1 | -3784 | 71656 | 53111 (68.6%) | 9453 (12.2%) | 14831 (19.2%) | 2604 (3.4%) | 1955 | +9092 | -12876 |
+  | m195_s2 | -3636 | 83947 | 60622 (66.9%) | 13044 (14.4%) | 17011 (18.8%) | 3126 (3.4%) | 3094 | +10281 | -13917 |
+  | nomut_s1 | -936 | 237502 | 236144 (99.0%) | 274 (0.1%) | 2224 (0.9%) | 437 (0.2%) | 204 | +1084 | -2020 |
+  | nomut_s2 | -2289 | 227936 | 226986 (98.5%) | 433 (0.2%) | 3018 (1.3%) | 581 (0.3%) | 212 | +517 | -2806 |
+
+  - **With copy error, births exceed ends in every window.** Births minus decay and wick
+    ends is +975 to +1755 per window after 150k. The count falls because in-place losses
+    exceed in-place gains; after 150k the net in-place loss is 3.4-3.8 times the net decline.
+    Without copy error, births and ends nearly balance (-246 to +832 per window from 100k;
+    +517 and +1084 in total after 150k), and the net in-place loss is 1.2-2.2 times the net
+    decline.
+  - **Rates per strict site per 5,000 ticks after 150k.** Whole decay: 0.40-0.44 in all four
+    runs. In-place loss with copy error: 0.08-0.21, rising late. Without copy error:
+    0.001-0.024. The fill of offset 30 alone: 0.017-0.024 with copy error, at most 0.002
+    without. Wick ends plus the net in-place loss, the counterpart of v18's balance
+    shortfall: 0.11-0.49 with copy error (v18 estimated 0.08-0.72) and 0.000-0.027 without
+    (v18: -0.01 to 0.03).
+  - **Attribution.** A change is the set of non-volatile bytes of a site that differ after
+    one tick. It is credited to the first foreign writer among them (lowest offset), or to
+    the site itself when it wrote them all; the writer's class is the census status of its
+    activation.
+  - **Who changes a strict site in place (after 150k, with copy error).** The site itself
+    39%, `other` sites 42-43%, strict sites 17-18%, `loose` and `prop` sites about 1%. The
+    status afterwards is `other` in 80-85% of losses, `prop` in 11-17% (94-96% of these
+    self-written) and `loose` in 3%. Without copy error the site itself writes 51-54%.
+  - **The fill of offset 30.** It is 17.6-18.4% of in-place losses and 3.4% of all strict
+    losses after 150k with copy error (19.3-19.6% and 0.2-0.3% without). In every case but
+    one, offset 30 is the only non-volatile change. `other` sites write 65-68% of these
+    fills and strict sites 30-33%; after 150k only 5 and 12 changes of offset 30 were
+    written by the site itself. The new direction names the writing neighbor in 20-24% of
+    fills, about the chance 1/4. The closing jump `JMP 30` then lands at [30] mod 64: offset
+    0 in 2-4%, another opcode offset of polite in 3-7%, elsewhere in 91-93%.
+  - **What a fill leaves behind.** The converted program reads its source from the
+    neighbor that [30] now names, but it seldom completes a copy: 0.15-0.24 copy births per
+    conversion with copy error, 0.06-0.16 without. None of these children equals the
+    parent's key; 36-50% equal the key of the named neighbor (60-70% without copy error),
+    and 19-26% are strict (33-60% without). The converted activation stays active until whole
+    decay in 65-79% of cases, on average 5,900-6,900 ticks after the conversion; up to 114
+    are alive at a checkpoint.
+  - **Self-written losses.** They change offset 0 in 73-89% of cases with copy error
+    (75-98% without). After 150k, 85-94% come from activations ignited at an offset other
+    than 0 (99.7-99.8% without copy error), although such activations are only 19-20% of
+    strict births (0.6-0.9% without). The instruction that ran is in polite's data region
+    (offsets 33-45) in 82-89% of cases: 35 (RND with operand [36]), 39 (RND [40]), 43 (RND
+    [44]) and 33 (DEC [34]). Where the operand byte is inert it names offset 0, so the
+    program overwrites its own first opcode (code inspection, consistent with the counts).
+    Before 150k, a further 27-31% come from the instruction at 8 (`MOV 32 40`), which writes a
+    neighbor's byte to its own offset [41]. In the variants dumped, [41] pointed outside the
+    masked offsets (to 61), so the key changes with every target check: a relabel by the
+    census key rather than a change of behavior (inference from dumped cases).
+  - **Other foreign writes.** Besides offset 30, foreign writes that end strict
+    status change the own-site pointer bytes 36, 38 and 40 (at least 1,500-1,800 per run
+    after 150k) and tail offsets 47-53 (at least about 1,500). Alone, polite with any one of
+    offsets 34-40, 46-53 or 60 filled is still strict (all 255 values; a scratch check, and
+    `ps_test` checks value 192 at five of them), while any fill of 30 breaks it. So these
+    losses involve evolved genotypes or several offsets at once. Strict writers (17-18% of
+    in-place losses) were not examined further.
+  - **Ends by status.** Over all windows, strict activations end by whole decay in 89-90%
+    of ends with copy error and 99.9% without; `loose` in 86-87%. `prop` and `other`
+    activations end by wick in 88-92% and 87-88% with copy error. The strict decay share falls
+    late, to 57-83% at 450-500k, as wick ends rise.
+
 Working interpretation (v13 and code inspection): saturation starts the decline in every
 run, and the space then fills with activations that no longer replicate. An activation ends
 only when the byte at its ip decays (`check_wicks`; no run recorded a starvation death).
@@ -879,7 +972,8 @@ v18 reading (counts from executed runs; which mechanism fills each class is infe
       make almost no copies alone;
     - 96-97% of `other` sites carry a filled offset.
 
-    It was not measured.
+    It was not measured here. v19 measures it: the route occurs, but it is about 18% of
+    in-place losses, and its copies are not exact copies of the converted parent.
 - **Copy error accelerates a process that the environment alone also starts.** Without copy
   error, intrinsic fidelity is 1. Even so:
   - filled offsets spread to 93-95% of strict sites;
@@ -903,12 +997,68 @@ v18 reading (counts from executed runs; which mechanism fills each class is infe
     re-ignition term comes from 300 sampled re-ignitions per window.
 - **A next measurement** (proposal, not agreed). For each active site between census
   points, count status changes without a birth, and the offsets and writers of the changing
-  bytes. Also record how each activation ends (whole decay or wick), by status.
+  bytes. Also record how each activation ends (whole decay or wick), by status. (v19 makes
+  this measurement.)
+
+v19 reading (counts from executed runs; mechanisms marked as inference):
+
+- **The offset-30 route occurs, but it is a minor part of the decline.** After 150k a
+  neighbor's fill of offset 30 turns a strict activation into a non-replicator 2,604 and
+  3,126 times, and in all cases but one nothing else non-volatile changes. That is 18% of
+  in-place losses, 3.4% of all strict losses and 20-22% of the net in-place loss. The
+  converted program does copy from the neighbor that [30] now names, but it seldom finishes
+  a copy and then mostly holds its site until whole decay. None of its children has its own
+  genotype, so this route is not the source of the exact `other` copies in v18.
+- **In-place change carries the decline (accounting, not a counterfactual).** With copy
+  error, births exceed decay and wick ends in every window, and strict sites fall because
+  in-place losses exceed in-place gains. Without in-place losses the population, mass and
+  births would differ, so the decomposition does not say how large the population would
+  then be.
+- **v18's missing loss is measured.** Wick ends plus the net in-place loss match v18's
+  balance shortfall in range, with and without copy error. Most of it is in-place change;
+  wick ends grow late.
+- **Two routes are larger than the fill of 30.**
+  - The site itself writes 39% of in-place losses. Most come from activations ignited at an
+    offset other than 0, which run polite's data region as code. An inert operand byte names
+    offset 0, so such a run overwrites the program's first opcode (code inspection,
+    consistent with 73-89% of these losses changing offset 0). What ignites strict
+    genotypes off entry, and why copy error raises their share from under 1% to 19-20% of
+    strict births, was not traced.
+  - Other sites fill polite's own-site pointer bytes (36, 38, 40) and write the tail
+    (47-53). Alone, polite stays strict with any one of these filled, so these losses
+    involve evolved genotypes or several offsets at once (inference).
+- **Both routes come from INERT's double meaning** (known issue 1, inference). An inert byte
+  is an empty slot that `fill` lets other sites write, and it is also the own-site direction
+  and the value 0. The fills of 30, 36, 38 and 40 use the first meaning; the self-overwrite
+  of offset 0 uses the second.
+- **Copy error scales the routes; it does not open new ones.** Without copy error the same
+  routes occur, with similar shares (the fill of 30 is 19-20% of in-place losses), at a rate
+  roughly 10 to 80 times lower.
+- **This qualifies v14 and v15.** Whole-program decay cannot alter a live replicator, but
+  writes, its own and its neighbors', still can. After 150k they are the larger term.
+- **Limits.**
+  - Status is the census verdict for a site's bytes alone. Some in-place changes may be
+    relabels that leave the behavior in the run unchanged; the scratch writes at
+    instruction 8 before 150k are a likely case.
+  - Changes of `other` sites are not tested; `found_at_census` (9-47 per window) corrects
+    the balance for them.
+  - A change with several foreign writers is credited to the first; the writer's status is
+    its status when the change is seen.
+  - Two seeds per condition; the fill test alone covers polite, not evolved genotypes.
+  - `fate=1` costs about 3.4 times the run time (580 s against 170 s per 100k ticks).
+- **Next steps** (proposals, not agreed).
+  - Separate the meanings of INERT, for example a distinct empty value that `fill` writes
+    to, as a one-mechanism comparison under form M. This changes a rule, so it needs
+    agreement first.
+  - Trace off-entry ignitions of strict genotypes: who ignites them, at which offset, and
+    why copy error raises their share.
 
 ## Known issues (code inspection)
 
 1. INERT means both "empty" and "own-site pointer / value 0", so self-pointer bytes can be
-   filled from outside even under `fill`. Mutation and `RND` never produce INERT.
+   filled from outside even under `fill`. Mutation and `RND` never produce INERT. An inert
+   operand byte also names offset 0, so a program that runs its own data as code overwrites
+   its first byte (v19 counts both effects as routes of in-place loss).
 2. Re-ignition is cheap relative to copying, and corpse sites sit at full energy.
 3. Without `bond_store`, `e_bond` also charges in-site counter updates.
 4. Walls drop bytes during cross-edge copying while the counters still advance.
