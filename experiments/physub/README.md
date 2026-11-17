@@ -28,7 +28,7 @@ From `experiments/physub/`:
 
 ```sh
 build/ps_run   key=value ...   # TSV per interval; frames=<file.psv> every=N writes a replay
-build/ps_probe key=value ...   # births, space census and copy errors of a polite-seeded run
+build/ps_probe key=value ...   # births, space census and copy errors; census=1 tests replicators
 build/ps_knockout anc=polite   # single-byte knockouts: which bytes stop replication
 scripts/run_jobs.sh scripts/jobs/v11_energy.txt runs/v11 8   # a job list, 8 in parallel
 python3 -m http.server 8765 -d viewer   # then open http://localhost:8765/?file=data/<name>.psv
@@ -100,6 +100,14 @@ python3 -m http.server 8765 -d viewer   # then open http://localhost:8765/?file=
 `starved`, field `energy`. The summary splits births by parent integrity and kind, and breaks
 down the copy differences of intact parents by source: foreign write, decay after writing,
 parent-written but different (mutation or misaligned copy), and residue.
+
+With `census=1`, `ps_probe` adds a `# census` line per interval. Each distinct active program
+(volatile offsets reset) is seeded alone in a fresh 9x9 world with the run's physics but no
+mutation, hydrolysis, erosion or `p_dead`; it counts as a replicator when at least two active
+sites carry it after 2000 ticks. The line reports replicators (any genotype), the subset with
+polite's program region intact, non-replicators by how their activation began
+(self/copy/reignite), and mean activation age. Trial worlds are separate, so the interval
+rows are unchanged.
 
 ## Findings from executed runs
 

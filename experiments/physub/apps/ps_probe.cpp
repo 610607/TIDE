@@ -1,6 +1,6 @@
 // Birth probe: classifies every birth of a polite-seeded run by parent integrity, copy
 // differences, child lifespan and child fertility. Observation only.
-// Usage: ps_probe ticks=N seed=S p_mut=X p_hydro=Y rival=0|1 [mass0=M]
+// Usage: ps_probe ticks=N seed=S p_mut=X p_hydro=Y rival=0|1 [mass0=M] [census=0|1]
 
 #include "ps_core.hpp"
 
@@ -158,6 +158,74 @@ void print_window(const World& w, const Window& win, const Stats& prev) {
             << std::endl;
 }
 
+// Replicator census (census=1): every distinct active program, with the volatile offsets
+// reset to the ancestor's values, is seeded alone in a fresh 9x9 world with the run's
+// physics but no mutation, hydrolysis, erosion or p_dead. It counts as a replicator when at
+// least two active sites carry its program after kTrialTicks. Trial worlds never touch the
+// run's world, so the run's dynamics and digest are unchanged. Results are cached by text.
+constexpr int kTrialSize = 9;
+constexpr uint64_t kTrialTicks = 2000;
+
+bool replicates(const Config& run_cfg, const std::string& key) {
+  Config c = run_cfg;
+  c.width = kTrialSize;
+  c.height = kTrialSize;
+  c.p_mut = 0.0;
+  c.p_hydro = 0.0;
+  c.p_erode = 0.0;
+  c.p_dead = 0.0;
+  c.dead_quiet = 0;
+  c.seed = 1;
+  World t(c);
+  std::vector<uint8_t> program(key.begin(), key.end());
+  for (int v : kVolatile) program[v] = polite()[v];
+  if (!t.seed_program(kTrialSize / 2, kTrialSize / 2, program)) return false;
+  t.run(kTrialTicks);
+  int carriers = 0;
+  for (int32_t s = 0; s < kTrialSize * kTrialSize; ++s) {
+    carriers += t.site_active(s) && masked(t, s) == key;
+  }
+  return carriers >= 2;
+}
+
+// Kind of the activation now running at a site; seeded founders count as self.
+int activation_kind(const std::vector<Record>& recs, const std::vector<int>& current, int32_t s) {
+  return current[s] >= 0 ? recs[current[s]].kind : kSelfIgnite;
+}
+
+void print_census(const World& w, const std::vector<Record>& recs,
+                  const std::vector<int>& current, std::map<std::string, bool>& cache) {
+  const int32_t n = w.config().width * w.config().height;
+  int rep = 0, rep_pfx = 0;
+  int other[kKinds] = {};
+  uint64_t age[2] = {}, count[2] = {};
+  std::map<std::string, bool> seen;  // genotypes active now -> replicator
+  for (int32_t s = 0; s < n; ++s) {
+    if (!w.site_active(s)) continue;
+    const std::string key = masked(w, s);
+    auto it = cache.find(key);
+    if (it == cache.end()) it = cache.emplace(key, replicates(w.config(), key)).first;
+    seen[key] = it->second;
+    const bool r = it->second;
+    rep += r;
+    rep_pfx += r && prefix_intact(w.bytes_at(s));
+    if (!r) other[activation_kind(recs, current, s)] += 1;
+    if (current[s] >= 0) {
+      age[r] += w.tick() - recs[current[s]].born;
+      count[r] += 1;
+    }
+  }
+  int rep_genotypes = 0;
+  for (auto& [k, r] : seen) rep_genotypes += r;
+  std::cout << "# census tick=" << w.tick() << " active=" << w.active_count()
+            << " replicators=" << rep << " pfx_replicators=" << rep_pfx
+            << " genotypes=" << seen.size() << " replicator_genotypes=" << rep_genotypes
+            << " nonrep_self/copy/reignite=" << other[kSelfIgnite] << '/' << other[kCopy] << '/'
+            << other[kReignite] << " mean_age_rep/nonrep="
+            << (count[1] ? age[1] / count[1] : 0) << '/' << (count[0] ? age[0] / count[0] : 0)
+            << " trials=" << cache.size() << std::endl;
+}
+
 void print_top_programs(const World& w) {
   std::map<std::string, int> counts;
   const int32_t n = w.config().width * w.config().height;
@@ -180,6 +248,7 @@ int main(int argc, char** argv) {
   cfg.mass0 = 48;
   uint64_t ticks = 20000;
   bool rival = false;
+  bool census = false;
   uint64_t interval = 10000;
   for (int i = 1; i < argc; ++i) {
     const std::string a = argv[i];
@@ -197,6 +266,7 @@ int main(int argc, char** argv) {
     else if (k == "dead_quiet") cfg.dead_quiet = std::atoi(v.c_str());
     else if (k == "mass0") cfg.mass0 = std::atoi(v.c_str());
     else if (k == "rival") rival = v == "1";
+    else if (k == "census") census = v == "1";
     else if (k == "e_erase") cfg.e_erase = std::atoi(v.c_str());
     else if (k == "e_ignite") cfg.e_ignite = std::atoi(v.c_str());
     else if (k == "e_max") cfg.e_max = std::atoi(v.c_str());
@@ -233,6 +303,7 @@ int main(int argc, char** argv) {
   Window win;
   Stats prev_stats;
   ErrTally errs;
+  std::map<std::string, bool> census_cache;  // program text -> replicator (census=1)
   std::cout << "tick\tactive\tbirths\texact%\tintact_parent%\ttop_count\ttop_dist\tdistinct"
                "\tcopies\treignites\tintact_copies\tblank\topen0\tdead\tpfx_active\tpfx_copies\text_erased\tstalls\tstarved\tenergy\n";
   while (w.tick() < ticks && w.active_count() > 0) {
@@ -282,6 +353,7 @@ int main(int argc, char** argv) {
       const int c = current[s];
       if (c >= 0 && recs[c].died == 0 && !w.site_active(static_cast<int32_t>(s))) recs[c].died = w.tick();
     }
+    if (census && w.tick() % interval == 0) print_census(w, recs, current, census_cache);
   }
   Group g[2][kKinds];
   for (const Record& r : recs) {
