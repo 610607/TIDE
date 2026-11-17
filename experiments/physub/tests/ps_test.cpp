@@ -1,5 +1,6 @@
 // Mechanism checks for the physical-substrate prototype.
 
+#include "ps_census.hpp"
 #include "ps_core.hpp"
 
 #include <algorithm>
@@ -575,6 +576,69 @@ void test_block_rotation() {
             << x.stats().copies_born_cut << "\n";
 }
 
+// Census trial and copy-difference classes (apps/ps_census.hpp): polite is a strict
+// replicator; a knocked-out IGNITE or a source pointer redirected to a neighbor is not; trials
+// are deterministic; a clean copy is exact and a refused fill-mode write leaves residue.
+void test_census_trial() {
+  Config cfg;
+  cfg.mass0 = 48;
+  cfg.ext_write = ExtWrite::FillOnly;
+  const census::Reference& ref = *census::reference_named("polite");
+  std::string key(cfg.site_len, 0);
+  for (size_t k = 0; k < polite().size(); ++k) key[k] = static_cast<char>(polite()[k]);
+  for (int v : ref.volatile_offsets) key[v] = 0;
+  const census::TrialResult a = census::run_trial(cfg, key, ref);
+  const census::TrialResult b = census::run_trial(cfg, key, ref);
+  assert(a.replicator && a.strict() && a.depth >= 2 && a.founder_copies >= 2);
+  assert(b.replicator == a.replicator && b.depth == a.depth && b.op_mask == a.op_mask &&
+         b.founder_copies == a.founder_copies && b.founder_exact == a.founder_exact);
+  std::string ko = key;
+  ko[26] = 0;  // IGNITE opcode
+  assert(!census::run_trial(cfg, ko, ref).replicator);
+  std::string redirected = key;
+  redirected[30] = static_cast<char>(192);  // source pointer: a neighbor instead of own site
+  assert(!census::run_trial(cfg, redirected, ref).replicator);
+  assert(!census::ref_inert_filled(polite().data(), ref));
+  std::vector<uint8_t> filled = polite();
+  filled[36] = 192;
+  assert(census::ref_inert_filled(filled.data(), ref));
+
+  // First copy of a lone founder: exact in an empty world; residue when every neighbor holds
+  // a non-inert byte at an offset where polite is inert (fill refuses the inert write).
+  for (const bool dirty : {false, true}) {
+    Config c = cfg;
+    c.width = 9;
+    c.height = 9;
+    c.p_hydro = 0.0;
+    c.p_erode = 0.0;
+    World w(c);
+    assert(w.seed_program(4, 4, polite()));
+    if (dirty) {
+      for (auto [x, y] : {std::pair{3, 4}, {5, 4}, {4, 3}, {4, 5}}) {
+        std::vector<uint8_t> junk(c.site_len, INERT);
+        junk[50] = 7;
+        assert(w.seed_program(x, y, junk));
+      }
+    }
+    const int32_t center = w.site_index(4, 4);
+    int cls = -1;
+    for (int t = 0; t < 2000 && cls < 0; ++t) {
+      w.run(1);
+      for (const auto& birth : w.births_this_tick()) {
+        if (birth.parent == center && census::classify(birth) == census::kCopy) {
+          const census::Diff d = census::diff_sources(w, birth, ref);
+          cls = d.cls;
+          assert(!dirty || d.n[census::kSrcResidue] == 1);
+        }
+      }
+    }
+    assert(cls == (dirty ? census::kClsEnv : census::kClsExact));
+  }
+  std::cout << "[ps test 17] census trial: polite strict, depth " << a.depth << ", founder copies "
+            << a.founder_exact << '/' << a.founder_copies
+            << "; knockout and redirected source fail; first copy exact, residue is env\n";
+}
+
 } // namespace
 
 int main() {
@@ -594,6 +658,7 @@ int main() {
   test_block_rotation();
   test_whole_decay_split();
   test_decay_table();
+  test_census_trial();
   std::cout << "all physub tests passed\n";
   return 0;
 }

@@ -1,0 +1,22 @@
+# v18: replication fidelity under form M to 500k ticks. Requested 2026-11-17: where does the
+# decline under uniform M after 100k come from, the genotypes' own copy fidelity or the
+# environment? Settings as v17 (ext_write fill, p_mut 0.003, p_hydro 1.95e-6 whole, 96x96,
+# census, no rotation), plus fidelity=5000: every copy birth in the last 5000 ticks before
+# each 50k checkpoint, parent and child judged by the census. The m195 and table runs repeat
+# v17 m195_s1/s2, t2_s1 and t3_s1 (tables 2 and 3: the longest and shortest polite ages in
+# v16) with extra observer lines only. Then ps_scan reads their # fidtop lines (see README).
+m195_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000
+m195_s2 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=2 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000
+t2_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 decay_table=2 seed=1 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000
+t3_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 decay_table=3 seed=1 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000
+# Short-ancestor control: ancestor() (35 bytes, anc=copier) in place of polite (46 bytes),
+# otherwise as m195. It does not persist, so the probe reports every 5000 ticks with full
+# fidelity coverage; ps_run repeats it for seeds 1-6 to 100k ticks (mass0 48 as the probe).
+anc_s1 ps_probe anc=copier width=96 height=96 ticks=500000 interval=5000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill census=1 fidelity=5000
+anc_s2 ps_probe anc=copier width=96 height=96 ticks=500000 interval=5000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=2 ext_write=fill census=1 fidelity=5000
+anc_run_s1 ps_run anc=copier width=96 height=96 ticks=100000 interval=10000 mass0=48 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 ext_write=fill seed=1
+anc_run_s2 ps_run anc=copier width=96 height=96 ticks=100000 interval=10000 mass0=48 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 ext_write=fill seed=2
+anc_run_s3 ps_run anc=copier width=96 height=96 ticks=100000 interval=10000 mass0=48 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 ext_write=fill seed=3
+anc_run_s4 ps_run anc=copier width=96 height=96 ticks=100000 interval=10000 mass0=48 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 ext_write=fill seed=4
+anc_run_s5 ps_run anc=copier width=96 height=96 ticks=100000 interval=10000 mass0=48 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 ext_write=fill seed=5
+anc_run_s6 ps_run anc=copier width=96 height=96 ticks=100000 interval=10000 mass0=48 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 ext_write=fill seed=6

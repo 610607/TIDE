@@ -1,11 +1,15 @@
-// Birth probe: classifies every birth of a polite-seeded run by parent integrity, copy
-// differences, child lifespan and child fertility. Observation only.
+// Birth probe: classifies every birth of a run seeded with one reference program (polite by
+// default) by parent integrity, copy differences, child lifespan and child fertility.
+// Observation only.
 // Usage: ps_probe ticks=N seed=S p_mut=X p_hydro=Y rival=0|1 [mass0=M] [census=0|1]
 //        [hydro_whole=0|1|live|dead] [p_rot=P] [physics=0|1]
-//        [decay_table=T decay_ratio=R] [classes=T1,T2,...]
+//        [decay_table=T decay_ratio=R] [classes=T1,T2,...] [anc=polite|copier]
+//        [fidelity=W]
 
+#include "ps_census.hpp"
 #include "ps_core.hpp"
 
+#include <algorithm>
 #include <array>
 #include <cstdlib>
 #include <iostream>
@@ -14,17 +18,22 @@
 #include <string>
 
 using namespace ps;
+using census::classify;
+using census::kCopy;
+using census::kKinds;
+using census::kReignite;
+using census::kSelfIgnite;
+using census::TrialResult;
 
 namespace {
 
-// Offsets of the polite ancestor whose value changes while it runs (counters, direction,
-// probe). Everything else is program text or constants.
-constexpr std::array<int, 4> kVolatile = {31, 32, 33, 44};
+// Reference program (anc=): the seeded ancestor, the text that "intact" and distances refer
+// to, and the source of the volatile offsets (see ps_census.hpp).
+const census::Reference* g_ref = census::reference_named("polite");
 
-bool is_volatile(int k) {
-  for (int v : kVolatile) if (v == k) return true;
-  return false;
-}
+const std::vector<uint8_t>& ref_program() { return *g_ref->program; }
+
+bool is_volatile(int k) { return g_ref->is_volatile(k); }
 
 int text_distance(const uint8_t* bytes, const std::vector<uint8_t>& ref, int len) {
   int d = 0;
@@ -38,7 +47,7 @@ int text_distance(const uint8_t* bytes, const std::vector<uint8_t>& ref, int len
 // Program-region match: the ancestor's own length only, so leftover bytes in the tail of a
 // recycled site do not count as alterations.
 bool prefix_intact(const uint8_t* bytes) {
-  const auto& ref = polite();
+  const auto& ref = ref_program();
   for (int k = 0; k < static_cast<int>(ref.size()); ++k) {
     if (!is_volatile(k) && bytes[k] != ref[k]) return false;
   }
@@ -103,15 +112,7 @@ struct Record {
   int kind = 0;        // see Kind
 };
 
-// Self: the parent re-ignites its own site. Copy: most of the child's code was written by
-// the parent since the child's last ignition. Reignite: the child's code was already there.
-enum Kind { kSelfIgnite = 0, kCopy = 1, kReignite = 2, kKinds = 3 };
 constexpr const char* kKindName[kKinds] = {"self", "copy", "reignite"};
-
-int classify(const World::Birth& b) {
-  if (b.parent == b.child) return kSelfIgnite;
-  return b.code > 0 && 2 * b.written >= b.code ? kCopy : kReignite;
-}
 
 struct Window {
   uint64_t births = 0, exact = 0, intact = 0, copies = 0, reignites = 0, intact_copies = 0;
@@ -122,12 +123,8 @@ struct Group {
   uint64_t n = 0, lifespan = 0, fertile = 0, offspring = 0, intact_child = 0, copy_diff = 0;
 };
 
-// Program text of a site with the ancestor's volatile offsets masked.
-std::string masked(const World& w, int32_t s) {
-  std::string t(reinterpret_cast<const char*>(w.bytes_at(s)), w.config().site_len);
-  for (int v : kVolatile) t[v] = 0;
-  return t;
-}
+// Program text of a site with the reference's volatile offsets masked.
+std::string masked(const World& w, int32_t s) { return census::masked(w, s, *g_ref); }
 
 void print_window(const World& w, const Window& win, const Stats& prev) {
   std::map<std::string, int> counts;
@@ -136,7 +133,7 @@ void print_window(const World& w, const Window& win, const Stats& prev) {
   std::string top;
   int best = 0;
   for (auto& [t, c] : counts) if (c > best) { best = c; top = t; }
-  const int dist = best ? text_distance(reinterpret_cast<const uint8_t*>(top.data()), polite(),
+  const int dist = best ? text_distance(reinterpret_cast<const uint8_t*>(top.data()), ref_program(),
                                         w.config().site_len) : -1;
   // Space census: blank = inactive and all bytes inert; open0 = byte 0 inert (a polite
   // copy target); dead = inactive with any non-inert byte.
@@ -161,61 +158,11 @@ void print_window(const World& w, const Window& win, const Stats& prev) {
             << std::endl;
 }
 
-// Replicator census (census=1): every distinct active program, with the volatile offsets
-// reset to the ancestor's values, is seeded alone in a fresh 9x9 world with the run's
-// physics but no mutation, hydrolysis, erosion or p_dead. It counts as a replicator when at
-// least two active sites carry its program after kTrialTicks. Trials also run without
-// rotation (p_rot), so the census tests a program's own ability to copy itself. The ip span
-// is the number of distinct offsets the founder's ip visits in the last kSpanTicks: the
-// bytes whose decay ends the activation by wick (-1 if the founder stopped). Trial worlds
-// never touch the run's world, so the run's dynamics and digest are unchanged. Results are
-// cached by text.
-constexpr int kTrialSize = 9;
-constexpr uint64_t kTrialTicks = 2000;
-constexpr uint64_t kSpanTicks = 500;
-
-struct TrialResult {
-  bool replicator = false;
-  int ip_span = -1;
-  uint64_t op_mask = 0;  // offsets where the founder executed an instruction (bit k = offset k)
-};
-
+// Replicator census (census=1): every distinct active program is tested alone in a trial
+// world (census::run_trial in ps_census.hpp). Trial worlds never touch the run's world, so
+// the run's dynamics and digest are unchanged. Results are cached by text.
 TrialResult run_trial(const Config& run_cfg, const std::string& key) {
-  Config c = run_cfg;
-  c.width = kTrialSize;
-  c.height = kTrialSize;
-  c.p_mut = 0.0;
-  c.p_hydro = 0.0;
-  c.p_erode = 0.0;
-  c.p_dead = 0.0;
-  c.dead_quiet = 0;
-  c.p_rot = 0.0;
-  c.seed = 1;
-  World t(c);
-  TrialResult r;
-  std::vector<uint8_t> program(key.begin(), key.end());
-  for (int v : kVolatile) program[v] = polite()[v];
-  const int32_t center = t.site_index(kTrialSize / 2, kTrialSize / 2);
-  if (!t.seed_program(kTrialSize / 2, kTrialSize / 2, program)) return r;
-  std::vector<bool> visited(c.site_len, false);
-  for (uint64_t k = 0; k < kTrialTicks; ++k) {
-    const int at = t.first_ip(center);  // the instruction this tick executes
-    if (at >= 0) r.op_mask |= uint64_t{1} << at;
-    t.run(1);
-    if (k < kTrialTicks - kSpanTicks) continue;
-    const int ip = t.first_ip(center);
-    if (ip >= 0) visited[ip] = true;
-  }
-  if (t.site_active(center)) {
-    r.ip_span = 0;
-    for (bool v : visited) r.ip_span += v;
-  }
-  int carriers = 0;
-  for (int32_t s = 0; s < kTrialSize * kTrialSize; ++s) {
-    carriers += t.site_active(s) && masked(t, s) == key;
-  }
-  r.replicator = carriers >= 2;
-  return r;
+  return census::run_trial(run_cfg, key, *g_ref);
 }
 
 // Kind of the activation now running at a site; seeded founders count as self.
@@ -272,11 +219,10 @@ struct ClassSums {
   double h = 0.0;
 };
 
-// Substitutions in replicators at polite's own offsets, by polite's role of the offset
-// (opcode or other) and by direction between the table's classes.
+// Substitutions in replicators at the reference's own offsets, by the reference's role of the
+// offset (opcode or other) and by direction between the table's classes.
 enum Dir { kF2S = 0, kS2F, kF2F, kS2S, kToInert, kFromInert, kDirsN };
 constexpr const char* kDirName[kDirsN] = {"f2s", "s2f", "f2f", "s2s", "to_inert", "from_inert"};
-constexpr std::array<int, 13> kPoliteOps = {0, 3, 6, 8, 11, 13, 15, 18, 20, 22, 24, 26, 28};
 
 std::string pct(uint64_t a, uint64_t b) {
   std::ostringstream o;
@@ -289,15 +235,15 @@ void print_classes(const World& w, const std::map<std::string, TrialResult>& cac
                    const std::vector<int>& tables) {
   const Config& c = w.config();
   const int32_t n = c.width * c.height;
-  const auto& ref = polite();
-  uint64_t polite_op = 0;
-  for (int k : kPoliteOps) polite_op |= uint64_t{1} << k;
+  const auto& ref = ref_program();
+  uint64_t ref_op = 0;
+  for (int k : g_ref->ops) ref_op |= uint64_t{1} << k;
   for (int table : tables) {
     const auto fast = decay_fast_classes(table);
     double rs = 0.0, rf = 0.0;
     decay_rates(c.p_hydro, c.decay_ratio, rs, rf);
     ClassSums sum[2], all;  // [0] non-replicators, [1] replicators (active sites only)
-    uint64_t subst[2][kDirsN] = {};  // [0] polite data offsets, [1] polite opcode offsets
+    uint64_t subst[2][kDirsN] = {};  // [0] reference data offsets, [1] its opcode offsets
     int pfx_sites = 0;
     for (int32_t s = 0; s < n; ++s) {
       const uint8_t* b = w.bytes_at(s);
@@ -335,7 +281,7 @@ void print_classes(const World& w, const std::map<std::string, TrialResult>& cac
       pfx_sites += 1;
       for (int k = 0; k < static_cast<int>(ref.size()); ++k) {
         if (is_volatile(k) || b[k] == ref[k]) continue;
-        const int role = polite_op >> k & 1;
+        const int role = ref_op >> k & 1;
         Dir d;
         if (b[k] == INERT) d = kToInert;
         else if (ref[k] == INERT) d = kFromInert;
@@ -371,6 +317,223 @@ void print_classes(const World& w, const std::map<std::string, TrialResult>& cac
   }
 }
 
+// Fidelity window (fidelity=W, needs census=1): every copy birth in the last W ticks before
+// each checkpoint is kept with the keys of parent and child at birth, the class of their
+// differences (census::diff_sources) and whether the parent's reference-inert offsets were
+// filled (census::ref_inert_filled). At the checkpoint every key gets a census verdict.
+// Status of a key: rep (strict replicator), loose (replicator by the two-carrier test only),
+// prop (not a replicator, but its trial reached copy depth kPropDepth: a child of the founder
+// made a copy) or other. Reignite births are sampled (the first kReigniteSample in the
+// window) to bound the number of trials.
+using census::Diff;
+using census::kDiffClasses;
+using census::kDiffClsName;
+using census::kDiffSrcName;
+using census::kDiffSrcs;
+
+constexpr int kPropDepth = 2;
+constexpr uint64_t kReigniteSample = 300;
+constexpr uint64_t kGenoMin = 10;  // copy births for a genotype to enter the quartiles
+constexpr int kTopGenotypes = 3;
+
+enum Status { kRep = 0, kLoose, kProp, kOther, kStatuses };
+constexpr const char* kStatusName[kStatuses] = {"rep", "loose", "prop", "other"};
+
+int status_of(const TrialResult& r) {
+  if (r.replicator) return r.strict() ? kRep : kLoose;
+  return r.depth >= kPropDepth ? kProp : kOther;
+}
+
+struct FidBirth {
+  std::string parent, child;
+  int kind = 0;
+  Diff diff;
+  bool parent_filled = false;
+  int parent_len = 0;  // non-inert bytes at the parent site
+};
+
+struct FidWindow {
+  std::vector<FidBirth> births;
+  uint64_t all = 0, reignites_seen = 0;
+  uint64_t kinds[kKinds] = {};
+  Stats start;  // run counters when the window opened
+};
+
+FidBirth observe_fid(const World& w, const World::Birth& b, int kind) {
+  FidBirth f;
+  f.parent = masked(w, b.parent);
+  f.child = masked(w, b.child);
+  f.kind = kind;
+  f.diff = census::diff_sources(w, b, *g_ref);
+  f.parent_filled = census::ref_inert_filled(w.bytes_at(b.parent), *g_ref);
+  for (int k = 0; k < w.config().site_len; ++k) f.parent_len += w.bytes_at(b.parent)[k] != INERT;
+  return f;
+}
+
+std::string hex(const std::string& key) {
+  static const char* kDigits = "0123456789abcdef";
+  std::string h;
+  for (unsigned char ch : key) {
+    h += kDigits[ch >> 4];
+    h += kDigits[ch & 15];
+  }
+  return h;
+}
+
+// Copy births grouped by parent; children counted by census verdict (rep = census
+// replicator, strict = strict replicator).
+struct FidTab {
+  uint64_t births = 0, child_rep = 0, child_strict = 0, child_prop = 0, len = 0;
+  uint64_t cls[kDiffClasses] = {}, cls_strict[kDiffClasses] = {};
+  uint64_t src[kDiffSrcs] = {};
+  uint64_t filled = 0, filled_strict = 0;
+
+  void add(const FidBirth& f, const TrialResult& child) {
+    const bool strict = child.strict();
+    births += 1;
+    child_rep += child.replicator;
+    child_strict += strict;
+    child_prop += status_of(child) == kProp;
+    len += f.parent_len;
+    cls[f.diff.cls] += 1;
+    cls_strict[f.diff.cls] += strict;
+    for (int i = 0; i < kDiffSrcs; ++i) src[i] += f.diff.n[i];
+    filled += f.parent_filled;
+    filled_strict += f.parent_filled && strict;
+  }
+  // exact=n(s) ...: births of each class and, in parentheses, those with a strict child.
+  void print_classes(std::ostream& o) const {
+    for (int c = 0; c < kDiffClasses; ++c) {
+      o << ' ' << kDiffClsName[c] << '=' << cls[c] << '(' << cls_strict[c] << ')';
+    }
+    o << " parent_filled=" << filled << '(' << filled_strict << ')';
+  }
+};
+
+void print_fidelity(const World& w, const FidWindow& fw, uint64_t window,
+                    std::map<std::string, TrialResult>& cache) {
+  auto verdict = [&](const std::string& key) -> const TrialResult& {
+    auto it = cache.find(key);
+    if (it == cache.end()) it = cache.emplace(key, run_trial(w.config(), key)).first;
+    return it->second;
+  };
+  auto mean = [](uint64_t a, uint64_t b) { return b ? static_cast<double>(a) / b : 0.0; };
+  const Stats& s = w.stats();
+  std::cout << "# fidelity tick=" << w.tick() << " window=" << window << " births=" << fw.all
+            << " self/copy/reignite=" << fw.kinds[kSelfIgnite] << '/' << fw.kinds[kCopy] << '/'
+            << fw.kinds[kReignite]
+            << " reignite_tested=" << std::min(fw.reignites_seen, kReigniteSample)
+            << " no_mass=" << s.write_no_mass - fw.start.write_no_mass
+            << " ext_blocked=" << s.ext_blocked - fw.start.ext_blocked
+            << " conflicts=" << s.write_conflict - fw.start.write_conflict
+            << " walled=" << s.write_walled - fw.start.write_walled << std::endl;
+
+  FidTab tab[kStatuses], reig;
+  uint64_t reig_igniter_rep = 0, reig_same = 0;
+  struct Geno {
+    FidTab tab;
+    int len = 0;
+    int status = kRep;
+  };
+  std::map<std::string, Geno> genos;  // census-replicator parents (rep and loose)
+  for (const FidBirth& f : fw.births) {
+    const int ps = status_of(verdict(f.parent));
+    const TrialResult& child = verdict(f.child);
+    if (f.kind == kReignite) {
+      reig.add(f, child);
+      reig_igniter_rep += ps == kRep || ps == kLoose;
+      reig_same += f.child == f.parent;
+      continue;
+    }
+    tab[ps].add(f, child);
+    if (ps != kRep && ps != kLoose) continue;
+    Geno& g = genos[f.parent];
+    g.tab.add(f, child);
+    g.len = f.parent_len;
+    g.status = ps;
+  }
+  for (int ps = 0; ps < kStatuses; ++ps) {
+    const FidTab& t = tab[ps];
+    std::cout << "# fidcopy tick=" << w.tick() << " parent=" << kStatusName[ps]
+              << " births=" << t.births << " child_rep%=" << pct(t.child_rep, t.births)
+              << " child_strict%=" << pct(t.child_strict, t.births)
+              << " child_prop%=" << pct(t.child_prop, t.births)
+              << " parent_len=" << mean(t.len, t.births);
+    t.print_classes(std::cout);
+    std::cout << " diffs/birth:";
+    for (int i = 0; i < kDiffSrcs; ++i) std::cout << ' ' << kDiffSrcName[i] << '=' << mean(t.src[i], t.births);
+    std::cout << std::endl;
+  }
+  // Per strict-replicator parent genotype: quartiles of the strict share of its copies.
+  std::vector<double> shares;
+  uint64_t covered = 0, strict_genos = 0;
+  for (auto& [key, g] : genos) {
+    if (g.status != kRep) continue;
+    strict_genos += 1;
+    if (g.tab.births < kGenoMin) continue;
+    shares.push_back(100.0 * mean(g.tab.child_strict, g.tab.births));
+    covered += g.tab.births;
+  }
+  std::sort(shares.begin(), shares.end());
+  auto q = [&](double f) {
+    return shares.empty() ? 0.0 : shares[static_cast<size_t>(f * (shares.size() - 1) + 0.5)];
+  };
+  std::cout << "# fidgeno tick=" << w.tick() << " rep_parent_genotypes=" << strict_genos
+            << " with_min" << kGenoMin << '=' << shares.size() << " their_births=" << covered
+            << " child_strict%_q25/q50/q75=" << q(0.25) << '/' << q(0.5) << '/' << q(0.75)
+            << std::endl;
+  // The census-replicator parent genotypes with the most copy births in the window.
+  std::multimap<uint64_t, const std::string*, std::greater<>> top;
+  for (auto& [key, g] : genos) top.insert({g.tab.births, &key});
+  int rank = 0;
+  for (auto& [n, key] : top) {
+    if (rank++ == kTopGenotypes) break;
+    const Geno& g = genos[*key];
+    const TrialResult& v = verdict(*key);
+    std::cout << "# fidtop tick=" << w.tick() << " rank=" << rank << " status="
+              << kStatusName[g.status] << " births=" << n
+              << " child_strict%=" << pct(g.tab.child_strict, n) << " len=" << g.len;
+    g.tab.print_classes(std::cout);
+    std::cout << " founder_exact/copies=" << v.founder_exact << '/' << v.founder_copies
+              << " hex=" << hex(*key) << std::endl;
+  }
+  std::cout << "# fidreig tick=" << w.tick() << " tested=" << reig.births
+            << " child_rep%=" << pct(reig.child_rep, reig.births)
+            << " child_strict%=" << pct(reig.child_strict, reig.births)
+            << " child_prop%=" << pct(reig.child_prop, reig.births)
+            << " igniter_rep%=" << pct(reig_igniter_rep, reig.births)
+            << " same_as_igniter%=" << pct(reig_same, reig.births) << std::endl;
+}
+
+// Active sites by status, and those whose reference-inert offsets are filled.
+void print_lineage(const World& w, std::map<std::string, TrialResult>& cache) {
+  const int32_t n = w.config().width * w.config().height;
+  uint64_t sites[kStatuses] = {}, depth[kStatuses] = {}, filled[kStatuses] = {};
+  std::map<std::string, int> genos;
+  for (int32_t s = 0; s < n; ++s) {
+    if (!w.site_active(s)) continue;
+    const std::string key = masked(w, s);
+    auto it = cache.find(key);
+    if (it == cache.end()) it = cache.emplace(key, run_trial(w.config(), key)).first;
+    const int st = status_of(it->second);
+    sites[st] += 1;
+    depth[st] += static_cast<uint64_t>(it->second.depth);
+    filled[st] += census::ref_inert_filled(w.bytes_at(s), *g_ref);
+    genos[key] = st;
+  }
+  uint64_t g[kStatuses] = {};
+  for (auto& [key, st] : genos) g[st] += 1;
+  auto mean = [](uint64_t a, uint64_t b) { return b ? static_cast<double>(a) / b : 0.0; };
+  std::cout << "# lineage tick=" << w.tick();
+  for (int st = 0; st < kStatuses; ++st) {
+    const std::string name = kStatusName[st];
+    std::cout << ' ' << name << "_sites=" << sites[st] << ' ' << name << "_genotypes=" << g[st]
+              << ' ' << name << "_depth=" << mean(depth[st], sites[st]) << ' ' << name
+              << "_filled=" << filled[st];
+  }
+  std::cout << std::endl;
+}
+
 // Cumulative counters of the optional physics (hydro_whole, p_rot).
 void print_physics(const World& w) {
   const Stats& s = w.stats();
@@ -392,7 +555,7 @@ void print_top_programs(const World& w) {
   for (auto& [c, t] : top) {
     if (shown++ == 3) break;
     std::vector<uint8_t> bytes(t.begin(), t.end());
-    std::cout << "# " << c << " active, dist " << text_distance(bytes.data(), polite(), w.config().site_len)
+    std::cout << "# " << c << " active, dist " << text_distance(bytes.data(), ref_program(), w.config().site_len)
               << ": " << disassemble(bytes) << '\n';
   }
 }
@@ -408,6 +571,7 @@ int main(int argc, char** argv) {
   bool physics = false;  // print the physics counters even with hydro_whole and p_rot off
   uint64_t interval = 10000;
   std::vector<int> class_tables;  // classes=...: per-op class measures (needs census=1)
+  uint64_t fidelity = 0;          // fidelity=W: copy-birth window before each checkpoint
   for (int i = 1; i < argc; ++i) {
     const std::string a = argv[i];
     const auto eq = a.find('=');
@@ -459,6 +623,14 @@ int main(int argc, char** argv) {
     else if (k == "width") cfg.width = std::atoi(v.c_str());
     else if (k == "height") cfg.height = std::atoi(v.c_str());
     else if (k == "interval") interval = std::max<long long>(1, std::atoll(v.c_str()));
+    else if (k == "fidelity") fidelity = std::max<long long>(0, std::atoll(v.c_str()));
+    else if (k == "anc") {
+      g_ref = census::reference_named(v);
+      if (!g_ref) {
+        std::cerr << "bad anc: " << v << '\n';
+        return 1;
+      }
+    }
     else {
       std::cerr << "unknown key: " << k << '\n';
       return 1;
@@ -472,9 +644,13 @@ int main(int argc, char** argv) {
     std::cerr << "classes needs census=1\n";
     return 1;
   }
+  if (fidelity > 0 && (!census || fidelity > interval)) {
+    std::cerr << "fidelity needs census=1 and a window no longer than interval\n";
+    return 1;
+  }
   World w(cfg);
   const int ax = rival ? cfg.width / 4 : cfg.width / 2;
-  w.seed_program(ax, cfg.height / 2, polite());
+  w.seed_program(ax, cfg.height / 2, ref_program());
   if (rival) w.seed_program(3 * cfg.width / 4, cfg.height / 2, ancestor());
   const int L = cfg.site_len;
   std::vector<Record> recs;
@@ -485,6 +661,7 @@ int main(int argc, char** argv) {
   Stats prev_stats;
   ErrTally errs;
   std::map<std::string, TrialResult> census_cache;  // program text -> trial (census=1)
+  FidWindow fid;
   std::cout << "tick\tactive\tbirths\texact%\tintact_parent%\ttop_count\ttop_dist\tdistinct"
                "\tcopies\treignites\tintact_copies\tblank\topen0\tdead\tpfx_active\tpfx_copies\text_erased\tstalls\tstarved\tenergy\n";
   const bool physics_line = physics || cfg.hydro_whole != Whole::Off || cfg.p_rot > 0.0;
@@ -504,19 +681,19 @@ int main(int argc, char** argv) {
     for (const auto& b : w.births_this_tick()) {
       Record r;
       r.born = w.tick();
-      r.parent_intact = text_distance(w.bytes_at(b.parent), polite(), L) == 0;
+      r.parent_intact = text_distance(w.bytes_at(b.parent), ref_program(), L) == 0;
       if (!r.parent_intact) {
         std::string sig;
         const uint8_t* pb = w.bytes_at(b.parent);
         for (int k = 0; k < L && sig.size() < 60; ++k) {
-          const uint8_t ref = k < static_cast<int>(polite().size()) ? polite()[k] : INERT;
+          const uint8_t ref = k < static_cast<int>(ref_program().size()) ? ref_program()[k] : INERT;
           if (!is_volatile(k) && pb[k] != ref) {
             sig += std::to_string(k) + ":" + std::to_string(ref) + ">" + std::to_string(pb[k]) + " ";
           }
         }
         altered_kinds[sig] += 1;
       }
-      r.child_text = text_distance(w.bytes_at(b.child), polite(), L);
+      r.child_text = text_distance(w.bytes_at(b.child), ref_program(), L);
       for (int k = 0; k < L; ++k) {
         if (!is_volatile(k) && w.bytes_at(b.child)[k] != w.bytes_at(b.parent)[k]) {
           r.copy_diff += 1;
@@ -524,6 +701,12 @@ int main(int argc, char** argv) {
         }
       }
       r.kind = classify(b);
+      if (fidelity > 0 && (interval - w.tick() % interval) % interval < fidelity) {
+        fid.all += 1;
+        fid.kinds[r.kind] += 1;
+        const bool sample = r.kind == kReignite && fid.reignites_seen++ < kReigniteSample;
+        if (r.kind == kCopy || sample) fid.births.push_back(observe_fid(w, b, r.kind));
+      }
       win.births += 1;
       win.exact += r.copy_diff == 0;
       win.intact += r.parent_intact;
@@ -544,7 +727,13 @@ int main(int argc, char** argv) {
     if (census && w.tick() % interval == 0) {
       print_census(w, recs, current, census_cache);
       if (!class_tables.empty()) print_classes(w, census_cache, class_tables);
+      if (fidelity > 0) {
+        print_lineage(w, census_cache);
+        print_fidelity(w, fid, fidelity, census_cache);
+        fid = FidWindow{};
+      }
     }
+    if (fidelity > 0 && (w.tick() + fidelity) % interval == 0) fid.start = w.stats();
     if (physics_line && w.tick() % interval == 0) print_physics(w);
   }
   Group g[2][kKinds];

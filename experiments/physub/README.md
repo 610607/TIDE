@@ -112,12 +112,14 @@ python3 -m http.server 8765 -d viewer   # then open http://localhost:8765/?file=
 | `src/ps_physics.cpp` | Diffusion (monomers, energy), hydrolysis (per byte or whole program), erosion, energy inflow, block rotation |
 | `src/ps_world.cpp` | Construction, ledger, digest, ancestors, disassembler |
 | `apps/ps_run.cpp` | Runner: TSV per interval, PSV replay frames |
-| `apps/ps_probe.cpp` | Probe for polite-seeded runs (columns below) |
+| `apps/ps_probe.cpp` | Probe for runs seeded with polite or `ancestor()` (columns below) |
+| `apps/ps_census.hpp` | Census trial, strict-replicator test and copy-difference classes, shared by the probe and the scan |
+| `apps/ps_scan.cpp` | Isolated first-copy fidelity, knockout and substitution scans of genotypes listed by the probe |
 | `apps/ps_knockout.cpp` | Single-byte knockout of an ancestor without mutation or decay |
 | `apps/ps_copycut.cpp` | First-copy cut probability of polite alone under block rotation |
-| `tests/ps_test.cpp` | Ledgers, replay, walls, ancestor, starvation, bond barrier, act_cap, ext_write, p_dead, energy diffusion, bond storage, dead_quiet, whole decay, block rotation, whole decay per class, per-op decay tables |
+| `tests/ps_test.cpp` | Ledgers, replay, walls, ancestor, starvation, bond barrier, act_cap, ext_write, p_dead, energy diffusion, bond storage, dead_quiet, whole decay, block rotation, whole decay per class, per-op decay tables, census trial and copy-difference classes |
 | `viewer/index.html` | Replay viewer (layers, inspector, timeline) |
-| `scripts/run_jobs.sh`, `scripts/jobs/` | Parallel runner and the v8-v17 job lists |
+| `scripts/run_jobs.sh`, `scripts/jobs/` | Parallel runner and the v8-v18 job lists |
 
 `ps_probe` columns per interval: births, `exact%`, `intact_parent%`, top genotype, `copies`
 (child mostly written by the parent) and `reignites` (child code already present),
@@ -147,6 +149,44 @@ replicator site, the bytes that differ from polite at polite's own offsets (vola
 excluded). The counts are split by polite's role of the offset (13 opcode offsets, the rest
 data) and by direction between the table's classes (fast to slow, slow to fast, fast to
 fast, slow to slow, to inert, from inert).
+
+`anc=copier` seeds `ancestor()` instead of polite; intact, distances, volatile offsets
+(24-26 instead of 31-33 and 44) and opcode offsets then refer to `ancestor()`.
+
+With `census=1` and `fidelity=W` (W at most the interval), `ps_probe` keeps every copy birth
+in the last W ticks before each checkpoint and adds four kinds of line (definitions in
+`apps/ps_census.hpp`):
+
+- Status of a genotype: `rep` is a strict replicator: a census replicator all of whose
+  founder copies in the trial are exact (the two-carrier test alone passes a program whose
+  first copy is exact and later ones are not). `loose` passes only the two-carrier test.
+  `prop` is not a replicator, but its trial reached copy depth 2: a child of the founder
+  made a copy. `other` is the rest.
+- Class of a copy birth, from the sources of the offsets where child and parent differ:
+  `env` when any was written by another site (foreign) or left by an earlier occupant
+  (residue); else `shift` when three or more were written by the parent (a misaligned copy;
+  three copy errors in one copy have probability about 2.7e-4 at `p_mut` 0.003 and 40
+  copied bytes); else `gap` when an offset was never written and is inert in the child; else
+  `point` (one or two parent-written differences: copy errors); else `exact`.
+- `# lineage`: active sites and genotypes by status, mean trial depth, and sites whose
+  reference-inert offsets (polite's own-site pointer directions 30, 34, 36, 38, 40) have
+  been filled from outside.
+- `# fidelity`: births in the window by kind, and the window's refused, conflicting and
+  walled writes. `# fidcopy` (one line per parent status): copy births, the shares of
+  children that are census replicators, strict replicators and propagators, the births per
+  class with the strict children in parentheses, and differing offsets per birth by source.
+  `# fidgeno`: quartiles over strict-replicator parent genotypes with at least 10 copies of
+  the strict share of their children. `# fidtop`: the three census-replicator genotypes with
+  the most copy births, with their key in hex for `ps_scan`. `# fidreig`: the first 300
+  re-ignitions in the window and the status of the re-ignited code.
+
+`ps_scan` reads the `# fidtop` lines and, for each genotype, measures the share of strict
+replicators among the founder's first copies in 9x9 worlds with copy error but no decay
+(`first` seeds; the target is empty and nothing else is active, so differences come only from
+the program's own copying), counts knockouts (byte set to inert, as `ps_knockout`) and random
+substitutions (`subs` per byte) that are not strict replicators, and predicts the strict share
+from text substitutions alone: (1-u)^m + u(1-u)^(m-1) sum_k s_k over the m non-inert,
+non-volatile bytes, with s_k the strict share of substitutions at k.
 
 With `hydro_whole` on, `p_rot > 0` or `physics=1`, `ps_probe` adds a `# physics` line per
 interval and at the end with cumulative counters: whole-program decays (and how many hit an

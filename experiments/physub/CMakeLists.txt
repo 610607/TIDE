@@ -33,7 +33,7 @@ add_library(physub STATIC
 target_include_directories(physub PUBLIC src)
 target_compile_options(physub PRIVATE ${PHYSUB_WARNINGS})
 
-foreach(app ps_run ps_probe ps_knockout ps_copycut)
+foreach(app ps_run ps_probe ps_knockout ps_copycut ps_scan)
   add_executable(${app} apps/${app}.cpp)
   target_link_libraries(${app} PRIVATE physub)
   target_compile_options(${app} PRIVATE ${PHYSUB_WARNINGS})
@@ -42,6 +42,7 @@ endforeach()
 # Tests rely on assert, so keep it active in every build type.
 add_executable(ps_test tests/ps_test.cpp)
 target_link_libraries(ps_test PRIVATE physub)
+target_include_directories(ps_test PRIVATE apps)
 target_compile_options(ps_test PRIVATE ${PHYSUB_WARNINGS} -UNDEBUG)
 
 enable_testing()
