@@ -351,6 +351,111 @@ void test_bond_store() {
             << " births=" << a.stats().births << " max bond energy=" << max_bonds << "\n";
 }
 
+int non_inert(const std::vector<uint8_t>& bytes) {
+  return static_cast<int>(std::count_if(bytes.begin(), bytes.end(),
+                                        [](uint8_t b) { return b != INERT; }));
+}
+
+// Form M: a program decays in one event, all its bytes return to the site's free monomers,
+// and the activation ends; with a small rate the ledger stays exact and replay holds.
+void test_whole_decay() {
+  Config cfg = small_config();
+  cfg.hydro_whole = true;
+  cfg.p_hydro = 1.0;
+  cfg.p_erode = 0.0;
+  World w(cfg);
+  const int32_t site = w.site_index(8, 8);
+  assert(w.seed_program(8, 8, polite()));
+  w.run(1);
+  assert(non_inert(w.site_bytes(site)) == 0);
+  assert(!w.site_active(site));
+  assert(w.free_mass(site) >= cfg.mass0);  // the program's monomers are back
+  assert(w.stats().whole_decays == 1 && w.stats().whole_decays_active == 1);
+  assert(w.stats().hydrolyzed == static_cast<uint64_t>(non_inert(polite())));
+  assert(w.ledger_ok());
+
+  Config slow = small_config();
+  slow.hydro_whole = true;
+  slow.p_hydro = 2e-5;
+  slow.p_mut = 0.01;
+  World a(slow), b(slow);
+  for (World* x : {&a, &b}) assert(x->seed_program(8, 8, polite()));
+  const uint64_t kTicks = 4000;
+  for (uint64_t t = 0; t < kTicks; ++t) {
+    a.run(1);
+    assert(a.ledger_ok());
+  }
+  b.run(kTicks);
+  assert(a.digest() == b.digest());
+  assert(a.stats().whole_decays > 0 && a.stats().births > 0);
+  std::cout << "[ps test 13] whole decay cleared " << w.stats().hydrolyzed
+            << " bytes in one event; 4000 ticks exact, decays=" << a.stats().whole_decays
+            << " births=" << a.stats().births << "\n";
+}
+
+// Every activation points at a non-inert byte of its own site's code.
+bool activations_on_code(const World& w) {
+  const int32_t n = w.config().width * w.config().height;
+  for (int32_t s = 0; s < n; ++s) {
+    const int ip = w.first_ip(s);
+    if (ip >= 0 && w.bytes_at(s)[ip] == INERT) return false;
+  }
+  return true;
+}
+
+// Block rotation moves code and activation together, conserves matter, replays exactly,
+// and a walled block stays.
+void test_block_rotation() {
+  Config cfg = small_config();
+  cfg.p_rot = 1.0;
+  cfg.p_hydro = 0.0;
+  cfg.p_erode = 0.0;
+  World w(cfg);
+  assert(w.seed_program(8, 8, polite()));
+  const int32_t from = w.site_index(8, 8);
+  w.run(1);
+  assert(w.stats().rotations == static_cast<uint64_t>((cfg.width / 2) * (cfg.height / 2)));
+  assert(w.moves_this_tick().size() == 4 * w.stats().rotations);
+  assert(!w.site_active(from) && non_inert(w.site_bytes(from)) == 0);
+  int32_t to = -1;
+  for (int32_t s : {w.site_index(9, 8), w.site_index(8, 9)}) if (w.site_active(s)) to = s;
+  assert(to >= 0);
+  assert(non_inert(w.site_bytes(to)) == non_inert(polite()));
+  assert(w.ledger_ok());
+
+  World walled(cfg);
+  assert(walled.seed_program(8, 8, polite()));
+  const int32_t a = walled.site_index(8, 8), b = walled.site_index(9, 8);
+  walled.set_wall(a, 1, cfg.w_max);   // a | b
+  walled.set_wall(b, 2, cfg.w_max);   // b over c
+  walled.set_wall(walled.site_index(8, 9), 1, cfg.w_max);  // d | c
+  walled.set_wall(a, 2, cfg.w_max);   // a over d
+  walled.run(1);
+  assert(walled.stats().rot_walled == 1 && walled.site_active(a));
+  assert(walled.ledger_ok());
+
+  Config mix = small_config();
+  mix.p_rot = 1e-3;
+  mix.p_mut = 0.01;
+  mix.ext_write = ExtWrite::FillOnly;
+  World x(mix), y(mix);
+  for (World* v : {&x, &y}) assert(v->seed_program(8, 8, polite()));
+  const uint64_t kTicks = 4000;
+  for (uint64_t t = 0; t < kTicks; ++t) {
+    x.run(1);
+    assert(x.ledger_ok());
+    assert(activations_on_code(x));
+  }
+  y.run(kTicks);
+  assert(x.digest() == y.digest());
+  assert(x.stats().births > 0 && x.stats().copies_cut > 0);
+  std::cout << "[ps test 14] rotation moved code with activation; walled block stayed;"
+            << " 4000 ticks exact, rotations=" << x.stats().rotations
+            << " copies started/cut/born/born_cut=" << x.stats().copies_started << '/'
+            << x.stats().copies_cut << '/' << x.stats().copies_born << '/'
+            << x.stats().copies_born_cut << "\n";
+}
+
 } // namespace
 
 int main() {
@@ -366,6 +471,8 @@ int main() {
   test_energy_diffusion();
   test_bond_store();
   test_dead_quiet();
+  test_whole_decay();
+  test_block_rotation();
   std::cout << "all physub tests passed\n";
   return 0;
 }

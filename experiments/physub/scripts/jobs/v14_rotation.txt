@@ -1,0 +1,32 @@
+# v14b: whole-site mobility by Margolus block rotation (p_rot), option (a): no binding, copies
+# that a rotation cuts continue into whatever site now lies in their direction. Base is the
+# v13 dead0 configuration (form P, p_hydro 3e-6, ext_write fill); only p_rot changes.
+# A site moves with probability p_rot per tick, about p_rot * 300 times per polite copy:
+# 1e-5 -> 0.003, 1e-4 -> 0.03, 1e-3 -> 0.3, 3e-3 -> 0.9 (about 1/300), 1e-2 -> 3.
+#
+# Mechanism check: mutation off, polite alone, 48x48, 20k ticks; counts cut copies and
+# inexact births.
+chk_rot0_s1 ps_probe width=48 height=48 ticks=20000 interval=2000 p_mut=0 p_hydro=3e-6 seed=1 ext_write=fill
+chk_rot1e-5_s1 ps_probe width=48 height=48 ticks=20000 interval=2000 p_mut=0 p_hydro=3e-6 seed=1 ext_write=fill p_rot=1e-5
+chk_rot1e-4_s1 ps_probe width=48 height=48 ticks=20000 interval=2000 p_mut=0 p_hydro=3e-6 seed=1 ext_write=fill p_rot=1e-4
+chk_rot1e-3_s1 ps_probe width=48 height=48 ticks=20000 interval=2000 p_mut=0 p_hydro=3e-6 seed=1 ext_write=fill p_rot=1e-3
+chk_rot3e-3_s1 ps_probe width=48 height=48 ticks=20000 interval=2000 p_mut=0 p_hydro=3e-6 seed=1 ext_write=fill p_rot=3e-3
+chk_rot1e-2_s1 ps_probe width=48 height=48 ticks=20000 interval=2000 p_mut=0 p_hydro=3e-6 seed=1 ext_write=fill p_rot=1e-2
+chk_rot0_s2 ps_probe width=48 height=48 ticks=20000 interval=2000 p_mut=0 p_hydro=3e-6 seed=2 ext_write=fill
+chk_rot1e-5_s2 ps_probe width=48 height=48 ticks=20000 interval=2000 p_mut=0 p_hydro=3e-6 seed=2 ext_write=fill p_rot=1e-5
+chk_rot1e-4_s2 ps_probe width=48 height=48 ticks=20000 interval=2000 p_mut=0 p_hydro=3e-6 seed=2 ext_write=fill p_rot=1e-4
+chk_rot1e-3_s2 ps_probe width=48 height=48 ticks=20000 interval=2000 p_mut=0 p_hydro=3e-6 seed=2 ext_write=fill p_rot=1e-3
+chk_rot3e-3_s2 ps_probe width=48 height=48 ticks=20000 interval=2000 p_mut=0 p_hydro=3e-6 seed=2 ext_write=fill p_rot=3e-3
+chk_rot1e-2_s2 ps_probe width=48 height=48 ticks=20000 interval=2000 p_mut=0 p_hydro=3e-6 seed=2 ext_write=fill p_rot=1e-2
+#
+# Census runs: the v13 dead0 configuration with p_rot added (control: v14a dead0 rows).
+rot1e-5_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=1 ext_write=fill census=1 p_rot=1e-5
+rot1e-5_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=2 ext_write=fill census=1 p_rot=1e-5
+rot1e-4_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=1 ext_write=fill census=1 p_rot=1e-4
+rot1e-4_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=2 ext_write=fill census=1 p_rot=1e-4
+rot1e-3_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=1 ext_write=fill census=1 p_rot=1e-3
+rot1e-3_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=2 ext_write=fill census=1 p_rot=1e-3
+rot3e-3_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=1 ext_write=fill census=1 p_rot=3e-3
+rot3e-3_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=2 ext_write=fill census=1 p_rot=3e-3
+rot1e-2_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=1 ext_write=fill census=1 p_rot=1e-2
+rot1e-2_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=2 ext_write=fill census=1 p_rot=1e-2

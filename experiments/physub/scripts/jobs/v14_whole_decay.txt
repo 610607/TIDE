@@ -1,0 +1,9 @@
+# v14a: decay form M (hydro_whole=1). A site's program decays in one event with probability
+# 1 - (1 - r)^n per tick over its n non-inert bytes, returning every byte to free monomers and
+# ending the activation. r = 1.95e-6 = 26 * 3e-6 / 40 matches polite's whole-program hazard to
+# its current replicative hazard (26 lethal bytes at p_hydro 3e-6). Only the form changes;
+# the dead0 rows rerun the v13 control (form P, p_hydro 3e-6) at this revision.
+m195_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill census=1
+m195_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=2 ext_write=fill census=1
+dead0_s1 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=1 ext_write=fill census=1
+dead0_s2 ps_probe width=96 height=96 ticks=100000 interval=10000 p_mut=0.003 p_hydro=3e-6 seed=2 ext_write=fill census=1

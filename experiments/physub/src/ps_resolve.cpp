@@ -47,6 +47,7 @@ int32_t World::free_slot(int32_t site) const {
 }
 
 void World::step() {
+  rotate_blocks();
   std::vector<Intent> intents;
   const int32_t slots = static_cast<int32_t>(act_.size());
   for (int32_t s = 0; s < slots; ++s) {
@@ -130,6 +131,7 @@ void World::apply_writes(std::vector<Intent>& intents) {
     }
     last_site = it.site;
     last_offset = it.offset;
+    if (it.dir != kSelf) note_copy_write(it.origin_site, it.site, it.dir);
     if (it.dir != kSelf &&
         !crosses(it.origin_site, it.dir, kWriteWall, static_cast<uint64_t>(it.origin))) {
       stats_.write_walled += 1;
@@ -162,9 +164,15 @@ void World::apply_writes(std::vector<Intent>& intents) {
     last_write_[it.site] = static_cast<int64_t>(tick_);
     stats_.writes += 1;
     const size_t at = static_cast<size_t>(it.site) * cfg_.site_len + it.offset;
-    writer_[at] = it.origin_site;
+    writer_[at] = body_[it.origin_site];
     written_at_[at] = tick_;
   }
+}
+
+void World::note_copy_write(int32_t origin_site, int32_t site, uint8_t dir) {
+  if (copy_to_[origin_site] < 0) stats_.copies_started += 1;
+  copy_to_[origin_site] = body_[site];
+  copy_dir_[origin_site] = dir;
 }
 
 void World::apply_walls(std::vector<Intent>& intents) {
@@ -202,6 +210,14 @@ void World::apply_arrivals(std::vector<Intent>& intents) {
       });
   for (uint32_t i : idx) {
     const Intent& it = intents[i];
+    // Copy observer: a paid ignition into a neighbor ends the emitting activation's copy.
+    const int32_t o = it.origin_site;
+    const bool copy_ends = it.dir != kSelf && copy_to_[o] >= 0;
+    const bool was_cut = copy_cut_[o] != 0;
+    if (copy_ends) {
+      copy_to_[o] = -1;
+      copy_cut_[o] = 0;
+    }
     const bool passes = it.dir == kSelf ||
         crosses(it.origin_site, it.dir, kIgniteWall, static_cast<uint64_t>(it.origin));
     const int32_t slot = free_slot(it.site);
@@ -211,6 +227,12 @@ void World::apply_arrivals(std::vector<Intent>& intents) {
     }
     fresh_[slot] = true;
     act_[slot] = Activation{true, it.offset};
+    if (copy_ends) {
+      stats_.copies_born += 1;
+      stats_.copies_born_cut += was_cut;
+    }
+    copy_to_[it.site] = -1;  // the new activation starts with no copy
+    copy_cut_[it.site] = 0;
     if (it.site != it.origin_site) lineage_[it.site] = lineage_[it.origin_site];
     stats_.births += 1;
     births_log_.push_back(observe_birth(it.origin_site, it.site));
@@ -226,11 +248,11 @@ World::Birth World::observe_birth(int32_t parent, int32_t child) {
   for (int k = 0; k < cfg_.site_len; ++k) {
     const int32_t wr = writer_[base + k];
     if (wr >= 0 && static_cast<int64_t>(written_at_[base + k]) > ignited_at_[child]) {
-      (wr == parent ? b.by_parent : b.by_other) |= uint64_t{1} << k;
+      (wr == body_[parent] ? b.by_parent : b.by_other) |= uint64_t{1} << k;
     }
     if (code_[base + k] == INERT) continue;
     b.code += 1;
-    b.written += writer_[base + k] == parent &&
+    b.written += writer_[base + k] == body_[parent] &&
                  static_cast<int64_t>(written_at_[base + k]) > ignited_at_[child];
   }
   ignited_at_[child] = static_cast<int64_t>(tick_);

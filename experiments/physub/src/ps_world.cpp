@@ -30,6 +30,19 @@ uint64_t threshold(double p) {
   return static_cast<uint64_t>(p * kTwoPow32);
 }
 
+// Thresholds for whole-program decay by non-inert count n: 1 - (1 - r)^n, built by repeated
+// multiplication so every platform gets the same values.
+std::vector<uint64_t> whole_thresholds(double r, int len) {
+  std::vector<uint64_t> t(static_cast<size_t>(len) + 1, 0);
+  if (r <= 0.0) return t;
+  double survive = 1.0;
+  for (int n = 1; n <= len; ++n) {
+    survive *= 1.0 - std::min(r, 1.0);
+    t[n] = threshold(1.0 - survive);
+  }
+  return t;
+}
+
 void fnv(uint64_t& h, uint64_t v) {
   h ^= v;
   h *= kFnvPrime;
@@ -40,6 +53,7 @@ Config sanitize(Config cfg) {
   cfg.d_div = std::max<int32_t>(cfg.d_div, 2 * kDirs);
   cfg.act_cap = std::max(cfg.act_cap, 1);
   cfg.dead_quiet = std::max<int32_t>(cfg.dead_quiet, 0);
+  cfg.p_rot = std::clamp(cfg.p_rot, 0.0, 1.0);
   return cfg;
 }
 
@@ -58,12 +72,23 @@ World::World(const Config& cfg) : cfg_(sanitize(cfg)) {
   written_at_.assign(code_.size(), 0);
   ignited_at_.assign(sites, -1);
   last_write_.assign(sites, kNeverWritten);
+  body_.resize(sites);
+  for (size_t s = 0; s < sites; ++s) body_[s] = static_cast<int32_t>(s);
+  copy_to_.assign(sites, -1);
+  copy_dir_.assign(sites, kSelf);
+  copy_cut_.assign(sites, 0);
   mass_total_ = static_cast<int64_t>(sites) * cfg_.mass0;
   energy_initial_ = static_cast<int64_t>(sites) * energy_[0];
   t_hydro_ = threshold(cfg_.p_hydro);
   t_dead_ = cfg_.p_dead < 0.0 ? t_hydro_ : threshold(cfg_.p_dead);
   t_erode_ = threshold(cfg_.p_erode);
   t_mut_ = threshold(cfg_.p_mut);
+  if (cfg_.hydro_whole) {
+    t_whole_ = whole_thresholds(cfg_.p_hydro, cfg_.site_len);
+    t_whole_dead_ = whole_thresholds(cfg_.p_dead < 0.0 ? cfg_.p_hydro : cfg_.p_dead,
+                                     cfg_.site_len);
+  }
+  t_rot_ = threshold(cfg_.p_rot / 2.0);
 }
 
 int32_t World::neighbor(int32_t site, uint8_t dir) const {

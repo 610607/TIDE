@@ -11,6 +11,7 @@
 
 #include <cstdint>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace ps {
@@ -40,6 +41,7 @@ enum Stream : uint64_t {
   kOrder = 1, kRnd, kMut, kMutByte, kReadWall, kWriteWall, kIgniteWall,
   kDiffuse, kGuard, kHydro, kErode,
   kEDiffuse, kEGuard,  // appended: earlier streams keep their values
+  kWhole, kRotate, kRotWall,
 };
 
 inline constexpr uint8_t kDirs = 4;   // N, E, S, W
@@ -100,6 +102,19 @@ struct Config {
   // (copies under construction) keep p_hydro. 0 = p_dead applies to every inactive site.
   int32_t dead_quiet = 0;
   double p_erode = 1e-4;      // per wall half-edge per tick (removes one unit)
+  // Decay form. false (P): each non-inert byte becomes inert on its own with probability
+  // p_hydro per tick. true (M): a site's program decays in one event with probability
+  // 1 - (1 - r)^n per tick, n = its non-inert bytes and r = p_hydro (p_dead and dead_quiet
+  // select r as in form P); every non-inert byte returns to the site's free monomers, which
+  // ends any activation there.
+  bool hydro_whole = false;
+  // Whole-site mobility by Margolus block rotation. At the start of each tick the lattice is
+  // split into 2x2 blocks, offset by (0,0) on even ticks and (1,1) on odd ticks; each block
+  // rotates clockwise or counterclockwise with probability p_rot / 2 each. A rotation moves
+  // code bytes and activation slots; free monomers, energy and walls stay in place. Each of
+  // the block's four internal edges must pass a crossing (1/(W+1)), or the block stays.
+  // 0 = off.
+  double p_rot = 0.0;
   uint64_t seed = 1;
 };
 
@@ -129,6 +144,18 @@ struct Stats {
   uint64_t walls_built = 0;
   uint64_t hydrolyzed = 0;
   uint64_t eroded = 0;
+  uint64_t whole_decays = 0;         // hydro_whole: programs decayed in one event
+  uint64_t whole_decays_active = 0;  // of which the site was active
+  uint64_t rotations = 0;            // p_rot: blocks rotated
+  uint64_t rot_walled = 0;           // rotations stopped by a wall crossing
+  // Copy observer (no effect on dynamics). A copy starts with an activation's first write
+  // into a neighbor and ends when that activation emits a paid ignition into a neighbor.
+  // A copy is cut when a rotation leaves its last target outside the direction it was
+  // written through; the program keeps writing into whatever site now lies there.
+  uint64_t copies_started = 0;
+  uint64_t copies_cut = 0;
+  uint64_t copies_born = 0;          // copies that ended in a birth
+  uint64_t copies_born_cut = 0;      // of which cut
 };
 
 struct Ledger {
@@ -200,6 +227,9 @@ public:
     uint64_t by_parent = 0, by_other = 0;
   };
   const std::vector<Birth>& births_this_tick() const { return births_log_; }
+  // Site moves made by this tick's rotations, as (from, to); observers that index by site
+  // apply them before reading this tick's births.
+  const std::vector<std::pair<int32_t, int32_t>>& moves_this_tick() const { return moves_log_; }
 
 private:
   Config cfg_;
@@ -217,6 +247,13 @@ private:
   std::vector<uint64_t> written_at_; // observer: tick of that write
   std::vector<int64_t> ignited_at_;  // observer: tick of the site's last ignition, -1 if none
   std::vector<int64_t> last_write_;  // dead_quiet: tick of the last applied write into the site
+  // Observer: identity of a site's contents, initially its index; moves with rotations so
+  // writer_ and copy targets follow contents rather than positions.
+  std::vector<int32_t> body_;
+  std::vector<int32_t> copy_to_;     // copy observer: body of the last target, -1 if none
+  std::vector<uint8_t> copy_dir_;    // direction of that write
+  std::vector<uint8_t> copy_cut_;    // copy cut by a rotation
+  std::vector<std::pair<int32_t, int32_t>> moves_log_;  // observer: cleared every tick
   Stats stats_;
   int64_t mass_total_ = 0;
   int64_t energy_in_ = 0;            // cumulative inflow
@@ -226,6 +263,9 @@ private:
   uint64_t t_dead_ = 0;
   uint64_t t_erode_ = 0;
   uint64_t t_mut_ = 0;
+  std::vector<uint64_t> t_whole_;    // hydro_whole: threshold by non-inert count, p_hydro
+  std::vector<uint64_t> t_whole_dead_;  // the same for p_dead
+  uint64_t t_rot_ = 0;               // per rotation sense
 
   // geometry and randomness
   int32_t neighbor(int32_t site, uint8_t dir) const;
@@ -255,6 +295,7 @@ private:
   void apply_writes(std::vector<Intent>& intents);
   void apply_walls(std::vector<Intent>& intents);
   void apply_arrivals(std::vector<Intent>& intents);
+  void note_copy_write(int32_t origin_site, int32_t site, uint8_t dir);
   void commit(const std::vector<Intent>& intents);
   void check_wicks();
 
@@ -263,7 +304,11 @@ private:
   void diffuse_field(std::vector<int32_t>& field, int32_t div, Stream flux_stream,
                      Stream guard_stream);
   void hydrolyze();
+  void hydrolyze_whole();
   void erode();
+  void rotate_blocks();
+  void move_cycle(const int32_t (&s)[4]);
+  void check_copy_cuts();
   void feed_energy();
 };
 

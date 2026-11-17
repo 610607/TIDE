@@ -1,6 +1,7 @@
 // Birth probe: classifies every birth of a polite-seeded run by parent integrity, copy
 // differences, child lifespan and child fertility. Observation only.
 // Usage: ps_probe ticks=N seed=S p_mut=X p_hydro=Y rival=0|1 [mass0=M] [census=0|1]
+//        [hydro_whole=0|1] [p_rot=P]
 
 #include "ps_core.hpp"
 
@@ -161,10 +162,12 @@ void print_window(const World& w, const Window& win, const Stats& prev) {
 // Replicator census (census=1): every distinct active program, with the volatile offsets
 // reset to the ancestor's values, is seeded alone in a fresh 9x9 world with the run's
 // physics but no mutation, hydrolysis, erosion or p_dead. It counts as a replicator when at
-// least two active sites carry its program after kTrialTicks. The ip span is the number of
-// distinct offsets the founder's ip visits in the last kSpanTicks: the bytes whose decay
-// ends the activation by wick (-1 if the founder stopped). Trial worlds never touch the
-// run's world, so the run's dynamics and digest are unchanged. Results are cached by text.
+// least two active sites carry its program after kTrialTicks. Trials also run without
+// rotation (p_rot), so the census tests a program's own ability to copy itself. The ip span
+// is the number of distinct offsets the founder's ip visits in the last kSpanTicks: the
+// bytes whose decay ends the activation by wick (-1 if the founder stopped). Trial worlds
+// never touch the run's world, so the run's dynamics and digest are unchanged. Results are
+// cached by text.
 constexpr int kTrialSize = 9;
 constexpr uint64_t kTrialTicks = 2000;
 constexpr uint64_t kSpanTicks = 500;
@@ -183,6 +186,7 @@ TrialResult run_trial(const Config& run_cfg, const std::string& key) {
   c.p_erode = 0.0;
   c.p_dead = 0.0;
   c.dead_quiet = 0;
+  c.p_rot = 0.0;
   c.seed = 1;
   World t(c);
   TrialResult r;
@@ -253,6 +257,17 @@ void print_census(const World& w, const std::vector<Record>& recs,
             << mean(span[0], spanned[0]) << " trials=" << cache.size() << std::endl;
 }
 
+// Cumulative counters of the optional physics (hydro_whole, p_rot).
+void print_physics(const World& w) {
+  const Stats& s = w.stats();
+  std::cout << "# physics tick=" << w.tick() << " whole_decays=" << s.whole_decays
+            << " whole_decays_active=" << s.whole_decays_active << " wick=" << s.deaths_wick
+            << " rotations=" << s.rotations << " rot_walled=" << s.rot_walled
+            << " copies_started=" << s.copies_started << " copies_cut=" << s.copies_cut
+            << " copies_born=" << s.copies_born << " copies_born_cut=" << s.copies_born_cut
+            << " births=" << s.births << std::endl;
+}
+
 void print_top_programs(const World& w) {
   std::map<std::string, int> counts;
   const int32_t n = w.config().width * w.config().height;
@@ -291,6 +306,8 @@ int main(int argc, char** argv) {
     else if (k == "p_hydro") cfg.p_hydro = std::atof(v.c_str());
     else if (k == "p_dead") cfg.p_dead = std::atof(v.c_str());
     else if (k == "dead_quiet") cfg.dead_quiet = std::atoi(v.c_str());
+    else if (k == "hydro_whole") cfg.hydro_whole = std::atoi(v.c_str()) != 0;
+    else if (k == "p_rot") cfg.p_rot = std::atof(v.c_str());
     else if (k == "mass0") cfg.mass0 = std::atoi(v.c_str());
     else if (k == "rival") rival = v == "1";
     else if (k == "census") census = v == "1";
@@ -333,8 +350,15 @@ int main(int argc, char** argv) {
   std::map<std::string, TrialResult> census_cache;  // program text -> trial (census=1)
   std::cout << "tick\tactive\tbirths\texact%\tintact_parent%\ttop_count\ttop_dist\tdistinct"
                "\tcopies\treignites\tintact_copies\tblank\topen0\tdead\tpfx_active\tpfx_copies\text_erased\tstalls\tstarved\tenergy\n";
+  const bool physics_line = cfg.hydro_whole || cfg.p_rot > 0.0;
+  std::vector<int> moved(current.size(), -1);
   while (w.tick() < ticks && w.active_count() > 0) {
     w.run(1);
+    // Rotations run at the start of a tick, before its births: records follow their sites.
+    if (!w.moves_this_tick().empty()) {
+      for (auto [from, to] : w.moves_this_tick()) moved[to] = current[from];
+      for (const auto& m : w.moves_this_tick()) current[m.second] = moved[m.second];
+    }
     if (w.tick() % interval == 0) {
       print_window(w, win, prev_stats);
       win = Window{};
@@ -381,6 +405,7 @@ int main(int argc, char** argv) {
       if (c >= 0 && recs[c].died == 0 && !w.site_active(static_cast<int32_t>(s))) recs[c].died = w.tick();
     }
     if (census && w.tick() % interval == 0) print_census(w, recs, current, census_cache);
+    if (physics_line && w.tick() % interval == 0) print_physics(w);
   }
   Group g[2][kKinds];
   for (const Record& r : recs) {
@@ -424,5 +449,6 @@ int main(int argc, char** argv) {
             << " free=" << l.free_mass << " code=" << l.code_mass
             << " ext_blocked=" << w.stats().ext_blocked
             << " ext_erased=" << w.stats().ext_erasures << '\n';
+  if (physics_line) print_physics(w);
   return 0;
 }
