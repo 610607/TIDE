@@ -572,10 +572,13 @@ struct FateTally {
   uint64_t other_changes = 0;                   // key changes of other activations (untested)
   uint64_t found[kStatuses] = {};               // other -> status, found at the census
   uint64_t change_writer[kStatuses][kWriters] = {};  // the same changes by writer
-  // Strict -> not strict in place.
+  // Strict -> not strict in place, by writer and by status after.
   uint64_t out_writer[kWriters] = {};
+  uint64_t out_to[kStatuses][kWriters] = {};
   uint64_t out_at[64] = {};  // changed offsets
   uint64_t out_src = 0, out_src_only = 0;  // the source-pointer direction byte among them
+  uint64_t src_writer[kWriters] = {};  // who wrote that byte
+  uint64_t src_names_writer = 0;       // a foreign writer, and the new direction names it
   uint64_t out_jump[3] = {};  // its new value v: ip after the closing jump, v mod len, is
                               // 0 / another reference opcode offset / elsewhere
   uint64_t vol_foreign_rep = 0;  // foreign writes into volatile offsets of strict sites
@@ -706,7 +709,15 @@ public:
     o << " (rep/loose/prop/other/self/none)" << std::endl;
     o << "# fateout tick=" << tick << " n=" << out << " writer";
     for (int k = 0; k < kWriters; ++k) o << ' ' << kWriterName[k] << '=' << t_.out_writer[k];
+    o << " by_to";
+    for (int a = kLoose; a < kStatuses; ++a) {
+      o << ' ' << kStatusName[a] << ':';
+      for (int k = 0; k < kWriters; ++k) o << (k ? "/" : "") << t_.out_to[a][k];
+    }
     o << " src_ptr=" << src_ptr_ << " with_src=" << t_.out_src << " only_src=" << t_.out_src_only
+      << " src_writer=";
+    for (int k = 0; k < kWriters; ++k) o << (k ? "/" : "") << t_.src_writer[k];
+    o << " src_names_writer=" << t_.src_names_writer
       << " jump_0/op/other=" << t_.out_jump[0] << '/' << t_.out_jump[1] << '/' << t_.out_jump[2]
       << " vol_foreign_rep=" << t_.vol_foreign_rep << " offsets:";
     std::multimap<uint64_t, int, std::greater<>> top;
@@ -796,11 +807,15 @@ private:
       if (before == kRep && after != kRep) {
         f.converted = true;
         t_.out_writer[wc] += 1;
+        t_.out_to[after][wc] += 1;
         for (int k = 0; k < len_; ++k) t_.out_at[k] += mask >> k & 1;
         if (mask >> src_ptr_ & 1) {
           t_.out_src += 1;
           t_.out_src_only += mask == uint64_t{1} << src_ptr_;
           const uint8_t v = now[src_ptr_];
+          const int32_t sw = w_.byte_writer(s, src_ptr_);
+          t_.src_writer[writer_class(sw, s)] += 1;
+          t_.src_names_writer += sw != s && v != INERT && neighbor_named(s, v) == sw;
           const int ip = v % len_;
           const auto& ops = g_ref->ops;
           t_.out_jump[ip == 0 ? 0 : std::find(ops.begin(), ops.end(), ip) != ops.end() ? 1 : 2] += 1;
@@ -820,13 +835,16 @@ private:
     t_.conv_child_same += child == masked(w_, b.parent);
     const uint8_t v = w_.bytes_at(b.parent)[src_ptr_];
     if (v == INERT) return;
+    t_.conv_child_src += child == masked(w_, neighbor_named(b.parent, v));
+  }
+
+  // The neighbor that a non-inert pointer direction byte v names (torus, as World::pointer).
+  int32_t neighbor_named(int32_t s, uint8_t v) const {
     const int dir = (v - 1) % kDirs;
     const Config& c = w_.config();
     static constexpr int kDx[kDirs] = {0, 1, 0, -1}, kDy[kDirs] = {-1, 0, 1, 0};
-    const int x = b.parent % c.width, y = b.parent / c.width;
-    const int32_t src = ((y + kDy[dir] + c.height) % c.height) * c.width +
-                        (x + kDx[dir] + c.width) % c.width;
-    t_.conv_child_src += child == masked(w_, src);
+    const int x = s % c.width, y = s / c.width;
+    return ((y + kDy[dir] + c.height) % c.height) * c.width + (x + kDx[dir] + c.width) % c.width;
   }
 };
 

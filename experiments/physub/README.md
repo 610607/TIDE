@@ -216,11 +216,13 @@ each changed byte was written that tick and the writer records name the writing 
 - `# fatechange`: in-place key changes by status before and after, and by writer: `self`, the
   status of the foreign writer's activation, or `none` (the writer's site is no longer active).
   When several sites wrote, the first foreign writer counts.
-- `# fateout`: strict activations lost in place: writer, whether the source-pointer direction
-  byte (`src_ptr`: 30 for polite, 23 for `ancestor()`) changed (`with_src`) or was the only
-  non-volatile change (`only_src`), where the closing jump then lands (polite's JMP 30 jumps to
-  [30] mod 64: offset 0, another opcode offset of the reference, or elsewhere), foreign writes
-  into volatile offsets of strict sites (not status changes), and the most changed offsets.
+- `# fateout`: strict activations lost in place: writer, writer by status after (`by_to`),
+  whether the source-pointer direction byte (`src_ptr`: 30 for polite, 23 for `ancestor()`)
+  changed (`with_src`) or was the only non-volatile change (`only_src`), who wrote that byte
+  (`src_writer`), how often a foreign writer is the neighbor the new direction names
+  (`src_names_writer`), where the closing jump then lands (polite's JMP 30 jumps to [30] mod
+  64: offset 0, another opcode offset of the reference, or elsewhere), foreign writes into
+  volatile offsets of strict sites (not status changes), and the most changed offsets.
 - `# fateconv`: converted activations alive, their copy births, and how many children are
   strict, equal to the parent's key, or equal to the key of the neighbor that the parent's
   source pointer names.
