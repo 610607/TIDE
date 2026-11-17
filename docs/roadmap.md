@@ -2,9 +2,11 @@
 
 TIDE stands for TIDE Is Digital Evolution.
 
-Updated: 2026-11-15.
+Updated: 2026-11-17.
 
 This roadmap is a plan. Stage contents are proposals until their rules are agreed; [AGENTS.md](../AGENTS.md) records what is decided.
+
+Current focus: fast exploration of substrate rules in [`experiments/physub/`](../experiments/physub/README.md). Formal verification (see the verification line below) is deferred until rules stabilize.
 
 ## Goal
 
@@ -44,6 +46,33 @@ R4 tooling is needed to read R3 results, so its design starts before R3 runs.
 The GPU backend must be cross-platform. Candidates to compare before P2 include Kompute, direct Vulkan, and native WebGPU implementations. Single-vendor or single-platform APIs are not primary targets. No framework is chosen yet.
 
 Sequential random-order update remains available on the CPU as a comparison mode.
+
+## Verification line
+
+Proposal, assessed 2026-11-17; not decided. Deferred while work focuses on fast exploration. Adopting it would add a formal model above the C++ code, so it needs agreement first; until then the single-threaded C++ implementation remains the reference, as AGENTS.md records.
+
+| Step | When | Content | Exit condition |
+| --- | --- | --- | --- |
+| V0 Pilot | When one rule has settled, for example field diffusion | Executable Lean 4 model of one rule; proofs of conservation, non-negativity, and independence from site visit order; differential test against the C++ code on random small lattices | Proofs check; outputs match; effort recorded; decision whether to use Lean for R0 |
+| V1 Executable contract | Within R0, if V0 is adopted | Lean model of each agreed transition. Total functions with exhaustive cases force a defined effect for every invalid operand and failed operation. Theorems for conservation, locality, and order independence (the P0 exit condition) | Every agreed rule has a model; its properties are proved for all lattice sizes |
+| V2 Differential testing | From R1 | Random configurations run on the Lean model and the C++ reference; state hashes compared | No mismatch over a stated test budget |
+| V3 Parallel models | With P1 and P2 | TLA+ models of the multithreaded and GPU execute and resolve phases: barriers, atomics, conflicting writes; model-checked on small instances | Every modeled schedule yields the reference result |
+
+Why Lean before TLA+: a kernel step is a deterministic function of state, and the two-phase synchronous update removes interleavings. Lean models such a function directly, runs as a differential-testing oracle, and proves properties for every lattice size. TLA+ is strongest for interleavings and temporal properties; its model checkers cover small instances only. Those concerns arise with real concurrency in P1 and P2.
+
+Costs and limits:
+
+- Learning the tool and maintaining proofs cost effort, and every rule change can break proofs. This is the reason to wait until rules settle.
+- Integer semantics must be explicit; C++ signed overflow is undefined behavior.
+- Differential testing samples inputs. It does not prove that the C++ code agrees with the model on every input.
+- A machine-checked proof removes the need to trust whoever wrote it, human or agent, but not the theorem statement. Statements need human review.
+
+Precedents:
+
+- Cedar uses verification-guided development: an executable Lean model with proofs, and differential random testing against the Rust implementation. Disselkoen et al., [How We Built Cedar: A Verification-Guided Approach](https://arxiv.org/abs/2407.01688), arXiv:2407.01688, preprint.
+- TLC can check recorded implementation traces against a TLA+ specification. Cirstea, Kuppe, Loillier, and Merz, [Validating Traces of Distributed Programs Against TLA+ Specifications](https://arxiv.org/abs/2404.16075), SEFM 2024, LNCS; read as arXiv:2404.16075v2.
+
+A brief search on 2026-11-17 found no machine-checked proofs of a digital-life kernel; the search was not exhaustive.
 
 ## Literature and project search plan
 
