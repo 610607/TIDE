@@ -30,6 +30,7 @@ From `experiments/physub/`:
 build/ps_run   key=value ...   # TSV per interval; frames=<file.psv> every=N writes a replay
 build/ps_probe key=value ...   # births, space census and copy errors; census=1 tests replicators
 build/ps_knockout anc=polite   # single-byte knockouts: which bytes stop replication
+build/ps_copycut p_rot=1e-3    # how often block rotation cuts polite's first copy
 scripts/run_jobs.sh scripts/jobs/v11_energy.txt runs/v11 8   # a job list, 8 in parallel
 python3 -m http.server 8765 -d viewer   # then open http://localhost:8765/?file=data/<name>.psv
 ```
@@ -71,11 +72,25 @@ python3 -m http.server 8765 -d viewer   # then open http://localhost:8765/?file=
   without an activation; negative means off. `dead_quiet=N` (0 = off) limits `p_dead` to
   inactive sites that no write has reached for more than N ticks, so copies under
   construction keep `p_hydro`; when on, the per-site last-write tick enters the digest.
+- **Decay form** (`hydro_whole`, 0 = off): with 1, a site's program decays in one event
+  with probability `1 - (1 - r)^n` per tick over its `n` non-inert bytes, `r` = `p_hydro`
+  (`p_dead` and `dead_quiet` select `r` as before). Every byte returns to the site's free
+  monomers and the activation ends at the wick check. Off, each byte decays on its own.
+- **Mobility** (`p_rot`, 0 = off): Margolus block rotation at the start of each tick. The
+  lattice is split into 2x2 blocks offset by (0,0) on even and (1,1) on odd ticks; each block
+  rotates clockwise or counterclockwise with probability `p_rot / 2` each, so a site moves
+  with probability `p_rot` per tick. Code bytes and activation slots move; free monomers,
+  energy and walls stay. Each of the block's four internal edges must pass a `1 / (W + 1)`
+  crossing, or the block stays. There is no binding: a copy whose parent and target are
+  separated continues into whatever site lies in its direction.
 - **Ancestors.** `ancestor()`: a 35-byte copier that overwrites neighbors. `polite()`: a
   46-byte copier that copies all 64 bytes, and only into a neighbor whose byte 0 is INERT.
   Runs use `site_len` 64 and `mass0` 48.
 - **Observer only** (not in the digest): lineage ids, a birth log with write provenance,
-  replay frames (PSV1).
+  replay frames (PSV1), a content identity per site that follows rotations, and copy
+  counters (a copy runs from an activation's first write into a neighbor to its next paid
+  ignition into a neighbor; it is cut when a rotation leaves its target outside the written
+  direction).
 
 ## Files
 
@@ -84,14 +99,15 @@ python3 -m http.server 8765 -d viewer   # then open http://localhost:8765/?file=
 | `src/ps_core.hpp` | Config, ISA, World API |
 | `src/ps_exec.cpp` | Phase 1: plan intents and write costs |
 | `src/ps_resolve.cpp` | Phase 2: pay, writes, walls, ignitions, commit, wick checks; birth observation |
-| `src/ps_physics.cpp` | Diffusion (monomers, energy), hydrolysis, erosion, energy inflow |
+| `src/ps_physics.cpp` | Diffusion (monomers, energy), hydrolysis (per byte or whole program), erosion, energy inflow, block rotation |
 | `src/ps_world.cpp` | Construction, ledger, digest, ancestors, disassembler |
 | `apps/ps_run.cpp` | Runner: TSV per interval, PSV replay frames |
 | `apps/ps_probe.cpp` | Probe for polite-seeded runs (columns below) |
 | `apps/ps_knockout.cpp` | Single-byte knockout of an ancestor without mutation or decay |
-| `tests/ps_test.cpp` | Ledgers, replay, walls, ancestor, starvation, bond barrier, act_cap, ext_write, p_dead, energy diffusion, bond storage, dead_quiet |
+| `apps/ps_copycut.cpp` | First-copy cut probability of polite alone under block rotation |
+| `tests/ps_test.cpp` | Ledgers, replay, walls, ancestor, starvation, bond barrier, act_cap, ext_write, p_dead, energy diffusion, bond storage, dead_quiet, whole decay, block rotation |
 | `viewer/index.html` | Replay viewer (layers, inspector, timeline) |
-| `scripts/run_jobs.sh`, `scripts/jobs/` | Parallel runner and the v8-v13 job lists |
+| `scripts/run_jobs.sh`, `scripts/jobs/` | Parallel runner and the v8-v14 job lists |
 
 `ps_probe` columns per interval: births, `exact%`, `intact_parent%`, top genotype, `copies`
 (child mostly written by the parent) and `reignites` (child code already present),
@@ -108,7 +124,13 @@ sites carry it after 2000 ticks. The line reports replicators (any genotype), th
 polite's program region intact, non-replicators by how their activation began
 (self/copy/reignite), mean activation age, and the mean ip span: distinct offsets the
 founder's ip visits in the trial's last 500 ticks, i.e. the bytes whose decay ends the
-activation by wick. Trial worlds are separate, so the interval rows are unchanged.
+activation by wick. Trial worlds are separate, so the interval rows are unchanged. Trials
+run without rotation, so the census tests a program's own ability to copy itself.
+
+With `hydro_whole=1`, `p_rot > 0` or `physics=1`, `ps_probe` adds a `# physics` line per
+interval and at the end with cumulative counters: whole-program decays (and how many hit an
+active site), wick deaths, rotations, rotations stopped by walls, copies started, cut, ended
+in a birth, and ended in a birth after a cut.
 
 ## Findings from executed runs
 
@@ -212,9 +234,11 @@ sites, so faster reclamation of corpses (v10, v13) does not reach these sites.
 
 ## Open proposals (none agreed)
 
-- **Per-op decay and whole-site mobility** (requested 2026-11-17): sources, code observations
-  and candidate designs are in [the decay and mobility note](../../docs/research/decay-and-mobility.md).
-  Not implemented.
+- **Per-op decay rates and size-dependent mobility** (requested 2026-11-17): sources, code
+  observations and candidate designs are in
+  [the decay and mobility note](../../docs/research/decay-and-mobility.md). The uniform
+  whole-program form and block rotation are implemented as options (v14); per-op rates and
+  size dependence are not.
 - **Bond release to the actor**: an external write that breaks a bond releases `e_bond` at
   the writer's site instead of the byte's site, so clearing dead code pays the clearer.
 - **Reclaiming ancestor**: a seeded replicator that clears its target before copying.

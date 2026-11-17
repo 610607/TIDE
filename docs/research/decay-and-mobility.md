@@ -1,7 +1,9 @@
 # Decay Form and Whole-Site Mobility: Sources and Candidate Designs
 
-Updated: 2026-11-17. Status: candidate designs for `experiments/physub/`, none agreed. Nothing
-here applies to the kernel contract.
+Updated: 2026-11-17. Status: candidate designs for `experiments/physub/`. On 2026-11-17 the
+user agreed to run decay form M with a uniform rate and mobility option (a) as optional
+physub configurations (section 4); per-op rates and size-dependent mobility remain open.
+Nothing here applies to the kernel contract.
 
 This note separates source findings, observations of the physub code, executed runs and
 candidate designs. Page numbers are printed pages unless marked "PDF p.".
@@ -230,14 +232,34 @@ following Rouse/Zimm scaling. All sites move, active or not. Surface tension and
   in one cell, so carrying over the exponent would be an analogy, and no lattice
   artificial-life model imposes it.
 
-## 4. Proposed next steps (not run)
+## 4. Agreed steps and implementation (2026-11-17)
 
-1. Decay form: M with uniform r = 1.95e-6 against `dead0` (`ext_write` fill, seeds 1-2, 96x96,
-   100k ticks, census). Only the form changes.
-2. Mobility, once the design is agreed: a mechanism check with mutation off (polite alone,
-   48x48, p_rot scan) counting completed intact copies and misdirected writes; then census
-   runs at two or three rates.
-3. Per-op spread and size-dependent mobility only after agreement on how values are chosen.
+Agreed by the user:
+
+1. Decay form M with uniform r = 1.95e-6 per byte against `dead0`, so polite's hazard equals
+   its current replicative hazard. No per-op rates yet.
+2. Mobility option (a): no binding relation; copies may be cut, and the cut and error rates
+   are measured.
+3. A p_rot scan from well below 1/300 to 1e-2, bracketing the copy duration.
+
+Both are optional physub configurations (`hydro_whole`, `p_rot`), off by default, and the
+default replay digest is unchanged (revision 5579cb7). Choices made in implementing them,
+not separately agreed:
+
+- Rotation runs at the start of each tick, which is the same as after the previous tick's
+  physics; it lets observers read a tick's births at their final positions.
+- Energy stays with the lattice position, like free monomers: both are site fields fed or
+  moved by their own rules, and an activation pays from the site it occupies.
+- Each of the four crossed internal edges must pass 1/(W+1) (the extension above); a failed
+  crossing leaves the whole block in place.
+- Levels: p_rot in {1e-5, 1e-4, 1e-3, 3e-3, 1e-2}. A site moves with probability p_rot per
+  tick, so a ~320-tick copy sees about 0.003, 0.03, 0.3, 1 and 3 moves of its parent. 1e-5
+  is a near-static control, 1e-4 and 1e-3 lie below 1/300, 3e-3 is close to it, and 1e-2
+  is the agreed upper end.
+- The census trial runs without rotation, so "replicator" keeps meaning a program that can
+  copy itself.
+
+Results are in the [physub README](../../experiments/physub/README.md) (v14).
 
 ## Search record
 
