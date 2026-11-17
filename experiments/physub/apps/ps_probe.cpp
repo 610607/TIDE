@@ -4,7 +4,7 @@
 // Usage: ps_probe ticks=N seed=S p_mut=X p_hydro=Y rival=0|1 [mass0=M] [census=0|1]
 //        [hydro_whole=0|1|live|dead] [p_rot=P] [physics=0|1]
 //        [decay_table=T decay_ratio=R] [classes=T1,T2,...] [anc=polite|copier]
-//        [fidelity=W] [fate=1] [inert_operand=zero|fail]
+//        [fidelity=W] [fate=1] [trace=1] [inert_operand=zero|fail]
 
 #include "ps_census.hpp"
 #include "ps_core.hpp"
@@ -565,6 +565,53 @@ struct Fate {
   int start_ip = 0;        // ignition offset
   bool fill = false;       // converted by a foreign write to the source-pointer direction alone
   uint64_t converted_at = 0;
+  uint64_t born_at = 0;    // trace: tick of the ignition
+  int kind = kKinds;       // trace: birth kind (kKinds: seeded founder)
+};
+
+// trace=1: how the site's previous activation ended (kept after it ends).
+struct LastEnd {
+  bool set = false;
+  int status = kOther;
+  int cause = 0;
+  bool start0 = true;
+  uint64_t tick = 0;
+};
+
+// trace=1 counters per checkpoint window. Age of an activation: ticks since its ignition,
+// in buckets < 1,000, 1,000-9,999 and >= 10,000.
+constexpr int kAges = 3;
+inline int age_bucket(uint64_t age) { return age < 1000 ? 0 : age < 10000 ? 1 : 2; }
+struct TraceTally {
+  // Strict -> not strict in place, credited to a foreign writer (as in FateTally).
+  uint64_t fo_n = 0;
+  uint64_t fo_writer[kWriters][kAges] = {};  // writer status x age
+  uint64_t fo_wkind[kKinds + 1] = {};         // writer's birth kind (self/copy/reignite/seeded)
+  uint64_t fo_wstart0 = 0;                    // writer ignited at offset 0
+  uint64_t fo_wip[64] = {};                   // offset of the writer's instruction
+  uint64_t fo_not_mov = 0;                    // that byte is not a MOV
+  uint64_t fo_src_own = 0;                    // the MOV's source pointer names the writer's site
+  uint64_t fo_off[64] = {};                   // every changed non-volatile offset
+  uint64_t fo_dir = 0;       // a changed byte was INERT and is a pointer direction of the victim
+  uint64_t fo_dir_only = 0;  // every changed non-volatile byte is such
+  uint64_t fo_dir_off[64] = {};
+  uint64_t fo_victim_start0 = 0;  // the victim activation was ignited at offset 0
+  // Strict births: [ignited off offset 0][kind].
+  uint64_t rb[2][kKinds] = {};
+  uint64_t rb_ign[kWriters][kAges] = {};  // off offset 0: igniter status x age
+  uint64_t rb_ign_ip[64] = {};            // off offset 0: offset of the igniter's instruction
+  uint64_t rb_entry[64] = {};             // off offset 0: entry offset
+  uint64_t rb_same = 0;                   // off offset 0: igniter carries the child's key
+  // Off offset 0: the site's previous activation was strict and ended by wick, ignited at 0
+  // or not; and the summed ticks since that end.
+  uint64_t rb_prev_wick[2] = {};
+  uint64_t rb_prev_gap = 0;
+  uint64_t all_off = 0, all_births = 0;  // births of any status, and those off offset 0
+  // Ends of strict activations by entry: [off offset 0][cause], lifetimes, and copy births
+  // made by strict activations by entry.
+  uint64_t re[2][kEnds] = {};
+  uint64_t re_life[2] = {};
+  uint64_t re_copies[2] = {};
 };
 
 struct FateTally {
@@ -605,11 +652,13 @@ struct FateTally {
 
 class FateObserver {
 public:
-  FateObserver(const World& w, const std::map<std::string, TrialResult>& census)
+  FateObserver(const World& w, const std::map<std::string, TrialResult>& census,
+               bool trace = false)
       : w_(w), census_(census), len_(w.config().site_len),
         sites_(w.config().width * w.config().height),
         src_ptr_(g_ref->name == "polite" ? 30 : 23),
-        fate_(sites_), snap_(static_cast<size_t>(sites_) * len_), next_ip_(sites_, 0) {
+        fate_(sites_), snap_(static_cast<size_t>(sites_) * len_), next_ip_(sites_, 0),
+        trace_(trace), prev_ip_(sites_, 0), last_(sites_) {
     // The seeded founders are activations that no birth announced.
     for (int32_t s = 0; s < sites_; ++s) {
       if (w.site_active(s)) start(s);
@@ -639,15 +688,18 @@ public:
 
   // Call after every tick, before reading the census.
   void observe() {
+    if (trace_) prev_ip_ = next_ip_;  // the instruction each tracked activation just ran
     for (const auto& b : w_.births_this_tick()) {
       Fate& f = fate_[b.child];
       if (f.on) t_.replaced += 1;
       const int kind = classify(b);
       const Fate parent = fate_[b.parent];
+      const LastEnd prev = last_[b.child];
       start(b.child);
       t_.born[fate_[b.child].status][kind] += 1;
       t_.born_rep_start0 += fate_[b.child].status == kRep && fate_[b.child].start_ip == 0;
       if (kind == kCopy && parent.on && parent.converted) note_converted_copy(b, parent);
+      if (trace_) trace_birth(b, kind, parent, prev);
     }
     for (int32_t s = 0; s < sites_; ++s) {
       Fate& f = fate_[s];
@@ -774,6 +826,7 @@ public:
       << " child_same=" << t_.fill_child_same << " child_src=" << t_.fill_child_src
       << " ends_decay/wick=" << t_.fill_ends[kEndDecay] << '/' << t_.fill_ends[kEndWick]
       << " life_sum=" << t_.fill_life << std::endl;
+    if (trace_) print_trace(o);
     rep_prev_ = rep_now;
     t_ = FateTally{};
     t_.start_starve = w_.stats().deaths_starve;
@@ -791,6 +844,10 @@ private:
   std::vector<int16_t> next_ip_;  // ip of each tracked activation for the next tick
   FateTally t_;
   uint64_t rep_prev_ = 0;
+  const bool trace_;
+  std::vector<int16_t> prev_ip_;  // trace: ip each tracked activation ran in this tick
+  std::vector<LastEnd> last_;     // trace: how each site's previous activation ended
+  TraceTally x_;
 
   uint64_t count(int status) const {
     uint64_t n = 0;
@@ -805,6 +862,8 @@ private:
     f.fill = false;
     f.status = status_of_key(masked(w_, s));
     f.start_ip = w_.first_ip(s);
+    f.born_at = w_.tick();
+    f.kind = kKinds;
     next_ip_[s] = static_cast<int16_t>(f.start_ip);
     std::memcpy(&snap_[static_cast<size_t>(s) * len_], w_.bytes_at(s), len_);
   }
@@ -819,6 +878,13 @@ private:
     if (f.fill) {
       t_.fill_ends[cause] += 1;
       t_.fill_life += w_.tick() - f.converted_at;
+    }
+    if (trace_) {
+      if (f.status == kRep) {
+        x_.re[f.start_ip != 0][cause] += 1;
+        x_.re_life[f.start_ip != 0] += w_.tick() - f.born_at;
+      }
+      last_[s] = LastEnd{true, f.status, cause, f.start_ip == 0, w_.tick()};
     }
     f.on = false;
   }
@@ -854,6 +920,7 @@ private:
       t_.change[before][after] += 1;
       t_.change_writer[before][wc] += 1;
       if (before == kRep && after != kRep) {
+        if (trace_ && wc != kWSelf) trace_foreign(s, old, now, mask, foreign, wc);
         f.converted = true;
         t_.out_writer[wc] += 1;
         t_.out_to[after][wc] += 1;
@@ -882,6 +949,183 @@ private:
       f.status = after;
     }
     std::memcpy(old, now, len_);
+  }
+
+  // Trial verdict for a key: the census cache, else this observer's cache (filled on demand).
+  const TrialResult& trial_of(const std::string& key) {
+    const auto c = census_.find(key);
+    if (c != census_.end()) return c->second;
+    auto it = cache_.find(key);
+    if (it == cache_.end()) it = cache_.emplace(key, run_trial(w_.config(), key)).first;
+    return it->second;
+  }
+
+  // Offsets that a key's executed MOV and IGNITE instructions read as pointer directions in
+  // its census trial (op_mask). An INERT operand names no pointer under inert_operand=fail.
+  uint64_t pointer_dirs(const std::string& key, uint64_t op_mask) const {
+    const bool fail = w_.config().inert_operand == InertOperand::Fail;
+    uint64_t m = 0;
+    auto add = [&](int at) {
+      const uint8_t v = static_cast<uint8_t>(key[at % len_]);
+      if (v == INERT && fail) return;
+      m |= uint64_t{1} << (v % len_);
+    };
+    for (int i = 0; i < len_; ++i) {
+      if (!(op_mask >> i & 1) || key[i] == INERT) continue;
+      const uint8_t op = op_class(static_cast<uint8_t>(key[i]));
+      if (op == MOV) { add(i + 1); add(i + 2); }
+      else if (op == IGNITE) add(i + 1);
+    }
+    return m;
+  }
+
+  // A strict activation lost strict status by a change credited to a foreign writer.
+  void trace_foreign(int32_t s, const uint8_t* old, const uint8_t* now, uint64_t mask,
+                     int32_t writer, int wc) {
+    x_.fo_n += 1;
+    x_.fo_victim_start0 += fate_[s].start_ip == 0;
+    const Fate& wf = fate_[writer];
+    const int age = wf.on ? age_bucket(w_.tick() - wf.born_at) : 0;
+    x_.fo_writer[wc][age] += 1;
+    if (wf.on) {
+      x_.fo_wkind[wf.kind] += 1;
+      x_.fo_wstart0 += wf.start_ip == 0;
+      const int ip = prev_ip_[writer];
+      if (ip >= 0) {
+        x_.fo_wip[ip] += 1;
+        const uint8_t* wb = w_.bytes_at(writer);
+        if (wb[ip] == INERT || op_class(wb[ip]) != MOV) {
+          x_.fo_not_mov += 1;
+        } else {
+          x_.fo_src_own += wb[wb[(ip + 1) % len_] % len_] == INERT;
+        }
+      }
+    }
+    std::string key(reinterpret_cast<const char*>(old), len_);
+    for (int v : g_ref->volatile_offsets) key[v] = 0;
+    const uint64_t dirs = pointer_dirs(key, trial_of(key).op_mask);
+    uint64_t hit = 0;
+    for (int k = 0; k < len_; ++k) {
+      if (!(mask >> k & 1)) continue;
+      x_.fo_off[k] += 1;
+      if (old[k] == INERT && now[k] != INERT && (dirs >> k & 1)) {
+        hit |= uint64_t{1} << k;
+        x_.fo_dir_off[k] += 1;
+      }
+    }
+    x_.fo_dir += hit != 0;
+    x_.fo_dir_only += hit == mask;
+  }
+
+  void trace_birth(const World::Birth& b, int kind, const Fate& parent, const LastEnd& prev) {
+    Fate& c = fate_[b.child];
+    c.kind = kind;
+    const bool off = c.start_ip != 0;
+    x_.all_births += 1;
+    x_.all_off += off;
+    if (kind == kCopy && parent.on && parent.status == kRep) {
+      x_.re_copies[parent.start_ip != 0] += 1;
+    }
+    if (c.status != kRep) return;
+    x_.rb[off][kind] += 1;
+    if (!off) return;
+    const int wc = kind == kSelfIgnite ? kWSelf
+                   : parent.on ? parent.status : kWNone;
+    x_.rb_ign[wc][parent.on ? age_bucket(w_.tick() - parent.born_at) : 0] += 1;
+    const int ip = prev_ip_[b.parent];
+    if (parent.on && ip >= 0) x_.rb_ign_ip[ip] += 1;
+    x_.rb_entry[c.start_ip] += 1;
+    x_.rb_same += masked(w_, b.parent) == masked(w_, b.child);
+    if (prev.set && prev.status == kRep && prev.cause == kEndWick) {
+      x_.rb_prev_wick[!prev.start0] += 1;
+      x_.rb_prev_gap += w_.tick() - prev.tick;
+    }
+  }
+
+  static void top(std::ostream& o, const char* name, const uint64_t* a, int n, int k) {
+    std::multimap<uint64_t, int, std::greater<>> m;
+    for (int i = 0; i < n; ++i) if (a[i]) m.insert({a[i], i});
+    o << ' ' << name << ':';
+    int shown = 0;
+    for (auto [v, i] : m) {
+      if (shown++ == k) break;
+      o << ' ' << i << ':' << v;
+    }
+  }
+
+  void print_trace(std::ostream& o) {
+    const uint64_t tick = w_.tick();
+    o << "# traceout tick=" << tick << " n=" << x_.fo_n << " victim_start0=" << x_.fo_victim_start0
+      << " writer(status:age<1k/1k-10k/>=10k)";
+    for (int k = 0; k < kWriters; ++k) {
+      if (k == kWSelf) continue;
+      o << ' ' << kWriterName[k] << ':' << x_.fo_writer[k][0] << '/' << x_.fo_writer[k][1] << '/'
+        << x_.fo_writer[k][2];
+    }
+    o << " writer_kind(self/copy/reignite/seeded)=" << x_.fo_wkind[kSelfIgnite] << '/'
+      << x_.fo_wkind[kCopy] << '/' << x_.fo_wkind[kReignite] << '/' << x_.fo_wkind[kKinds]
+      << " writer_start0=" << x_.fo_wstart0 << " not_mov=" << x_.fo_not_mov
+      << " src_own=" << x_.fo_src_own << " dir=" << x_.fo_dir << " dir_only=" << x_.fo_dir_only;
+    top(o, "writer_ip", x_.fo_wip, 64, 10);
+    top(o, "offsets", x_.fo_off, 64, 24);
+    top(o, "dir_offsets", x_.fo_dir_off, 64, 10);
+    o << std::endl;
+    o << "# traceign tick=" << tick << " births=" << x_.all_births << " off0=" << x_.all_off
+      << " rep_start0(self/copy/reignite)=" << x_.rb[0][kSelfIgnite] << '/' << x_.rb[0][kCopy] << '/'
+      << x_.rb[0][kReignite] << " rep_off0(self/copy/reignite)=" << x_.rb[1][kSelfIgnite] << '/'
+      << x_.rb[1][kCopy] << '/' << x_.rb[1][kReignite] << " igniter(status:age<1k/1k-10k/>=10k)";
+    for (int k = 0; k < kWriters; ++k) {
+      o << ' ' << kWriterName[k] << ':' << x_.rb_ign[k][0] << '/' << x_.rb_ign[k][1] << '/'
+        << x_.rb_ign[k][2];
+    }
+    o << " same_key=" << x_.rb_same << " prev_rep_wick(start0/off0)=" << x_.rb_prev_wick[0] << '/'
+      << x_.rb_prev_wick[1] << " prev_gap_sum=" << x_.rb_prev_gap;
+    top(o, "igniter_ip", x_.rb_ign_ip, 64, 10);
+    top(o, "entry", x_.rb_entry, 64, 12);
+    o << std::endl;
+    o << "# traceend tick=" << tick << " rep_start0: decay/wick=" << x_.re[0][kEndDecay] << '/'
+      << x_.re[0][kEndWick] << " life_sum=" << x_.re_life[0] << " copies=" << x_.re_copies[0]
+      << " rep_off0: decay/wick=" << x_.re[1][kEndDecay] << '/' << x_.re[1][kEndWick]
+      << " life_sum=" << x_.re_life[1] << " copies=" << x_.re_copies[1] << std::endl;
+    // Matter by holder: code bytes of active sites by status, and of inactive sites (with how
+    // many of those carry a key already known as strict; no new trials).
+    uint64_t act_bytes[kStatuses] = {}, act_sites[kStatuses] = {};
+    uint64_t dead_sites = 0, dead_bytes = 0, dead_strict = 0, dead_strict_bytes = 0, dead_open0 = 0;
+    for (int32_t s = 0; s < sites_; ++s) {
+      const uint8_t* b = w_.bytes_at(s);
+      const uint64_t n = static_cast<uint64_t>(
+          std::count_if(b, b + len_, [](uint8_t v) { return v != INERT; }));
+      if (n == 0) continue;
+      if (w_.site_active(s) && fate_[s].on) {
+        act_bytes[fate_[s].status] += n;
+        act_sites[fate_[s].status] += 1;
+        continue;
+      }
+      dead_sites += 1;
+      dead_bytes += n;
+      dead_open0 += b[0] == INERT;
+      const std::string key = masked(w_, s);
+      auto c = census_.find(key);
+      const TrialResult* r = c != census_.end() ? &c->second : nullptr;
+      if (!r) {
+        auto it = cache_.find(key);
+        if (it != cache_.end()) r = &it->second;
+      }
+      if (r && status_of(*r) == kRep) {
+        dead_strict += 1;
+        dead_strict_bytes += n;
+      }
+    }
+    const Ledger l = w_.ledger();
+    o << "# tracemass tick=" << tick << " free=" << l.free_mass << " code=" << l.code_mass
+      << " wall=" << l.wall_mass << " active_bytes(rep/loose/prop/other)=";
+    for (int st = 0; st < kStatuses; ++st) o << (st ? "/" : "") << act_bytes[st];
+    o << " active_sites=";
+    for (int st = 0; st < kStatuses; ++st) o << (st ? "/" : "") << act_sites[st];
+    o << " inactive_sites=" << dead_sites << " inactive_bytes=" << dead_bytes
+      << " inactive_open0=" << dead_open0 << " inactive_strict_key=" << dead_strict
+      << " inactive_strict_bytes=" << dead_strict_bytes << std::endl;
+    x_ = TraceTally{};
   }
 
   // A copy by a converted activation: is the child strict, a copy of the parent, or a copy of
@@ -956,6 +1200,7 @@ int main(int argc, char** argv) {
   std::vector<int> class_tables;  // classes=...: per-op class measures (needs census=1)
   uint64_t fidelity = 0;          // fidelity=W: copy-birth window before each checkpoint
   bool fate = false;              // fate=1: activation fates (needs census=1, p_rot 0)
+  bool trace = false;             // trace=1: writers, igniters and matter (needs fate=1)
   for (int i = 1; i < argc; ++i) {
     const std::string a = argv[i];
     const auto eq = a.find('=');
@@ -1015,6 +1260,7 @@ int main(int argc, char** argv) {
     else if (k == "interval") interval = std::max<long long>(1, std::atoll(v.c_str()));
     else if (k == "fidelity") fidelity = std::max<long long>(0, std::atoll(v.c_str()));
     else if (k == "fate") fate = v == "1";
+    else if (k == "trace") trace = v == "1";
     else if (k == "anc") {
       g_ref = census::reference_named(v);
       if (!g_ref) {
@@ -1039,6 +1285,10 @@ int main(int argc, char** argv) {
     std::cerr << "fidelity needs census=1 and a window no longer than interval\n";
     return 1;
   }
+  if (trace && !fate) {
+    std::cerr << "trace needs fate=1\n";
+    return 1;
+  }
   if (fate && (!census || cfg.p_rot > 0.0)) {
     std::cerr << "fate needs census=1 and p_rot 0\n";
     return 1;
@@ -1058,7 +1308,7 @@ int main(int argc, char** argv) {
   std::map<std::string, TrialResult> census_cache;  // program text -> trial (census=1)
   FidWindow fid;
   std::unique_ptr<FateObserver> fates;
-  if (fate) fates = std::make_unique<FateObserver>(w, census_cache);
+  if (fate) fates = std::make_unique<FateObserver>(w, census_cache, trace);
   std::cout << "tick\tactive\tbirths\texact%\tintact_parent%\ttop_count\ttop_dist\tdistinct"
                "\tcopies\treignites\tintact_copies\tblank\topen0\tdead\tpfx_active\tpfx_copies\text_erased\tstalls\tstarved\tenergy\n";
   const bool physics_line = physics || cfg.hydro_whole != Whole::Off || cfg.p_rot > 0.0;

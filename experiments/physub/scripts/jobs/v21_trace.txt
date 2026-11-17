@@ -1,0 +1,12 @@
+# v21: measurement only (trace=1) under v20 settings. Requested 2026-11-17: with copy error
+# and inert_operand=fail, who writes the remaining foreign in-place losses (status and age of
+# the writer, its instruction, target offsets, and how many fill an INERT pointer direction of
+# the victim); how strict code is ignited off offset 0 (igniter status, age and instruction,
+# entry offset, repeat visits); and where matter is held when writes start to be refused for
+# lack of a free monomer. Same settings as v20 m195_s1/s2 (identical runs and output apart
+# from the added # trace* lines), plus two comparisons: v20 nomut_s1 (no copy error) and v19
+# m195_s1 (inert_operand=zero), both also with trace=1.
+m195_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000 fate=1 inert_operand=fail trace=1
+m195_s2 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=2 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000 fate=1 inert_operand=fail trace=1
+nomut_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill census=1 fidelity=5000 fate=1 inert_operand=fail trace=1
+zero_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000 fate=1 trace=1
