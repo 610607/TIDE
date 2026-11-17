@@ -34,6 +34,15 @@ Checked 2026-11-15. Failed endpoints are not cached as PDFs. Original successful
 | Levy and Miller 1998, PNAS 95:7933 (PMC20907) | Publisher and PMC PDF endpoints returned bot challenges; Europe PMC full-text XML returned HTTP 500; PMC OA service returned 404 | Abstract (p. 7933) verified through NCBI efetch; half-lives quoted from it. Arrhenius fits seen by a subagent in HTML were not used. Not cached. |
 | Kaukinen et al. 2002, Nucleic Acids Res. 30:468 (PMC99829) | Same failures as above | Abstract (p. 468) verified through NCBI efetch. Not cached. |
 | Robinson and Robinson 2001, PNAS 98:944 (PMC14689) | PDF not retrieved | HTML read by a subagent; no page numbers recorded. Not cached. |
-| Lindahl and Nyberg 1972; Lindahl and Karlström 1973; Lindahl 1993; Radzicka and Wolfenden 1996; Ofria and Wilke 2004 | No open copy found (Ofria and Wilke: TLS failure) | Not read. Lindahl and Nyberg 1972 was seen by a subagent only as a scan inside a court filing; not used. |
+| Lindahl and Nyberg 1972; Lindahl and Karlström 1973; Lindahl 1993; Radzicka and Wolfenden 1996 | No open copy found | Not read. Lindahl and Nyberg 1972 was seen by a subagent only as a scan inside a court filing; not used. |
+| Lenski, Ofria, Collier and Adami 1999, Nature 400:661 ([DOI](https://doi.org/10.1038/23245)) | CaltechAUTHORS record 27p2s-erw44 is metadata only (no file); no open copy found (2026-11-17) | Abstract only, from the CaltechAUTHORS record. Not cached. |
 
 Initial unprivileged shell downloads for several new sources failed DNS in the sandbox; authorized ordinary public downloads then succeeded. No paywall or authentication was bypassed. The three stream reports preserve exact queries and more detailed access receipts.
+
+Correction (2026-11-17): an earlier version of the table above listed Ofria and Wilke 2004 as
+having no open copy because of a TLS failure. That was wrong. The manifest records the
+author-hosted PDF, retrieved and verified on 2026-11-15, and
+[shared-memory-prior-work.md](../research/shared-memory-prior-work.md) records a reading of
+it. Only a later download, in another container, failed TLS verification at the proxy; a PDF
+missing from a working copy can be restored from the manifest's source URL and checked
+against its SHA-256.
