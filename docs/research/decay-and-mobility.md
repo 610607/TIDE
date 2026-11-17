@@ -3,9 +3,8 @@
 Updated: 2026-11-17. Status: candidate designs for `experiments/physub/`. On 2026-11-17 the
 user agreed to run decay form M with a uniform rate and mobility option (a) as optional
 physub configurations (section 4), and then to two controls that separate the two effects of
-form M (section 5). Per-op rates in form M are proposed in section 6 and await agreement;
-binding (b) and size-dependent mobility remain open. Nothing here applies to the kernel
-contract.
+form M (section 5), and then to per-op rates in form M as proposed in section 6. Binding
+(b) and size-dependent mobility remain open. Nothing here applies to the kernel contract.
 
 This note separates source findings, observations of the physub code, executed runs and
 candidate designs. Page numbers are printed pages unless marked "PDF p.".
@@ -308,13 +307,14 @@ Expected differences (inference, not measured):
 
 Results are in the [physub README](../../experiments/physub/README.md) (v15).
 
-## 6. Per-op decay rates in form M (proposal, not agreed)
+## 6. Per-op decay rates in form M (agreed 2026-11-17)
 
 Request (2026-11-17): keep form M (a whole program decays in one event, with hazard equal to
 the sum of its byte rates) and give each op class its own rate. The rate is fixed per class
 and does not depend on activation or environment. The mean rate is aligned with the v14
 r = 1.95e-6 for comparison with M. The spread between classes needs a source. The binding
-rule (b) stays out. This section is a proposal; nothing in it is implemented.
+rule (b) stays out. The proposal below was agreed as recommended; see "Agreed and
+implemented" at the end of this section.
 
 ### Rule as requested
 
@@ -507,12 +507,35 @@ Expected (inference, not measured): in saturated space, births need vacancies, s
 hazard lengthens a program's occupancy and its copies per lifetime. The size of the effect
 over 100k ticks is not predicted.
 
-### To confirm
+### Agreed and implemented
 
-1. S1 (two levels, 30:1) or S2.
-2. Random assignment by fixed tables, with four fast classes (or five).
-3. N2 or N1.
-4. Tables 1-4 × seeds 1-2, with `m195` as the control.
+The user agreed to the following:
+
+1. S1: two levels, fast : slow = 30 : 1.
+2. Random assignment by tables 1-4, with four fast classes.
+3. N2: slow 1.404e-7, fast 4.212e-6.
+4. Tables 1-4 × seeds 1-2, with `m195` as the control. `decay_ratio` = 1 must reproduce `m195`
+   bit for bit, and the default replay digest must stay unchanged.
+
+The user also asked for a separate report if data bytes are selected first.
+
+Implementation: `decay_table` and `decay_ratio` (revision 84092a3, test 16).
+
+Choices made in measuring, not separately agreed:
+
+- **Opcode bytes** of an evolved program are the offsets where its census founder executed
+  an instruction during the 2000-tick trial. The other non-inert bytes count as operand or
+  data bytes. For polite this gives 13 and 27, as in the code observations.
+- **Control.** Each run prints the class measures under all four tables. Each table's
+  control is `m195` with the same seed, measured under that table, so drift under uniform
+  rates is measured with the same classification.
+- **Substitutions** are also counted at polite's own offsets, by polite's role of the offset
+  and by direction between classes. This is direct for programs that keep polite's layout and
+  says nothing about programs that do not.
+- **Identity runs.** Each table and seed is run once more with `decay_ratio` = 1, and the
+  output is compared byte for byte with v15 `m195`.
+
+Results are in the [physub README](../../experiments/physub/README.md) (v16).
 
 ## Search record
 

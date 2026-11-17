@@ -78,6 +78,14 @@ python3 -m http.server 8765 -d viewer   # then open http://localhost:8765/?file=
   monomers and the activation ends at the wick check. Off, each byte decays on its own.
   `live` applies the whole form only to live sites (those that decay at `p_hydro`: active,
   or recently written with `dead_quiet`), `dead` only to the others.
+- **Per-op rates** (`decay_table`, 0 = off; `decay_ratio`, default 30): with whole decay,
+  table T marks four of the nine op classes as fast (`decay_fast_classes`, a fixed hash of
+  T; tables 1-4 are mov/dec/rnd/unwall, jmp/ignite/wall/unwall, dec/jmp/rnd/unwall and
+  mov/inc/jmp/wall). A byte's class is `(v - 1) % 9` whether it runs or not. Fast bytes
+  decay at `decay_ratio` times the slow rate, and the unweighted mean of the nine class
+  rates is `p_hydro`. A site with `n_f` fast and `n_s` slow bytes decays with probability
+  `1 - (1 - r_f)^n_f (1 - r_s)^n_s` per tick, active or not. The apps require
+  `hydro_whole=1` without `p_dead`. `decay_ratio=1` reproduces uniform form M bit for bit.
 - **Mobility** (`p_rot`, 0 = off): Margolus block rotation at the start of each tick. The
   lattice is split into 2x2 blocks offset by (0,0) on even and (1,1) on odd ticks; each block
   rotates clockwise or counterclockwise with probability `p_rot / 2` each, so a site moves
@@ -107,9 +115,9 @@ python3 -m http.server 8765 -d viewer   # then open http://localhost:8765/?file=
 | `apps/ps_probe.cpp` | Probe for polite-seeded runs (columns below) |
 | `apps/ps_knockout.cpp` | Single-byte knockout of an ancestor without mutation or decay |
 | `apps/ps_copycut.cpp` | First-copy cut probability of polite alone under block rotation |
-| `tests/ps_test.cpp` | Ledgers, replay, walls, ancestor, starvation, bond barrier, act_cap, ext_write, p_dead, energy diffusion, bond storage, dead_quiet, whole decay, block rotation, whole decay per class |
+| `tests/ps_test.cpp` | Ledgers, replay, walls, ancestor, starvation, bond barrier, act_cap, ext_write, p_dead, energy diffusion, bond storage, dead_quiet, whole decay, block rotation, whole decay per class, per-op decay tables |
 | `viewer/index.html` | Replay viewer (layers, inspector, timeline) |
-| `scripts/run_jobs.sh`, `scripts/jobs/` | Parallel runner and the v8-v15 job lists |
+| `scripts/run_jobs.sh`, `scripts/jobs/` | Parallel runner and the v8-v16 job lists |
 
 `ps_probe` columns per interval: births, `exact%`, `intact_parent%`, top genotype, `copies`
 (child mostly written by the parent) and `reignites` (child code already present),
@@ -128,6 +136,17 @@ polite's program region intact, non-replicators by how their activation began
 founder's ip visits in the trial's last 500 ticks, i.e. the bytes whose decay ends the
 activation by wick. Trial worlds are separate, so the interval rows are unchanged. Trials
 run without rotation, so the census tests a program's own ability to copy itself.
+
+With `census=1` and `classes=1,2,...`, `ps_probe` adds two lines per interval and listed
+table, whether or not the table is the run's `decay_table`. `# classes` gives the share of
+non-inert bytes in the table's fast classes and the mean hazard at the run's `p_hydro` and
+`decay_ratio`, for replicators, non-replicators and all code. For replicators, it also
+splits bytes into opcode bytes (offsets where the census founder executed an instruction
+during its 2000-tick trial) and the others (operands and data). `# subst` counts, per
+replicator site, the bytes that differ from polite at polite's own offsets (volatile offsets
+excluded). The counts are split by polite's role of the offset (13 opcode offsets, the rest
+data) and by direction between the table's classes (fast to slow, slow to fast, fast to
+fast, slow to slow, to inert, from inert).
 
 With `hydro_whole` on, `p_rot > 0` or `physics=1`, `ps_probe` adds a `# physics` line per
 interval and at the end with cumulative counters: whole-program decays (and how many hit an
