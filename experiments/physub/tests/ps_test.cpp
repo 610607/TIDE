@@ -598,6 +598,13 @@ void test_census_trial() {
   std::string redirected = key;
   redirected[30] = static_cast<char>(192);  // source pointer: a neighbor instead of own site
   assert(!census::run_trial(cfg, redirected, ref).replicator);
+  // Alone, a fill of another own-site pointer byte or of the tail leaves a strict replicator
+  // (the neighbors it names are empty).
+  for (int off : {34, 36, 38, 40, 50}) {
+    std::string filled_key = key;
+    filled_key[off] = static_cast<char>(192);
+    assert(census::run_trial(cfg, filled_key, ref).strict());
+  }
   assert(!census::ref_inert_filled(polite().data(), ref));
   std::vector<uint8_t> filled = polite();
   filled[36] = 192;
@@ -644,7 +651,8 @@ void test_census_trial() {
   }
   std::cout << "[ps test 17] census trial: polite strict, depth " << a.depth << ", founder copies "
             << a.founder_exact << '/' << a.founder_copies
-            << "; knockout and redirected source fail; first copy exact, residue is env; writers recorded\n";
+            << "; knockout and redirected source fail, other fills stay strict; first copy exact, residue is env;"
+            << " writers recorded\n";
 }
 
 } // namespace
