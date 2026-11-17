@@ -222,13 +222,16 @@ each changed byte was written that tick and the writer records name the writing 
   (`src_writer`), how often a foreign writer is the neighbor the new direction names
   (`src_names_writer`), where the closing jump then lands (polite's JMP 30 jumps to [30] mod
   64: offset 0, another opcode offset of the reference, or elsewhere), foreign writes into
-  volatile offsets of strict sites (not status changes), and the most changed offsets.
+  volatile offsets of strict sites (not status changes), and the most changed offsets, for
+  foreign and for self-written losses.
 - `# fatestart`: of the strict activations lost in place (and of those written by the site
   itself), how many were ignited at offset 0, polite's entry; strict births ignited at offset
   0; and, for self-written losses, the offset of the instruction that ran in that tick.
 - `# fateconv`: converted activations alive, their copy births, and how many children are
   strict, equal to the parent's key, or equal to the key of the neighbor that the parent's
-  source pointer names.
+  source pointer names. `fill:` the same for activations converted by a foreign write to the
+  source-pointer direction alone, with their ends by cause and the summed ticks from
+  conversion to end.
 
 The observer runs extra trials for keys the census has not seen and hands the census the
 verdicts for active sites, so all other lines, including the census `trials` count, are the

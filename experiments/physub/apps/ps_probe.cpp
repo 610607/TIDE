@@ -563,6 +563,8 @@ struct Fate {
   bool converted = false;  // was strict, lost strict status in place
   int status = kOther;
   int start_ip = 0;        // ignition offset
+  bool fill = false;       // converted by a foreign write to the source-pointer direction alone
+  uint64_t converted_at = 0;
 };
 
 struct FateTally {
@@ -576,7 +578,7 @@ struct FateTally {
   // Strict -> not strict in place, by writer and by status after.
   uint64_t out_writer[kWriters] = {};
   uint64_t out_to[kStatuses][kWriters] = {};
-  uint64_t out_at[64] = {};  // changed offsets
+  uint64_t out_at[2][64] = {};  // changed offsets, by a foreign writer [0] or the site [1]
   uint64_t out_src = 0, out_src_only = 0;  // the source-pointer direction byte among them
   uint64_t src_writer[kWriters] = {};  // who wrote that byte
   uint64_t src_names_writer = 0;       // a foreign writer, and the new direction names it
@@ -593,6 +595,11 @@ struct FateTally {
   uint64_t replaced = 0;         // a birth into a site whose tracked activation was on
   // Copy births by converted activations.
   uint64_t conv_copies = 0, conv_child_rep = 0, conv_child_same = 0, conv_child_src = 0;
+  // The same for activations converted by a foreign fill of the source pointer alone, with
+  // their ends and the summed ticks from conversion to end.
+  uint64_t fill_copies = 0, fill_child_rep = 0, fill_child_same = 0, fill_child_src = 0;
+  uint64_t fill_ends[kEnds] = {};
+  uint64_t fill_life = 0;
   uint64_t start_starve = 0;
 };
 
@@ -640,7 +647,7 @@ public:
       start(b.child);
       t_.born[fate_[b.child].status][kind] += 1;
       t_.born_rep_start0 += fate_[b.child].status == kRep && fate_[b.child].start_ip == 0;
-      if (kind == kCopy && parent.on && parent.converted) note_converted_copy(b);
+      if (kind == kCopy && parent.on && parent.converted) note_converted_copy(b, parent);
     }
     for (int32_t s = 0; s < sites_; ++s) {
       Fate& f = fate_[s];
@@ -728,13 +735,17 @@ public:
     for (int k = 0; k < kWriters; ++k) o << (k ? "/" : "") << t_.src_writer[k];
     o << " src_names_writer=" << t_.src_names_writer
       << " jump_0/op/other=" << t_.out_jump[0] << '/' << t_.out_jump[1] << '/' << t_.out_jump[2]
-      << " vol_foreign_rep=" << t_.vol_foreign_rep << " offsets:";
-    std::multimap<uint64_t, int, std::greater<>> top;
-    for (int k = 0; k < len_; ++k) if (t_.out_at[k]) top.insert({t_.out_at[k], k});
+      << " vol_foreign_rep=" << t_.vol_foreign_rep;
     int shown = 0;
-    for (auto [n, k] : top) {
-      if (shown++ == 10) break;
-      o << ' ' << k << ':' << n;
+    for (int w = 0; w < 2; ++w) {
+      o << (w == 0 ? " offsets_foreign:" : " offsets_self:");
+      std::multimap<uint64_t, int, std::greater<>> top;
+      for (int k = 0; k < len_; ++k) if (t_.out_at[w][k]) top.insert({t_.out_at[w][k], k});
+      shown = 0;
+      for (auto [n, k] : top) {
+        if (shown++ == 8) break;
+        o << ' ' << k << ':' << n;
+      }
     }
     o << std::endl;
     std::multimap<uint64_t, int, std::greater<>> at;
@@ -751,11 +762,18 @@ public:
       o << ' ' << k << ':' << n;
     }
     o << std::endl;
-    uint64_t conv_alive = 0;
-    for (int32_t s = 0; s < sites_; ++s) conv_alive += fate_[s].on && fate_[s].converted;
+    uint64_t conv_alive = 0, fill_alive = 0;
+    for (int32_t s = 0; s < sites_; ++s) {
+      conv_alive += fate_[s].on && fate_[s].converted;
+      fill_alive += fate_[s].on && fate_[s].fill;
+    }
     o << "# fateconv tick=" << tick << " alive=" << conv_alive << " copies=" << t_.conv_copies
       << " child_rep=" << t_.conv_child_rep << " child_same=" << t_.conv_child_same
-      << " child_src=" << t_.conv_child_src << std::endl;
+      << " child_src=" << t_.conv_child_src << " fill: alive=" << fill_alive
+      << " copies=" << t_.fill_copies << " child_rep=" << t_.fill_child_rep
+      << " child_same=" << t_.fill_child_same << " child_src=" << t_.fill_child_src
+      << " ends_decay/wick=" << t_.fill_ends[kEndDecay] << '/' << t_.fill_ends[kEndWick]
+      << " life_sum=" << t_.fill_life << std::endl;
     rep_prev_ = rep_now;
     t_ = FateTally{};
     t_.start_starve = w_.stats().deaths_starve;
@@ -784,6 +802,7 @@ private:
     Fate& f = fate_[s];
     f.on = true;
     f.converted = false;
+    f.fill = false;
     f.status = status_of_key(masked(w_, s));
     f.start_ip = w_.first_ip(s);
     next_ip_[s] = static_cast<int16_t>(f.start_ip);
@@ -797,6 +816,10 @@ private:
                           ? kEndDecay : kEndWick;
     t_.ends[f.status][cause] += 1;
     if (f.converted) t_.ends_converted[cause] += 1;
+    if (f.fill) {
+      t_.fill_ends[cause] += 1;
+      t_.fill_life += w_.tick() - f.converted_at;
+    }
     f.on = false;
   }
 
@@ -839,7 +862,7 @@ private:
           t_.self_start0 += f.start_ip == 0;
           if (next_ip_[s] >= 0) t_.self_at[next_ip_[s]] += 1;  // the instruction that ran
         }
-        for (int k = 0; k < len_; ++k) t_.out_at[k] += mask >> k & 1;
+        for (int k = 0; k < len_; ++k) t_.out_at[wc == kWSelf][k] += mask >> k & 1;
         if (mask >> src_ptr_ & 1) {
           t_.out_src += 1;
           t_.out_src_only += mask == uint64_t{1} << src_ptr_;
@@ -847,6 +870,10 @@ private:
           const int32_t sw = w_.byte_writer(s, src_ptr_);
           t_.src_writer[writer_class(sw, s)] += 1;
           t_.src_names_writer += sw != s && v != INERT && neighbor_named(s, v) == sw;
+          if (sw != s && mask == uint64_t{1} << src_ptr_ && !f.fill) {
+            f.fill = true;
+            f.converted_at = w_.tick();
+          }
           const int ip = v % len_;
           const auto& ops = g_ref->ops;
           t_.out_jump[ip == 0 ? 0 : std::find(ops.begin(), ops.end(), ip) != ops.end() ? 1 : 2] += 1;
@@ -859,14 +886,21 @@ private:
 
   // A copy by a converted activation: is the child strict, a copy of the parent, or a copy of
   // the neighbor that the parent's source pointer names?
-  void note_converted_copy(const World::Birth& b) {
-    t_.conv_copies += 1;
-    t_.conv_child_rep += fate_[b.child].status == kRep;
+  void note_converted_copy(const World::Birth& b, const Fate& parent) {
     const std::string child = masked(w_, b.child);
-    t_.conv_child_same += child == masked(w_, b.parent);
+    const bool rep = fate_[b.child].status == kRep;
+    const bool same = child == masked(w_, b.parent);
     const uint8_t v = w_.bytes_at(b.parent)[src_ptr_];
-    if (v == INERT) return;
-    t_.conv_child_src += child == masked(w_, neighbor_named(b.parent, v));
+    const bool src = v != INERT && child == masked(w_, neighbor_named(b.parent, v));
+    t_.conv_copies += 1;
+    t_.conv_child_rep += rep;
+    t_.conv_child_same += same;
+    t_.conv_child_src += src;
+    if (!parent.fill) return;
+    t_.fill_copies += 1;
+    t_.fill_child_rep += rep;
+    t_.fill_child_same += same;
+    t_.fill_child_src += src;
   }
 
   // The neighbor that a non-inert pointer direction byte v names (torus, as World::pointer).
