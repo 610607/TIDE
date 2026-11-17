@@ -161,12 +161,20 @@ void print_window(const World& w, const Window& win, const Stats& prev) {
 // Replicator census (census=1): every distinct active program, with the volatile offsets
 // reset to the ancestor's values, is seeded alone in a fresh 9x9 world with the run's
 // physics but no mutation, hydrolysis, erosion or p_dead. It counts as a replicator when at
-// least two active sites carry its program after kTrialTicks. Trial worlds never touch the
+// least two active sites carry its program after kTrialTicks. The ip span is the number of
+// distinct offsets the founder's ip visits in the last kSpanTicks: the bytes whose decay
+// ends the activation by wick (-1 if the founder stopped). Trial worlds never touch the
 // run's world, so the run's dynamics and digest are unchanged. Results are cached by text.
 constexpr int kTrialSize = 9;
 constexpr uint64_t kTrialTicks = 2000;
+constexpr uint64_t kSpanTicks = 500;
 
-bool replicates(const Config& run_cfg, const std::string& key) {
+struct TrialResult {
+  bool replicator = false;
+  int ip_span = -1;
+};
+
+TrialResult run_trial(const Config& run_cfg, const std::string& key) {
   Config c = run_cfg;
   c.width = kTrialSize;
   c.height = kTrialSize;
@@ -177,15 +185,28 @@ bool replicates(const Config& run_cfg, const std::string& key) {
   c.dead_quiet = 0;
   c.seed = 1;
   World t(c);
+  TrialResult r;
   std::vector<uint8_t> program(key.begin(), key.end());
   for (int v : kVolatile) program[v] = polite()[v];
-  if (!t.seed_program(kTrialSize / 2, kTrialSize / 2, program)) return false;
-  t.run(kTrialTicks);
+  const int32_t center = t.site_index(kTrialSize / 2, kTrialSize / 2);
+  if (!t.seed_program(kTrialSize / 2, kTrialSize / 2, program)) return r;
+  t.run(kTrialTicks - kSpanTicks);
+  std::vector<bool> visited(c.site_len, false);
+  for (uint64_t k = 0; k < kSpanTicks; ++k) {
+    t.run(1);
+    const int ip = t.first_ip(center);
+    if (ip >= 0) visited[ip] = true;
+  }
+  if (t.site_active(center)) {
+    r.ip_span = 0;
+    for (bool v : visited) r.ip_span += v;
+  }
   int carriers = 0;
   for (int32_t s = 0; s < kTrialSize * kTrialSize; ++s) {
     carriers += t.site_active(s) && masked(t, s) == key;
   }
-  return carriers >= 2;
+  r.replicator = carriers >= 2;
+  return r;
 }
 
 // Kind of the activation now running at a site; seeded founders count as self.
@@ -194,19 +215,19 @@ int activation_kind(const std::vector<Record>& recs, const std::vector<int>& cur
 }
 
 void print_census(const World& w, const std::vector<Record>& recs,
-                  const std::vector<int>& current, std::map<std::string, bool>& cache) {
+                  const std::vector<int>& current, std::map<std::string, TrialResult>& cache) {
   const int32_t n = w.config().width * w.config().height;
   int rep = 0, rep_pfx = 0;
   int other[kKinds] = {};
-  uint64_t age[2] = {}, count[2] = {};
+  uint64_t age[2] = {}, count[2] = {}, span[2] = {}, spanned[2] = {};
   std::map<std::string, bool> seen;  // genotypes active now -> replicator
   for (int32_t s = 0; s < n; ++s) {
     if (!w.site_active(s)) continue;
     const std::string key = masked(w, s);
     auto it = cache.find(key);
-    if (it == cache.end()) it = cache.emplace(key, replicates(w.config(), key)).first;
-    seen[key] = it->second;
-    const bool r = it->second;
+    if (it == cache.end()) it = cache.emplace(key, run_trial(w.config(), key)).first;
+    const bool r = it->second.replicator;
+    seen[key] = r;
     rep += r;
     rep_pfx += r && prefix_intact(w.bytes_at(s));
     if (!r) other[activation_kind(recs, current, s)] += 1;
@@ -214,16 +235,22 @@ void print_census(const World& w, const std::vector<Record>& recs,
       age[r] += w.tick() - recs[current[s]].born;
       count[r] += 1;
     }
+    if (it->second.ip_span >= 0) {
+      span[r] += it->second.ip_span;
+      spanned[r] += 1;
+    }
   }
   int rep_genotypes = 0;
   for (auto& [k, r] : seen) rep_genotypes += r;
+  auto mean = [](uint64_t a, uint64_t b) { return b ? static_cast<double>(a) / b : 0.0; };
   std::cout << "# census tick=" << w.tick() << " active=" << w.active_count()
             << " replicators=" << rep << " pfx_replicators=" << rep_pfx
             << " genotypes=" << seen.size() << " replicator_genotypes=" << rep_genotypes
             << " nonrep_self/copy/reignite=" << other[kSelfIgnite] << '/' << other[kCopy] << '/'
             << other[kReignite] << " mean_age_rep/nonrep="
             << (count[1] ? age[1] / count[1] : 0) << '/' << (count[0] ? age[0] / count[0] : 0)
-            << " trials=" << cache.size() << std::endl;
+            << " ip_span_rep/nonrep=" << mean(span[1], spanned[1]) << '/'
+            << mean(span[0], spanned[0]) << " trials=" << cache.size() << std::endl;
 }
 
 void print_top_programs(const World& w) {
@@ -303,7 +330,7 @@ int main(int argc, char** argv) {
   Window win;
   Stats prev_stats;
   ErrTally errs;
-  std::map<std::string, bool> census_cache;  // program text -> replicator (census=1)
+  std::map<std::string, TrialResult> census_cache;  // program text -> trial (census=1)
   std::cout << "tick\tactive\tbirths\texact%\tintact_parent%\ttop_count\ttop_dist\tdistinct"
                "\tcopies\treignites\tintact_copies\tblank\topen0\tdead\tpfx_active\tpfx_copies\text_erased\tstalls\tstarved\tenergy\n";
   while (w.tick() < ticks && w.active_count() > 0) {

@@ -106,8 +106,9 @@ With `census=1`, `ps_probe` adds a `# census` line per interval. Each distinct a
 mutation, hydrolysis, erosion or `p_dead`; it counts as a replicator when at least two active
 sites carry it after 2000 ticks. The line reports replicators (any genotype), the subset with
 polite's program region intact, non-replicators by how their activation began
-(self/copy/reignite), and mean activation age. Trial worlds are separate, so the interval
-rows are unchanged.
+(self/copy/reignite), mean activation age, and the mean ip span: distinct offsets the
+founder's ip visits in the trial's last 500 ticks, i.e. the bytes whose decay ends the
+activation by wick. Trial worlds are separate, so the interval rows are unchanged.
 
 ## Findings from executed runs
 
