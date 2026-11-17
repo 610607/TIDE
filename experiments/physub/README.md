@@ -302,6 +302,39 @@ do not alter the dynamics: the v9 baseline is byte-identical to v8.
     - The copy counters also count the short write-and-ignite loops of altered programs, so
       the share of births from cut copies in the census runs (0.1-4%) is not comparable to
       the mechanism check.
+- **v15** (separating the two effects of form M; revision 4eef9cf, job list
+  `v15_decay_split.txt`; settings as v14, no rotation). Live (active) sites and the others
+  each take the form and rate they have in one v14 run; `dead0` and `m195` were rerun and
+  match v14 byte for byte. Census at 100k:
+
+  | run | live sites | other sites | replicator peak | active | replicators | polite region intact | non-rep copy-born (% of active) | re-ignited | age rep / non-rep | replicator genotypes |
+  | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+  | dead0_s1 | byte, 3e-6 | byte, 3e-6 | 3047 (30k) | 2089 | 39 | 5 | 1731 (83%) | 319 | 53713 / 70591 | 32 |
+  | dead0_s2 | byte, 3e-6 | byte, 3e-6 | 2676 (30k) | 2009 | 33 | 2 | 1590 (79%) | 386 | 48090 / 68809 | 31 |
+  | whole_dead_s1 | byte, 3e-6 | whole, 1.95e-6 | 3431 (30k) | 3605 | 361 | 31 | 2683 (74%) | 561 | 23334 / 51628 | 214 |
+  | whole_dead_s2 | byte, 3e-6 | whole, 1.95e-6 | 3323 (30k) | 3394 | 362 | 41 | 2440 (72%) | 592 | 18838 / 50783 | 207 |
+  | whole_live_s1 | whole, 1.95e-6 | byte, 3e-6 | 5712 (30k) | 4747 | 3635 | 1584 | 732 (15%) | 380 | 12895 / 12002 | 617 |
+  | whole_live_s2 | whole, 1.95e-6 | byte, 3e-6 | 4801 (30k) | 4112 | 3036 | 926 | 734 (18%) | 342 | 12565 / 11650 | 549 |
+  | m195_s1 | whole, 1.95e-6 | whole, 1.95e-6 | 6452 (40k) | 7390 | 5396 | 1752 | 1119 (15%) | 875 | 12051 / 10945 | 1082 |
+  | m195_s2 | whole, 1.95e-6 | whole, 1.95e-6 | 6254 (30k) | 7479 | 5473 | 1642 | 1211 (16%) | 795 | 11982 / 10440 | 1081 |
+
+  - Replicators fall from peak to 100k by about 80x (`dead0`), 9x (`whole_dead`), 1.6x
+    (`whole_live`) and 1.2x (`m195`).
+  - Whole decay of live programs alone (`whole_live`) brings copy-born non-replicators down
+    to the M level: 15-18% of active sites against 15-16% under M and 72-83% in the two runs
+    with per-byte decay of live programs. Replicators make up 74-77% of active sites, as
+    under M (73%).
+  - Whole clearance of inactive code alone (`whole_dead`) leaves about 10x more replicators
+    at 100k than `dead0` (361-362 against 33-39). But 72-74% of active sites are still
+    copy-born non-replicators, and they are 2.2-2.7x older than the replicators.
+  - Non-replicators outlive replicators only where live programs decay byte by byte (1.3-1.4x
+    in `dead0`, 2.2-2.7x in `whole_dead`). With whole decay of live programs both groups
+    live about 12k ticks.
+  - Combined: the two effects act on different quantities. Whole decay of live programs sets
+    the non-replicator share and is the larger effect on replicator numbers (about 90x over
+    `dead0` and 15x over `whole_dead`). Whole clearance of inactive code adds about 10x over
+    `dead0` and 1.6x over `whole_live`, and it raises the number of active sites (4.1-4.7k
+    to 7.4-7.5k).
 
 Working interpretation (v13 and code inspection): saturation starts the decline in every
 run, and the space then fills with activations that no longer replicate. An activation ends
@@ -315,12 +348,20 @@ v14 reading (the counts are executed runs; the mechanisms are inference). Whole-
 decay (form M) almost removes the decline: 12-16% below the peak at 100k against about 80x
 under form P. Under M a replicator cannot turn into a non-replicator where it stands, and a
 non-replicator decays at the same per-byte rate as a replicator. Form M also clears corpses
-about 26 times sooner, so the runs do not show which of the two changes matters. Block
+about 26 times sooner, so v14 alone does not show which of the two changes matters; v15
+separates them (below). Block
 rotation without binding does not clear non-replicating sites. Up to 1e-4 it has no clear
 effect. From 1e-3 it cuts a third or more of all copies, replicators fall further than
 under `dead0`, and non-replicators shift from copy-born to re-ignited. A cut copy ends by
 igniting a site the parent wrote only in part, which fits that shift but was not measured
 directly.
+
+v15 reading (counts from executed runs; the mechanism is inference). Most of the effect of
+form M comes from ending in-place damage. When a live program decays as a whole, a
+replicator cannot lose replication and keep its site, so copy-born non-replicators fall to
+15-18% of active sites, as under M. Clearing inactive code in one event raises replicator
+numbers in either case but leaves the non-replicator share where per-byte decay of live
+programs puts it.
 
 ## Known issues (code inspection)
 
