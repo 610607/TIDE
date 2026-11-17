@@ -119,11 +119,11 @@ python3 -m http.server 8765 -d viewer   # then open http://localhost:8765/?file=
 | `src/ps_world.cpp` | Construction, ledger, digest, ancestors, disassembler |
 | `apps/ps_run.cpp` | Runner: TSV per interval, PSV replay frames |
 | `apps/ps_probe.cpp` | Probe for runs seeded with polite or `ancestor()` (columns below) |
-| `apps/ps_census.hpp` | Census trial, strict-replicator test and copy-difference classes, shared by the probe and the scan |
+| `apps/ps_census.hpp` | Census trial (with its seeding limit and the `top_up` check), strict-replicator test and copy-difference classes, shared by the probe and the scan |
 | `apps/ps_scan.cpp` | Isolated first-copy fidelity, knockout and substitution scans of genotypes listed by the probe |
 | `apps/ps_knockout.cpp` | Single-byte knockout of an ancestor without mutation or decay |
 | `apps/ps_copycut.cpp` | First-copy cut probability of polite alone under block rotation |
-| `tests/ps_test.cpp` | Ledgers, replay, walls, ancestor, starvation, bond barrier, act_cap, ext_write, p_dead, energy diffusion, bond storage, dead_quiet, whole decay, block rotation, whole decay per class, per-op decay tables, census trial, copy-difference classes, writer records and inert operands |
+| `tests/ps_test.cpp` | Ledgers, replay, walls, ancestor, starvation, bond barrier, act_cap, ext_write, p_dead, energy diffusion, bond storage, dead_quiet, whole decay, block rotation, whole decay per class, per-op decay tables, census trial and its seeding limit, copy-difference classes, writer records and inert operands |
 | `viewer/index.html` | Replay viewer (layers, inspector, timeline) |
 | `scripts/run_jobs.sh`, `scripts/jobs/` | Parallel runner and the v8-v22 job lists |
 
@@ -983,6 +983,131 @@ do not alter the dynamics: the v9 baseline is byte-identical to v8.
     traced.
   - **Copy fidelity in the run.** The strict share of strict parents' children is as in v19
     with copy error (59-86% against 57-83%, by point).
+- **v21** (who writes the remaining in-place losses and who ignites strict code off entry;
+  measurement only; revision 76ef87b, job list `v21_trace.txt`; 4 jobs in 43 minutes on 4
+  cores, the last 7 shared with v22). `trace=1` under v20 settings: `m195_s1` and `m195_s2` (`inert_operand=fail`, copy
+  error), `nomut_s1` (`fail`, no copy error), and `zero_s1`, which is v19 `m195_s1` (the
+  default `zero`). Apart from the `# trace*` lines, each output equals its v20 or v19
+  counterpart line for line. Counts are summed over windows, to 150k and from 150k to 500k.
+  Offsets, writer instructions and entries are kept per window only for the top 10-24, so
+  their shares are lower bounds. Pairs are s1 / s2 under `fail`; `zero` is seed 1.
+
+  Foreign-written strict losses in place (shares in % of losses):
+
+  | | `fail` to 150k | `fail` 150k-500k | `zero` to 150k | `zero` 150k-500k |
+  | --- | --- | --- | --- | --- |
+  | losses | 4,628 / 5,026 | 8,566 / 8,175 | 4,975 | 9,047 |
+  | writer `other` / strict / `loose` or `prop` | 60-61 / 35 / 5 | 71-72 / 26-27 / 1 | 61 / 36 / 4 | 71 / 27 / 2 |
+  | writer age under 1k / 1k-10k / from 10k ticks | 41 / 44-45 / 15-16 | 42 / 42-43 / 15-16 | 42 / 43 / 16 | 43 / 42 / 15 |
+  | writer born by copy / by re-ignition | 60-62 / 38-40 | 65-67 / 33-35 | 60 / 40 | 65 / 35 |
+  | writer ran offset 15 (polite's copy `MOV`) | 91.5-91.8 | 89.5-89.6 | 92.3 | 89.0 |
+  | that MOV read the writer's own site | 81-82 | 78-79 | 82 | 78 |
+  | filled an inert pointer direction of the victim | 53.7-54.0 | 48.7-48.8 | 54.7 | 47.0 |
+  | of these, offset 30 | 35.7-38.6 | 27.0-27.7 | 38.4 | 28.8 |
+  | of these, offsets 34, 36, 38, 40 | 15.4-18.1 | 21.1-21.8 | 16.3 | 18.2 |
+  | changed tail offsets 46-63 (at least) | 45.6-45.9 | 49.5-50.1 | 44.5 | 51.9 |
+
+  - In all but 4 of the 20,339 losses with a direction fill, the direction bytes were the
+    only non-volatile change. The victim activation was ignited at offset 0 in 97.9-99.5% of
+    losses, the writer in 95-98%. One loss in 40,417 came from an instruction that was not a
+    `MOV`.
+  - Without copy error (`nomut_s1`), 56 and 98 losses: strict writers 75% then 41%,
+    direction fills 71% then 86%.
+
+  Strict births off offset 0 (re-ignitions in 99.4-100%; shares in % of these births):
+
+  | | `fail` to 150k | `fail` 150k-500k | `zero` to 150k | `zero` 150k-500k | `nomut` to 150k | `nomut` 150k-500k |
+  | --- | --- | --- | --- | --- | --- | --- |
+  | births (% of strict births) | 38,142 / 32,500 (33-36) | 68,303 / 41,961 (46-58) | 5,511 (7.4) | 13,333 (18.6) | 568 (0.6) | 647 (0.3) |
+  | igniter `other` | 97.5 / 99.6 | 98.2 / 99.7 | 98.5 | 97.3 | 100 | 99.8 |
+  | igniter age from 1k ticks | 96 / 95 | 95 / 94 | 86 | 88 | 99 | 83 |
+  | entry 33 / 31 / 32 | 55 / 26 / 7; 34 / 46 / 8 | 31 / 20 / 8; 28 / 25 / 14 | 23 / 15 / 8 | 20 / 19 / 16 | 0.2 / 99.5 / 0 | 74 / 0 / 0 |
+  | igniter instruction at offset 1 / 4 | 19 / 12; 38 / 12 | 13 / 8; 10 / 8 | 6 / 12 | 12 / 6 | 99 / 0 | 0 / 2 |
+  | the site last held a strict off-entry activation that ended by wick | 94.8 / 94.5 | 93.7 / 88.6 | 51.6 | 54.8 | 98.9 | 97.8 |
+  | mean ticks since that end | 11 / 18 | 15 / 16 | 79 | 31 | 4 | 2 |
+  | these activations end by wick | 99.7 / 99.6 | 99.4 / 99.2 | 97.6 | 96.3 | 99.6 | 99.4 |
+  | their mean life (ticks) | 35 / 48 | 62 / 93 | 248 | 419 | 29 | 15 |
+  | their copy births | 76 / 121 | 454 / 407 | 76 | 406 | 1 | 4 |
+
+  - Strict activations ignited at offset 0 made 58-67k copy births per period in every run
+    with copy error. The igniter carried the child's key in 0.0-0.1%.
+  - Other frequent igniter instructions are at offsets 0, 6 and 8 (with copy error) and 6 and
+    38 (`nomut` from 150k); entries 32 and 34 follow 31 and 33.
+  - **Rule comparison** (0-500k, `fail` against `zero`; seed 2 `zero` from v22 `zero_s2`):
+
+    | seed | strict re-ignitions | off entry | at offset 0 | strict wick ends | off entry |
+    | --- | --- | --- | --- | --- | --- |
+    | 1 | 134,446 / 49,216 (+85,230) | 106,346 / 18,738 (+87,608) | 28,100 / 30,478 | 103,920 / 13,181 (+90,739) | +90,835 |
+    | 2 | 100,283 / 51,041 (+49,242) | 74,344 / 21,402 (+52,942) | 25,939 / 29,639 | 71,044 / 15,307 (+55,737) | +55,882 |
+
+    Off-entry activations are 98.9-99.6% of strict wick ends under `fail` and 80-99% under
+    `zero`.
+
+  Matter (`# tracemass`; 442,368 monomers in all, 48 per site) and writes refused for lack
+  of a free monomer (`no_mass`, counted only in the 5,000 ticks before each checkpoint), in
+  thousands except refusals:
+
+  | tick | free | walls | active strict bytes | active `other` bytes | inactive bytes | refused writes |
+  | --- | --- | --- | --- | --- | --- | --- |
+  | 50k | 65.7 / 61.8; 65.2 | 2.9 / 3.0; 3.3 | 264 / 255; 259 | 66 / 76; 70 | 40 / 42; 40 | 0 / 0; 0 |
+  | 100k | 52.8 / 48.8; 56.3 | 4.8 / 5.2; 5.7 | 225 / 222; 224 | 104 / 111; 100 | 53 / 52; 54 | 0 / 0; 0 |
+  | 150k | 34.0 / 30.9; 37.7 | 6.8 / 7.6; 7.4 | 178 / 174; 189 | 154 / 156; 137 | 68 / 72; 68 | 49 / 112; 5 |
+  | 200k | 22.6 / 19.1; 24.4 | 10.2 / 10.2; 9.1 | 114 / 113; 146 | 195 / 199; 175 | 99 / 100; 86 | 4,985 / 5,278; 1,649 |
+
+  - The cells are `fail` s1 / s2; `zero` s1.
+  - At 150k an `other` site holds 54 non-inert bytes on average and a strict site 42.5-42.8,
+    in all three runs.
+  - From 250k, refusals per window are 3,404-9,614 under `fail` and 1,707-10,266 under
+    `zero` (v19 s1-s2).
+  - Without copy error, free monomers stay at 71.6-76.5k and no write is refused.
+- **v22** (the census seeding limit; measurement only; revision b56495b, job list
+  `v22_seed_limit.txt`; 4 jobs in 49 minutes on 4 cores, the first 7 minutes shared with
+  v21). Found while tracing v21. The census trial draws the founder's bytes from the trial
+  center's `mass0` (48) free monomers. A key with more than 48 non-inert bytes after the
+  volatile reset therefore cannot be seeded, and the census calls it a non-replicator
+  (`other`) whatever it does in the run. Polite has 40 such bytes. With 8 tail bytes filled
+  it is still strict; with 9 it is `other`, and strict again once the founder site is topped
+  up to its byte count (`ps_test`). Alone, polite stays strict with any single fill of 34,
+  36, 38, 40 or 46-63 and is a non-replicator with any fill of 30 (all 255 values; scratch
+  check with `mass0` 48 and `inert_operand=fail`).
+
+  The runs repeat v20 `m195_s1` and `m195_s2` (`fail`) and v19 `m195_s1` and `m195_s2`
+  (`zero`) with `trace=1`. Apart from `# tracekey`, the outputs equal v21 and v19 `m195_s2`
+  line for line. A topped-up trial is the census trial with the founder site given as many
+  free monomers as the key has bytes; nothing else changes.
+
+  Active sites, `fail` s1 / s2; `zero` s1 / s2. "Past 48": more than 48 non-inert bytes
+  after the volatile reset. "Strict + topped": census strict sites plus the sites past 48
+  whose key is strict when topped up:
+
+  | tick | census strict | `other` | `other` past 48 (%) | past 48, strict when topped up | strict + topped | copy births by parents past 48 (% of the window) |
+  | --- | --- | --- | --- | --- | --- | --- |
+  | 50k | 6,401 / 6,188; 6,294 / 6,008 | 1,320 / 1,493; 1,398 / 1,625 | 47 / 55; 45 / 54 | 255 / 379; 228 / 377 | 6,656 / 6,567; 6,522 / 6,385 | 2 / 6; 2 / 5 |
+  | 100k | 5,383 / 5,313; 5,369 / 5,437 | 2,065 / 2,124; 1,958 / 1,969 | 54 / 64; 55 / 61 | 463 / 705; 481 / 577 | 5,846 / 6,018; 5,850 / 6,014 | 8 / 12; 8 / 12 |
+  | 150k | 4,176 / 4,075; 4,454 / 4,612 | 2,852 / 2,881; 2,559 / 2,456 | 77 / 78; 75 / 74 | 1,239 / 1,280; 979 / 903 | 5,415 / 5,355; 5,433 / 5,515 | 18 / 22; 18 / 15 |
+  | 200k | 2,622 / 2,579; 3,364 / 3,275 | 3,539 / 3,619; 3,180 / 3,213 | 84 / 85; 83 / 81 | 1,597 / 1,727; 1,455 / 1,320 | 4,219 / 4,306; 4,819 / 4,595 | 37 / 37; 34 / 26 |
+  | 250k | 1,823 / 1,718; 2,220 / 2,372 | 3,877 / 3,816; 3,578 / 3,436 | 90 / 91; 87 / 86 | 1,945 / 1,976; 1,733 / 1,531 | 3,768 / 3,694; 3,953 / 3,903 | 55 / 56; 49 / 42 |
+  | 300k | 1,377 / 1,163; 1,535 / 1,903 | 4,031 / 4,035; 3,917 / 3,712 | 93 / 93; 91 / 89 | 2,150 / 2,146; 1,927 / 1,760 | 3,527 / 3,309; 3,462 / 3,663 | 62 / 65; 58 / 53 |
+  | 350k | 1,043 / 938; 1,194 / 1,607 | 4,152 / 4,279; 4,116 / 3,928 | 94 / 96; 93 / 92 | 2,267 / 2,460; 2,135 / 2,046 | 3,310 / 3,398; 3,329 / 3,653 | 73 / 75; 67 / 57 |
+  | 400k | 840 / 877; 992 / 1,303 | 4,130 / 4,210; 4,128 / 4,043 | 96 / 95; 95 / 94 | 2,284 / 2,330; 2,288 / 2,191 | 3,124 / 3,207; 3,280 / 3,494 | 78 / 77; 74 / 65 |
+  | 450k | 663 / 842; 889 / 1,079 | 4,368 / 4,204; 4,301 / 4,071 | 97 / 97; 95 / 94 | 2,535 / 2,436; 2,476 / 2,156 | 3,198 / 3,278; 3,365 / 3,235 | 82 / 79; 77 / 73 |
+  | 500k | 626 / 649; 670 / 976 | 4,363 / 4,276; 4,264 / 4,172 | 97 / 97; 97 / 95 | 2,449 / 2,443; 2,314 / 2,304 | 3,075 / 3,092; 2,984 / 3,280 | 85 / 83; 81 / 76 |
+
+  - Strict sites move up to the limit: at 50k, 80-86% hold 40 bytes or fewer; at 500k,
+    49-63% hold 45-48. Of the `other` sites past 48, 74-88% hold 53-64 bytes.
+  - At 500k, 54-57% of all `other` sites are strict replicators once topped up.
+
+  In-place strict losses and copy births, summed over windows:
+
+  | | `fail` to 150k | `fail` 150k-500k | `zero` to 150k | `zero` 150k-500k |
+  | --- | --- | --- | --- | --- |
+  | foreign-written strict losses | 4,628 / 5,026 | 8,566 / 8,175 | 4,975 / 4,881 | 9,047 / 10,309 |
+  | new key past 48 (%) | 49.9 / 49.1 | 63.5 / 64.5 | 47.8 / 46.0 | 64.8 / 63.9 |
+  | of those, strict when topped up (%) | 96.1 / 95.3 | 92.3 / 92.2 | 96.6 / 96.4 | 92.1 / 92.3 |
+  | self-written strict losses (new key past 48) | 3,405 (1) / 2,142 (0) | 1,768 (10) / 3,866 (11) | 4,149 (2) / 4,257 (0) | 5,784 (7) / 6,702 (8) |
+  | copy births | 70,892 / 73,055 | 206,523 / 203,928 | 72,091 / 76,459 | 198,730 / 206,382 |
+  | by parents past 48 (%) | 9.3 / 13.4 | 68.0 / 68.6 | 9.2 / 10.7 | 63.0 / 56.7 |
+  | child carries the parent's key: all copies / parents past 48 (%) | 67.6 / 66.5; 42.0 / 45.3 | 41.3 / 42.9; 36.7 / 38.2 | 66.9 / 64.9; 37.5 / 42.6 | 43.6 / 43.4; 37.5 / 36.6 |
 
 Working interpretation (v13 and code inspection): saturation starts the decline in every
 run, and the space then fills with activations that no longer replicate. An activation ends
@@ -1163,7 +1288,8 @@ v19 reading (counts from executed runs; mechanisms marked as inference):
     strict births, was not traced.
   - Other sites fill polite's own-site pointer bytes (36, 38, 40) and write the tail
     (47-53). Alone, polite stays strict with any one of these filled, so these losses
-    involve evolved genotypes or several offsets at once (inference).
+    involve evolved genotypes or several offsets at once (inference). (v22: most of them
+    push the key past the census seeding limit of 48 bytes and are relabels.)
 - **Both routes come from INERT's double meaning** (known issue 1, inference). An inert byte
   is an empty slot that `fill` lets other sites write, and it is also the own-site direction
   and the value 0. The fills of 30, 36, 38 and 40 use the first meaning; the self-overwrite
@@ -1226,13 +1352,105 @@ v20 reading (counts from executed runs; mechanisms marked as inference):
   - The lower bounds at 36, 38, 40 and 47-53 come from the top 8 offsets per window.
   - Census status is judged under each run's own rule, so a genotype can have a different
     status in v19 and v20.
-  - The earlier mass shortage with copy error is not explained.
+  - The earlier mass shortage with copy error is not explained. (v21: the same depletion,
+    reached sooner.)
 - **Next steps** (proposals, not agreed).
   - Split the own-site direction role as well, which addresses the fills of 30, 36, 38 and
     40. This changes the ledger (five more monomers per polite copy, a higher whole-decay
     hazard) and the direction decoding, so it needs agreement on the encoding first.
   - With copy error, trace who writes the remaining foreign in-place losses, and who
-    ignites strict code off entry.
+    ignites strict code off entry. (v21.)
+
+v21 and v22 reading (counts from executed runs; mechanisms marked as inference or code
+inspection):
+
+- **The census misses long replicators, and from 250k they are most of the
+  replicators.** The census cannot seed a key past 48 bytes, so it counts such a program as
+  `other`. With copy error, strict genotypes grow toward the limit and past it. At 500k,
+  95-97% of `other` sites are past 48 and 54-57% of all `other` sites are strict once
+  topped up. Programs past 48 make 76-85% of copy births in the window before 500k.
+  `other` therefore mixes non-replicators with replicators longer than 48 bytes. This
+  affects every census verdict (`census=1`) wherever programs grow past 48. In the v19-v22
+  settings it matters from about 100k; v17 and v18 ran the same `m195` settings, so their
+  late counts are likely affected too (inference).
+- **The decline is real but about half as deep.** Strict plus topped-strict sites fall from
+  6.4-6.7k at 50k to 3.0-3.3k at 500k, against 0.6-1.0k census strict. At 500k the two
+  rules do not differ (3,075 and 3,092 under `fail`, 2,984 and 3,280 under `zero`). v20's
+  lower census strict counts under `fail` therefore reflect a difference in which
+  replicators are long, not in how many replicate (inference from four runs).
+- **Answer 1: who writes the remaining foreign in-place losses.**
+  - **Writer and instruction.** Polite's copy loop writes them: the `MOV` at offset 15
+    (89-92%), reading the writer's own site (78-82%). The writer is `other` (60-72%) or
+    strict (26-36%), and was ignited at offset 0 (95-98%). 41-43% of writers are younger
+    than 1k ticks, and 60-67% were born by copy.
+  - **Direction path.** Half of the losses (47-55%) fill an inert pointer direction of the
+    victim, which is the own-site direction role of INERT: offset 30 in 27-39% and 34, 36,
+    38, 40 in 15-22%. The other half add a byte in the tail (46-63).
+  - **Relabels.** v22 shows that 46-65% of these losses push the key past 48, and 92-97% of
+    those keys are strict when topped up. These are relabels, not lost replication.
+  - **What remains.** The tail fills and the single fills of 34-40, which polite survives
+    alone (v19's open question), fit this share. What remains is mainly the fill of 30
+    (inference from totals; joint counts per loss were not recorded). Many `other` writers
+    may themselves be long replicators copying into an occupied neighbor (inference; the
+    writer's length was not recorded).
+  - **Same under `zero`.** The pattern is the same under `zero`, so the operand split does
+    not touch this route.
+- **Answer 2: off-entry ignitions.**
+  - **Who and where.** `other` sites ignite strict code off entry (97-100%). Under `fail`,
+    94-96% of these igniters have been active for at least 1k ticks. The entries are mostly
+    33 and 31, then 32 and 34.
+  - **Igniting the neighbor** (code inspection). Polite holds 34 at offsets 1 and 4, which
+    decodes as `IGNITE`. Its operand is 36 or 38, whose pointers name offset 31 ([37]) or
+    33 ([39]). Once 36 or 38 has been filled, the pointer names a neighbor. A
+    polite-derived program that runs from offset 1 or 4 then ignites that neighbor at 31
+    or 33.
+  - **Filling the entry byte.** The same filled pointer makes `MOV 34 36` and `MOV 34 38`
+    copy byte 42 (192) into the neighbor's 31 or 33 when empty, and 192 decodes as `DEC`.
+    Without copy error, 99% of these ignitions are this one (instruction at 1, entry 31,
+    to 150k). With copy error, instructions at 1 and 4 account for 18-50% and other variant
+    instructions (offsets 0, 6, 8) for much of the rest; those were not resolved.
+  - **What the visit does** (own-site emulation of polite entered at 33 holding 192, code
+    inspection).
+    - Under `zero`: `DEC`'s inert operand names offset 0, so the visit erases byte 0, and
+      three `RND`s then write there. This matches v19's self-overwrite of offset 0.
+    - Under `fail`: each of those instructions fails, one `WALL` runs, and the activation
+      dies by wick at 47 with the code intact.
+    - Consistent with this, under `fail` 89-95% of off-entry strict births follow an
+      off-entry strict activation that ended by wick on the same site, 11-18 ticks
+      earlier. Under `zero` the share is 34-64%, with gaps of 24-79 ticks.
+  - **Why copy error raises their share.** The igniters are `other` sites, which copy error
+    makes in large numbers (1.3-4.4k against 3-29 without it). Without copy error the
+    route exists but fires 568 and 647 times per period.
+  - **The rise in re-ignitions and wick ends is this route.** Under `fail` against `zero`,
+    the extra strict re-ignitions (+85k and +49k) and extra wick ends (+91k and +56k) are
+    all off-entry activations. These activations live 35-93 ticks and make almost no
+    copies (76-454 per period, against about 60k from activations ignited at 0).
+- **Answer 3: writes refused for lack of a free monomer before 200k.**
+  - **Depletion.** With copy error, free monomers fall from 61-66k at 50k to 19-24k at
+    200k in every run. Matter accumulates in `other` sites, which hold 54 bytes each
+    against 43 for strict sites, mostly programs past 48 (v22). It also accumulates in
+    inactive sites (40-44k to 86-100k bytes) and walls (3k to 9-11k).
+  - **Why earlier under `fail`.** At 150k, seed by seed, `fail` holds 16.5k and 23.8k more
+    bytes in `other` sites than `zero`, and 3.7k and 4.5k fewer free monomers (v22
+    `zero_s2` for seed 2). Refusals therefore start one checkpoint earlier. From 250k they are in the same range under both rules. So the early refusals
+    are the same depletion reached sooner.
+  - **Not recorded.** A write is refused when the target site's own pool is empty. The
+    distribution of free monomers over sites, and who was refused, were not recorded.
+- **Limits.**
+  - Two seeds per rule.
+  - The topped-up trial tests a program alone with enough monomers to place it, not in the
+    depleted run.
+  - Writer and igniter status is the census status, so `other` includes long replicators.
+  - Offsets, instructions and entries are top-N per window (lower bounds).
+- **Next steps** (proposals, not agreed).
+  - Make the census verdict free of the seeding limit, for example by topping up the
+    founder as `top_up` does. This changes measurement only, but every census-based count
+    from v13 on would change, so it needs agreement before earlier tables are recomputed.
+  - With that verdict, re-measure the in-place routes (v19-v21) to count real losses, and
+    record per loss which offsets changed together with the key length.
+  - The off-entry route depends on the own-site direction role of INERT (a filled 36 or 38
+    turns polite's misaligned `IGNITE` toward a neighbor). The open proposal to split that
+    role addresses it; it changes the ledger and needs agreement on the encoding.
 
 ## Known issues (code inspection)
 
@@ -1247,6 +1465,11 @@ v20 reading (counts from executed runs; mechanisms marked as inference):
 5. Minor: the cost of a write is computed from the byte behind a wall before the crossing
    check; the wick check covers only the byte at `ip`; modulo bias in direction and opcode
    decoding.
+6. Census (observer, not dynamics): the trial seeds the founder from the trial center's
+   `mass0` free monomers, so a key with more than 48 non-inert bytes after the volatile reset
+   is a non-replicator by construction. Strict counts are lower bounds for replicators and
+   `other` includes long replicators (v22). `top_up` measures the gap but is not used for
+   the census verdict.
 
 ## Open proposals (none agreed)
 
