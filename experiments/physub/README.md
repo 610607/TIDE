@@ -642,29 +642,30 @@ do not alter the dynamics: the v9 baseline is byte-identical to v8.
       the controls.
     - Polite's region is intact in 0-28 replicators per run at 500k (controls: 6-48).
 - **v18** (copy fidelity under form M to 500k ticks; revision 80f9fcf, job list
-  `v18_fidelity.txt`; 12 jobs in 22 minutes on 4 cores). Four runs repeat v17 `m195_s1`,
-  `m195_s2`, `t2_s1` and `t3_s1` with `fidelity=5000`: every copy birth in the last 5,000
-  ticks before each 50k point is classified, and parent and child are judged by the census.
-  Their rows and their census, class, substitution and physics lines equal v17's to 500k
-  (trial counts aside). Below, a strict parent or child is one whose genotype is a strict
-  replicator in the census trial. `ps_scan` (revision 94a6475) then tested the three strict
-  genotypes with the most copies per run and point, 120 genotype-points in all
-  (`ps_scan label=RUN first=400 subs=4 < runs/v18/RUN.tsv`).
+  `v18_fidelity.txt`; 12 jobs in 22 minutes on 4 cores; counts recomputed in v23). Four runs
+  repeat v17 `m195_s1`, `m195_s2`, `t2_s1` and `t3_s1` with `fidelity=5000`: every copy
+  birth in the last 5,000 ticks before each 50k point is classified, and parent and child
+  are judged by the census. Their rows and their census, class, substitution and physics
+  lines equal v17's to 500k (trial counts aside). Below, a strict parent or child is one
+  whose genotype is a strict replicator in the topped-up census trial (v23 runs
+  `zero_m195_s1/s2`, `t2_s1` and `t3_s1`). `ps_scan` then tested the three strict genotypes
+  with the most copies per run and point, 120 genotype-points in all (`ps_scan label=RUN
+  first=400 subs=4 < runs/v23/RUN.tsv`, at revision b4b4ea1).
 
   Copies by strict parents in the window / strict children among them (%):
 
   | tick | m195_s1 | m195_s2 | t2_s1 | t3_s1 |
   | --- | --- | --- | --- | --- |
-  | 50k | 2362 / 83.3 | 2303 / 82.2 | 2051 / 83.1 | 2578 / 84.2 |
-  | 100k | 1902 / 79.6 | 2070 / 79.9 | 1653 / 79.5 | 2169 / 78.2 |
-  | 150k | 1732 / 75.8 | 1975 / 76.6 | 1589 / 76.0 | 1805 / 74.2 |
-  | 200k | 1530 / 71.0 | 1662 / 65.3 | 1417 / 72.4 | 1657 / 68.7 |
-  | 250k | 1249 / 62.9 | 1381 / 65.6 | 1229 / 61.4 | 1266 / 62.2 |
-  | 300k | 1023 / 58.1 | 1143 / 66.5 | 985 / 59.0 | 1106 / 68.1 |
-  | 350k | 828 / 56.6 | 1013 / 62.4 | 793 / 61.2 | 881 / 64.6 |
-  | 400k | 702 / 66.5 | 875 / 64.9 | 602 / 63.0 | 769 / 64.8 |
-  | 450k | 625 / 65.8 | 792 / 60.9 | 429 / 59.7 | 581 / 64.9 |
-  | 500k | 467 / 72.0 | 673 / 65.7 | 428 / 66.8 | 507 / 69.8 |
+  | 50k | 2439 / 83.5 | 2433 / 82.4 | 2129 / 83.3 | 2658 / 84.5 |
+  | 100k | 2078 / 79.0 | 2303 / 80.6 | 1805 / 79.5 | 2378 / 78.6 |
+  | 150k | 2115 / 76.3 | 2367 / 77.3 | 1872 / 77.3 | 2315 / 73.7 |
+  | 200k | 2267 / 70.8 | 2406 / 66.1 | 1991 / 71.7 | 2547 / 68.3 |
+  | 250k | 2318 / 62.0 | 2381 / 64.8 | 2140 / 61.7 | 2460 / 62.2 |
+  | 300k | 2411 / 59.2 | 2336 / 65.8 | 2178 / 59.5 | 2473 / 66.1 |
+  | 350k | 2509 / 56.7 | 2450 / 62.2 | 2167 / 60.6 | 2374 / 62.4 |
+  | 400k | 2446 / 64.7 | 2465 / 65.0 | 2054 / 60.4 | 2384 / 64.9 |
+  | 450k | 2546 / 63.5 | 2523 / 60.8 | 2074 / 60.8 | 2387 / 61.8 |
+  | 500k | 2318 / 65.0 | 2484 / 62.9 | 2163 / 66.2 | 2334 / 67.6 |
 
   Strict-parent copies whose child is not strict, by class, in percentage points of all
   strict-parent copies (mean over the four runs, range in parentheses). The last two columns
@@ -674,19 +675,19 @@ do not alter the dynamics: the v9 baseline is byte-identical to v8.
 
   | tick | point | gap | multi | env | total | foreign / residue per copy | no-mass writes |
   | --- | --- | --- | --- | --- | --- | --- | --- |
-  | 50k | 6.3 (5.7-7.0) | 0.3 (0.2-0.5) | 3.1 (2.7-3.6) | 7.1 (6.7-7.9) | 16.8 (15.8-17.8) | 0.61 / 0.08 | 0 |
-  | 100k | 5.8 (5.6-6.4) | 0.4 (0.2-0.6) | 3.6 (2.6-4.5) | 10.9 (9.3-13.1) | 20.7 (20.1-21.9) | 1.03 / 0.10 | 0 |
-  | 150k | 5.5 (5.4-5.6) | 0.7 (0.3-1.2) | 4.6 (4.4-5.0) | 13.6 (12.6-14.6) | 24.4 (23.4-25.8) | 1.26 / 0.12 | 5-348 |
-  | 200k | 4.3 (4.0-4.6) | 3.0 (1.3-4.9) | 5.2 (4.3-6.0) | 18.2 (17.1-19.8) | 30.6 (27.6-34.7) | 1.75 / 0.20 | 924-2412 |
-  | 250k | 4.5 (3.6-5.1) | 6.6 (4.1-9.4) | 6.7 (6.4-7.0) | 19.2 (18.2-20.3) | 37.0 (34.4-38.6) | 1.64 / 0.21 | 3067-5874 |
-  | 300k | 4.6 (3.9-5.1) | 5.6 (3.2-9.1) | 7.1 (6.4-7.7) | 19.8 (16.3-22.8) | 37.1 (31.9-41.9) | 1.59 / 0.25 | 2494-6799 |
-  | 350k | 4.6 (3.7-5.3) | 5.6 (4.3-7.6) | 7.5 (7.4-7.9) | 21.1 (18.2-23.5) | 38.8 (35.4-43.4) | 1.78 / 0.19 | 3448-10266 |
-  | 400k | 5.2 (4.2-6.5) | 4.6 (3.2-6.0) | 8.2 (5.7-9.6) | 17.2 (16.7-17.7) | 35.2 (33.5-37.0) | 1.44 / 0.22 | 2518-4454 |
-  | 450k | 5.3 (4.4-5.9) | 5.8 (3.4-7.7) | 8.7 (8.4-9.0) | 17.5 (15.0-19.6) | 37.2 (34.2-40.3) | 1.35 / 0.15 | 4838-6472 |
-  | 500k | 5.2 (4.6-6.1) | 4.3 (1.9-5.6) | 7.1 (5.3-9.6) | 14.9 (12.1-16.6) | 31.4 (28.1-34.3) | 1.31 / 0.13 | 1457-7882 |
+  | 50k | 6.2 (5.7-6.9) | 0.3 (0.2-0.5) | 3.2 (2.9-3.7) | 6.9 (6.3-7.7) | 16.6 (15.5-17.6) | 0.62 / 0.08 | 0 |
+  | 100k | 5.7 (5.4-6.2) | 0.4 (0.2-0.5) | 4.1 (3.2-4.6) | 10.4 (8.9-12.2) | 20.6 (19.4-21.4) | 1.06 / 0.10 | 0 |
+  | 150k | 5.2 (5.0-5.3) | 0.7 (0.3-1.3) | 5.2 (4.6-5.5) | 12.8 (11.8-14.6) | 23.8 (22.6-26.3) | 1.29 / 0.14 | 5-348 |
+  | 200k | 4.1 (3.9-4.4) | 2.9 (1.4-4.9) | 6.6 (5.7-7.5) | 17.2 (16.1-18.2) | 30.8 (28.3-33.9) | 1.80 / 0.22 | 924-2412 |
+  | 250k | 4.2 (3.6-5.0) | 6.2 (3.8-8.4) | 8.6 (8.1-9.6) | 18.3 (17.6-19.8) | 37.3 (35.2-38.3) | 1.74 / 0.26 | 3067-5874 |
+  | 300k | 4.2 (3.7-4.7) | 4.6 (2.9-7.1) | 10.1 (9.5-10.5) | 18.5 (16.7-20.8) | 37.4 (33.9-40.8) | 1.67 / 0.24 | 2494-6799 |
+  | 350k | 4.0 (3.5-4.5) | 5.5 (4.1-8.6) | 11.2 (9.7-12.0) | 18.8 (17.7-19.5) | 39.5 (37.6-43.3) | 1.62 / 0.20 | 3448-10266 |
+  | 400k | 4.9 (4.6-5.3) | 3.7 (2.9-4.1) | 10.9 (9.7-12.0) | 16.8 (15.2-19.3) | 36.3 (35.0-39.6) | 1.50 / 0.20 | 2518-4454 |
+  | 450k | 4.4 (4.1-5.0) | 4.8 (4.0-5.4) | 11.9 (11.5-12.4) | 17.1 (16.1-17.8) | 38.3 (36.5-39.2) | 1.52 / 0.18 | 4838-6472 |
+  | 500k | 4.6 (4.2-4.8) | 3.1 (2.0-5.2) | 10.5 (9.1-12.2) | 16.4 (15.2-17.2) | 34.6 (32.4-37.1) | 1.50 / 0.17 | 1457-7882 |
 
   The same genotypes in the run and alone. In the run: the strict share of the children of
-  the 12 genotypes (three per run), weighted by their copies; from 250k these are 169-289
+  the 12 genotypes (three per run), weighted by their copies; from 250k these are 197-301
   copies per point. Alone: 400 first copies per genotype in a 9x9 world with copy error and
   no decay. m counts non-inert, non-volatile bytes. The sensitive length is m minus the
   summed share of substitutions that leave a strict replicator, and pred is the first-order
@@ -694,63 +695,66 @@ do not alter the dynamics: the v9 baseline is byte-identical to v8.
 
   | tick | copies | in-run strict % | alone: strict % | alone: exact % | (1-u)^m % | m | sensitive length | pred % |
   | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-  | 50k | 5378 | 87.4 | 91.8-92.0 | 88.0-89.2 | 89.5 | 37 | 26.5-26.8 | 92.2-92.3 |
-  | 100k | 2757 | 83.6 | 91.8-93.0 | 89.0-89.2 | 89.2-89.5 | 37-38 | 23.5-26.8 | 92.2-93.1 |
-  | 150k | 1321 | 82.4 | 91.8-93.0 | 89.0-89.2 | 89.2-89.5 | 37-38 | 23.5-26.8 | 92.2-93.1 |
-  | 200k | 563 | 72.5 | 91.5-93.2 | 89.0-89.2 | 89.2-89.5 | 37-38 | 23.2-26.5 | 92.3-93.2 |
-  | 250k | 289 | 68.2 | 92.0-93.0 | 88.2-89.2 | 87.6-89.5 | 37-44 | 22.8-26.5 | 92.3-93.3 |
-  | 300k | 194 | 72.2 | 92.0-93.2 | 86.2-89.2 | 87.4-89.5 | 37-45 | 23.0-26.8 | 92.2-93.2 |
-  | 350k | 182 | 67.6 | 91.2-93.0 | 87.5-90.0 | 87.9-89.5 | 37-43 | 22.8-27.8 | 92.0-93.3 |
-  | 400k | 219 | 69.4 | 91.2-93.2 | 87.2-89.2 | 87.4-89.2 | 38-45 | 22.8-27.5 | 92.0-93.3 |
-  | 450k | 230 | 71.3 | 91.2-94.0 | 86.2-89.2 | 87.4-89.2 | 38-45 | 23.0-28.0 | 91.9-93.2 |
-  | 500k | 169 | 77.5 | 91.2-93.0 | 87.5-89.5 | 87.9-89.2 | 38-43 | 23.2-28.0 | 91.9-93.2 |
+  | 50k | 5378 | 87.6 | 91.8-92.0 | 88.0-89.2 | 89.5 | 37 | 26.5-26.8 | 92.2-92.3 |
+  | 100k | 2757 | 84.6 | 91.8-93.0 | 89.0-89.2 | 89.2-89.5 | 37-38 | 23.5-26.8 | 92.2-93.1 |
+  | 150k | 1321 | 84.0 | 91.8-93.0 | 89.0-89.2 | 89.2-89.5 | 37-38 | 23.5-26.8 | 92.2-93.1 |
+  | 200k | 563 | 76.0 | 91.5-93.2 | 89.0-89.2 | 89.2-89.5 | 37-38 | 23.2-26.5 | 92.3-93.2 |
+  | 250k | 301 | 72.1 | 92.0-93.0 | 86.0-89.2 | 86.1-89.5 | 37-50 | 22.5-26.5 | 92.3-93.3 |
+  | 300k | 197 | 76.7 | 92.0-93.2 | 85.8-89.2 | 84.8-89.5 | 37-55 | 22.5-26.8 | 92.2-93.2 |
+  | 350k | 241 | 49.8 | 91.2-93.2 | 82.8-89.5 | 85.0-89.5 | 37-54 | 22.8-27.8 | 92.0-93.3 |
+  | 400k | 234 | 62.4 | 91.2-93.8 | 85.0-89.2 | 84.5-89.2 | 38-56 | 22.8-27.5 | 92.0-93.3 |
+  | 450k | 239 | 72.4 | 91.2-93.5 | 86.2-89.2 | 86.3-89.2 | 38-49 | 23.0-28.0 | 91.9-93.2 |
+  | 500k | 215 | 76.7 | 91.2-93.5 | 85.0-89.2 | 84.5-89.2 | 38-56 | 20.8-28.0 | 91.9-93.6 |
 
-  None of the 48,000 first copies alone fell in the gap, multi or env class: 86-90% were
+  None of the 48,000 first copies alone fell in the gap, multi or env class: 83-90% were
   exact and the rest point. Knockouts kill 25-32 of the m bytes at every point. Grouped by m
   over the 120 genotype-points ((1-u)^m at the mean m):
 
   | m | genotype-points | exact % | (1-u)^m % | strict % |
   | --- | --- | --- | --- | --- |
-  | 37 | 45 | 89.2 | 89.5 | 92.0 |
-  | 38-39 | 36 | 89.0 | 89.2 | 92.7 |
-  | 40-42 | 25 | 88.5 | 88.4 | 92.9 |
-  | 43-45 | 14 | 87.5 | 87.6 | 93.1 |
+  | 37 | 44 | 89.2 | 89.5 | 92.0 |
+  | 38-39 | 24 | 88.9 | 89.2 | 92.7 |
+  | 40-42 | 18 | 88.5 | 88.3 | 93.0 |
+  | 43-45 | 8 | 87.4 | 87.5 | 93.0 |
+  | 46-49 | 11 | 86.6 | 86.7 | 93.1 |
+  | 50-53 | 6 | 85.9 | 85.7 | 93.1 |
+  | 54-56 | 9 | 85.1 | 84.9 | 93.1 |
 
   Population, range over the four runs. Status `other` is a non-replicator whose trial did
-  not reach copy depth 2 (`loose` and `prop` stay below 70 sites). Filled: a reference-inert
-  offset (an own-site pointer) is non-inert. Re-ignitions are per window; their strict share
-  comes from 300 sampled re-ignitions. The last column is the median, over strict genotypes
-  with at least 10 copies, of their children's strict share:
+  not reach copy depth 2 (`loose` stays at most 52 sites and `prop` at most 101). Filled: a
+  reference-inert offset (an own-site pointer) is non-inert. Re-ignitions are per window;
+  their strict share comes from 300 sampled re-ignitions. The last column is the median,
+  over strict genotypes with at least 10 copies, of their children's strict share:
 
   | tick | strict sites | filled % | `other` sites | filled % | copies by `other` (strict %) | re-ignitions | re-ignited strict % | genotype median strict % |
   | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-  | 50k | 6008-6378 | 10-12 | 1398-1625 | 60-62 | 153-244 (2.6-5.1) | 4662-6137 | 14.0-23.0 | 83-87 |
-  | 100k | 5177-5509 | 27-34 | 1958-2158 | 67-77 | 316-615 (2.0-2.8) | 5432-10234 | 10.0-13.7 | 82-89 |
-  | 150k | 3933-4684 | 47-53 | 2456-2871 | 81-85 | 710-773 (0.6-2.3) | 8834-11611 | 4.3-17.3 | 80-86 |
-  | 200k | 2703-3534 | 64-69 | 3180-3374 | 89-92 | 995-1630 (0.6-1.5) | 9270-16766 | 5.0-12.7 | 67-83 |
-  | 250k | 1922-2372 | 69-76 | 3436-3686 | 93-95 | 1172-1581 (0.5-1.1) | 13107-19421 | 2.0-8.3 | 70-79 |
-  | 300k | 1535-1903 | 67-81 | 3712-3917 | 94-96 | 1772-2351 (0.3-0.7) | 13789-17006 | 0.7-4.0 | 67-82 |
-  | 350k | 1194-1607 | 64-81 | 3928-4116 | 95-96 | 1767-2439 (0.2-0.9) | 14757-23622 | 2.3-6.3 | 67-75 |
-  | 400k | 961-1303 | 66-84 | 4043-4244 | 94-97 | 2064-2280 (0.1-0.4) | 15522-17977 | 0.3-1.3 | 64-80 |
-  | 450k | 628-1079 | 68-81 | 4071-4405 | 95-97 | 2072-2675 (0.1-0.4) | 13001-22209 | 0.3-5.0 | 70-79 |
-  | 500k | 670-976 | 59-79 | 4172-4501 | 96-97 | 2126-3243 (0.1-0.2) | 14570-19562 | 0.7-4.0 | 69-80 |
+  | 50k | 6385-6605 | 11-13 | 1131-1194 | 61-65 | 72-107 (5.3-10.3) | 4662-6137 | 14.3-23.3 | 83-87 |
+  | 100k | 5689-6014 | 29-37 | 1349-1614 | 65-79 | 104-402 (4.0-5.8) | 5432-10234 | 11.3-15.7 | 82-89 |
+  | 150k | 5006-5515 | 52-60 | 1506-1748 | 83-87 | 184-435 (1.1-7.1) | 8834-11611 | 4.7-18.7 | 80-85 |
+  | 200k | 4182-4899 | 71-77 | 1681-1837 | 90-92 | 238-714 (1.7-7.1) | 9270-16766 | 7.0-19.0 | 73-83 |
+  | 250k | 3563-3953 | 80-84 | 1782-2066 | 94-96 | 219-484 (2.5-8.1) | 13107-19421 | 4.3-11.7 | 64-80 |
+  | 300k | 3413-3663 | 81-88 | 1805-2000 | 94-97 | 545-924 (1.3-2.6) | 13789-17006 | 1.7-13.7 | 67-75 |
+  | 350k | 3329-3653 | 82-90 | 1791-1954 | 96-97 | 214-703 (2.3-8.4) | 14757-23622 | 7.3-9.7 | 64-80 |
+  | 400k | 3153-3494 | 84-92 | 1755-1965 | 96-98 | 284-729 (2.5-3.7) | 15522-17977 | 2.7-7.3 | 65-80 |
+  | 450k | 2957-3365 | 86-93 | 1747-2003 | 96-98 | 283-729 (1.8-6.7) | 13001-22209 | 7.0-9.0 | 67-71 |
+  | 500k | 2984-3280 | 87-92 | 1776-1861 | 96-98 | 332-1367 (0.7-4.3) | 14570-19562 | 3.0-8.7 | 69-75 |
 
-  - **Who copies.** Strict parents made 89-92% of all copy births at 50k, 50-62% at 200k and
-    14-17% at 500k. Per strict site, their copies per window rose from 0.32-0.40 to
-    0.63-0.70. Their mean length (non-inert bytes, volatile offsets excluded) grew from
-    38.3-38.5 to 42.8-43.3. v17's 41 to 45 counts the volatile offsets too.
+  - **Who copies.** Strict parents made 94-95% of all copy births at 50k, 77-90% at 200k and
+    63-85% at 500k. Per strict site, their copies per window rose from 0.32-0.40 to
+    0.66-0.78. Their mean length (non-inert bytes at the parent site) grew from 38.7-39.4 to
+    50.8-51.9.
   - **Where the length went.** In the leading genotypes, polite's region (offsets 0-45)
     holds 37 non-inert bytes, or 38 when an own-site pointer offset is filled (0 of 12 at
-    50k, 3-9 of 12 at later points). From 250k, 5-12 of 12 also carry 1-7 non-inert bytes
+    50k, 3-10 of 12 at later points). From 250k, 6-12 of 12 also carry 1-18 non-inert bytes
     at offsets 46-63, which polite copies but never executes.
   - **Mass.** Writes refused for lack of a free monomer start at 150-200k. At 500k free
     monomers are 4.7-6.3% of the initial 442,368.
   - **Balance (estimate).** For each 50k interval, take the strict sites at its start, add
     strict births (copies and re-ignitions, the mean of the two bounding windows times ten)
-    and subtract the whole-program decays expected at 1.95e-6 per non-inert byte (0.40-0.45
-    per strict site per 5k ticks). The result exceeds the strict sites at the end of the
-    interval. The shortfall per strict site per 5k ticks is -0.01 to 0.16 up to 150k and
-    0.08 to 0.72 after, against 0.40-0.45 from decay.
+    and subtract the whole-program decays expected at 1.95e-6 per non-inert byte of the
+    replicators' mean length (0.41-0.52 per strict site per 5k ticks). The result exceeds
+    the strict sites at the end of the interval. The shortfall per strict site per 5k ticks
+    is -0.02 to 0.22 up to 150k and 0.06 to 0.54 after, against 0.41-0.52 from decay.
 
   Short-ancestor control: `ancestor()` (35 bytes, `anc=copier`) in place of polite,
   otherwise as `m195`. Probes `anc_s1` and `anc_s2` report every 5k ticks; `ps_run` repeats
@@ -780,28 +784,31 @@ do not alter the dynamics: the v9 baseline is byte-identical to v8.
       own-site pointer offset.
 
   No-copy-error control: `nomut_s1` and `nomut_s2` are `m195` with `p_mut` 0 (revision
-  94a6475, which only renames the shift class; 2 jobs in 13 minutes). The pairs are s1 / s2:
+  94a6475, which only renames the shift class; 2 jobs in 13 minutes; counts recomputed in
+  v23 from `zero_nomut_s1/s2`). The pairs are s1 / s2; the exact share of `other` copies is
+  given from 100 copies:
 
   | tick | strict sites | `other` sites | strict sites filled % | strict children of strict parents % | env copies per window | copies by `other` (exact %) | re-ignited strict % |
   | --- | --- | --- | --- | --- | --- | --- | --- |
-  | 50k | 8672 / 8664 | 40 / 43 | 3 / 5 | 99.6 / 99.7 | 16 / 10 | 3 / 4 | 91 / 92 |
-  | 100k | 8652 / 8630 | 32 / 50 | 7 / 9 | 99.5 / 99.3 | 16 / 26 | 5 / 3 | 95 / 96 |
-  | 200k | 8576 / 8565 | 62 / 54 | 22 / 28 | 99.3 / 99.5 | 36 / 48 | 6 / 1 | 95 / 96 |
-  | 300k | 8397 / 8383 | 122 / 172 | 50 / 56 | 98.8 / 97.2 | 67 / 83 | 11 / 17 | 91 / 93 |
-  | 400k | 8206 / 7595 | 213 / 785 | 78 / 82 | 97.4 / 94.4 | 111 / 157 | 34 / 177 | 46 / 40 |
-  | 500k | 7670 / 6306 | 623 / 1782 | 93 / 95 | 97.2 / 94.0 | 110 / 188 | 154 (71) / 780 (54) | 71 / 29 |
+  | 50k | 8677 / 8673 | 32 / 33 | 3 / 5 | 99.7 / 99.7 | 16 / 10 | 3 / 4 | 91 / 92 |
+  | 100k | 8658 / 8638 | 24 / 41 | 7 / 10 | 99.6 / 99.5 | 16 / 26 | 5 / 2 | 95 / 96 |
+  | 200k | 8596 / 8577 | 35 / 41 | 22 / 28 | 99.3 / 99.5 | 36 / 48 | 4 / 1 | 95 / 96 |
+  | 300k | 8438 / 8476 | 76 / 78 | 50 / 57 | 98.9 / 98.0 | 67 / 84 | 2 / 4 | 91 / 95 |
+  | 400k | 8296 / 8192 | 120 / 179 | 78 / 83 | 97.2 / 96.4 | 119 / 184 | 4 / 14 | 47 / 44 |
+  | 500k | 8089 / 7717 | 193 / 358 | 93 / 96 | 96.8 / 94.6 | 143 / 256 | 7 / 253 (0) | 76 / 35 |
 
   - **Losses.** Without copy error, strict parents lose children almost only to env and
-    multi. Gap copies number at most 2 per window. The total loss is 2.8-6.0% at 500k.
-  - **Length.** Their mean length still grows, from 38.0 to 39.9-40.6.
+    multi. Gap copies number at most 5 per window. The total loss is 3.2-5.4% at 500k.
+  - **Length.** Their mean length still grows, from 38.0 to 40.8-42.9.
   - **Mass.** Writes refused for lack of a free monomer occur only in s2's last window (20
     writes). Free monomers are 7.5-12.3% of the initial mass at 500k.
   - **Active sites at 500k.** 8.1-8.3k, against 4.9-5.2k with copy error.
-  - **Balance.** The balance estimate above closes in every interval: the shortfall per
-    strict site per 5k ticks is -0.01 to 0.03.
-  - **`other` copies.** With copy error, 22-43% of the copies made by `other` parents are
-    exact copies of the parent at every point (four runs).
-
+  - **Balance.** These runs have no class lines, so the strict parents' mean length stands
+    in for the replicators' in the estimate above. The shortfall per strict site per 5k
+    ticks is then 0.01 to 0.06, against 0.37-0.41 from decay.
+  - **`other` copies.** With copy error, 0-7% of the copies made by `other` parents are
+    exact copies of the parent at every point (four runs). The seed-limited census found
+    22-43%, because it counted long strict parents as `other`.
 - **v19** (activation fates under form M to 500k ticks; revision 2280ebf, job list
   `v19_fate.txt`; 4 jobs in 43 minutes on 4 cores; counts recomputed in v23). The runs
   repeat v18 `m195_s1`, `m195_s2`, `nomut_s1` and `nomut_s2` with `fate=1`. Every other line
@@ -850,7 +857,8 @@ do not alter the dynamics: the v9 baseline is byte-identical to v8.
     error, 0.40-0.43 without. In-place loss with copy error: 0.076-0.133, rising late.
     Without copy error: 0.000-0.027. The fill of offset 30 alone: 0.030-0.055 with copy
     error, at most 0.005 without. Wick ends plus the net in-place loss, the counterpart of
-    v18's balance shortfall: 0.12-0.36 with copy error and 0.000-0.028 without.
+    v18's balance shortfall: 0.12-0.36 with copy error (v18 estimated 0.06-0.28 in the same
+    runs) and 0.000-0.028 without (v18: 0.01-0.04).
   - **Attribution.** A change is the set of non-volatile bytes of a site that differ after
     one tick. It is credited to the first foreign writer among them (lowest offset), or to
     the site itself when it wrote them all; the writer's class is the census status of its
@@ -1217,22 +1225,23 @@ v17 reading (counts from executed runs; mechanisms are inference):
   births suggests that copies from evolved replicators more often yield non-replicators,
   but copy fidelity per genotype was not measured (v18 measures it).
 
-v18 reading (counts from executed runs; which mechanism fills each class is inference):
+v18 reading (counts from executed runs, recomputed in v23 with the topped-up census; which
+mechanism fills each class is inference):
 
 - **The genotypes' own fidelity does not fall.**
   - Alone, the leading strict genotypes give 91-94% strict first copies at every point from
     50k to 500k. This is within about one point of the prediction from their substitution
     scans.
-  - Their exact share falls with m as (1-u)^m, from 89.2% at m 37 to 87.5% at m 43-45. This
+  - Their exact share falls with m as (1-u)^m, from 89.2% at m 37 to 85.1% at m 54-56. This
     is Eigen's quality factor for precise copies, Q = q^ν
     ([Eigen 1971](../../docs/references/pdf/eigen-1971-selforganization-of-matter.pdf#page=11),
     journal pp. 475 and 491).
   - Their strict share does not fall (92.0% to 93.1%), because the bytes they gained are
-    neutral: the sensitive length stays at 23-28.
+    neutral: the sensitive length stays at 21-28.
 
   Length growth costs exact copies, not replicating children.
 - **The length grew outside the copy mechanism.** In the leading genotypes the growth is a
-  filled own-site pointer offset and up to 7 bytes past polite's region, which are never
+  filled own-site pointer offset and up to 18 bytes past polite's region, which are never
   executed. A copy error only replaces a non-inert byte with another (`src/ps_exec.cpp`), so
   these bytes did not come from an aligned copy of the parent. They came from other sites,
   from residue or from a misaligned copy, and were then copied along (inference). Without
@@ -1244,38 +1253,37 @@ v18 reading (counts from executed runs; which mechanism fills each class is infe
   occupied sites, and under `fill` the refused writes leave chimeras: residue reaches 4.5
   offsets per copy by 15k.
 - **Fidelity in the run falls, for environmental reasons.**
-  - In the run, the same genotypes give 87% strict children at 50k and 68-78% from 200k.
-  - Over all strict parents, losses rise from 16-18 points to 31-43 at 250-350k. Point
+  - In the run, the same genotypes give 88% strict children at 50k and 50-77% from 200k.
+  - Over all strict parents, losses rise from 16-18 points to 34-43 at 250-350k. Point
     losses (copy errors) stay at 4-7 points.
   - The rise is in three classes, none of which occurs alone:
     - env: mostly offsets written into the target by other sites;
     - gap: in step with writes refused for lack of a free monomer;
     - multi.
 - **Lost copies are the smaller part of the decline.** From 50k to 500k, strict children
-  per strict-parent copy fall by a factor of 1.16-1.25, while strict sites fall 6-9-fold.
-  Per strict site, copies even rise.
+  per strict-parent copy fall by a factor of 1.25-1.31, while strict sites fall 1.9-2.2-fold
+  (6-9-fold under the seed-limited census). Per strict site, copies even rise.
   - **A further loss channel.** With copy error, the balance leaves a loss of strict sites
-    beyond whole-program decay. After 150k it reaches 0.08-0.72 per site per 5k ticks,
-    against 0.40-0.45 from decay. Without copy error the same balance closes. So the
-    missing loss needs copy error somewhere, yet it does not pass through the parent's own
-    failed copies.
+    beyond whole-program decay. After 150k it reaches 0.06-0.54 per site per 5k ticks,
+    against 0.41-0.52 from decay. Without copy error the same balance nearly closes
+    (0.01-0.06). So the missing loss needs copy error somewhere, yet it does not pass
+    through the parent's own failed copies.
   - **One route that fits (code inspection, not measured): in-place change by outside
     writes** (known issue 1). Offset 30 is both the direction of polite's source pointer
     and the address its loop jumps back to. A fill there turns a live polite into a program
     that copies from a neighbor; with `[30]=192` the census test finds a non-replicator.
     Mutants and `other` sites write more varied bytes than polite does. This would also fit
-    two observations:
-    - 22-43% of `other` copies are exact copies of the parent, though `other` genotypes
-      make almost no copies alone;
-    - 96-97% of `other` sites carry a filled offset.
+    the 96-98% of `other` sites that carry a filled offset. (The seed-limited census also
+    showed 22-43% of `other` copies as exact copies of the parent; with the topped-up census
+    it is 0-7%, so those parents were long strict replicators.)
 
-    It was not measured here. v19 measures it: the route occurs, but it is about 18% of
-    in-place losses, and its copies are not exact copies of the converted parent.
+    It was not measured here. v19 measures it: the route occurs, it is 42-45% of in-place
+    losses after 150k, and its copies are not exact copies of the converted parent.
 - **Copy error accelerates a process that the environment alone also starts.** Without copy
   error, intrinsic fidelity is 1. Even so:
-  - filled offsets spread to 93-95% of strict sites;
-  - env copies rise about tenfold;
-  - `other` sites grow from about 40 to 623 and 1782;
+  - filled offsets spread to 93-96% of strict sites;
+  - env copies rise about ten- to twentyfold;
+  - `other` sites grow from about 30 to 193 and 358;
   - strict sites begin to fall after 300k.
 
   With copy error, the same signs appear by 100k and are larger by an order of magnitude.
@@ -1284,8 +1292,9 @@ v18 reading (counts from executed runs; which mechanism fills each class is infe
     descendant viability alone with a timeout, and notes that solitary tests miss
     interactions ([A04, PDF pp. 21-22, as recorded in the prior-work
     note](../../docs/research/shared-memory-prior-work.md)). Here the gap between alone and
-    in-run is that interaction, and `other` genotypes that copy themselves in the run but
-    not alone are a case of it.
+    in-run is that interaction. Under the seed-limited census, `other` genotypes that
+    seemed to copy themselves in the run but not alone were mostly strict replicators the
+    trial could not seed.
   - Knockout and substitution scans are the kind of measurement Lenski et al. 1999 made in
     digital organisms (abstract only; see `docs/references/unavailable.md`).
   - The test alone covers first copies only, and only the three most-copied strict
@@ -1306,17 +1315,17 @@ mechanisms marked as inference):
   42-45% of in-place losses, 6.2-6.4% of all strict losses and 58-60% of the net in-place
   loss. The converted program does copy from the neighbor that [30] now names, but it seldom
   finishes a copy and then mostly holds its site until whole decay. At most 0.1% of its
-  children have its own genotype, so this route is not the source of the exact `other`
-  copies in v18. (The seed-limited census put it at 18% of in-place losses; most of the
+  children have its own genotype. (The seed-limited census put it at 18% of in-place losses; most of the
   other losses it counted were keys pushed past 48 bytes, relabels.)
 - **In-place change carries the decline (accounting, not a counterfactual).** With copy
   error, births exceed decay and wick ends in every window, and strict sites fall because
   in-place losses exceed in-place gains. Without in-place losses the population, mass and
   births would differ, so the decomposition does not say how large the population would
   then be.
-- **v18's missing loss is measured.** Wick ends plus the net in-place loss match v18's
-  balance shortfall in range, with and without copy error. Most of it is in-place change;
-  wick ends grow late.
+- **v18's missing loss is measured.** Wick ends plus the net in-place loss are of the size of
+  v18's balance shortfall, with and without copy error (0.12-0.36 against an estimate of
+  0.06-0.28 after 150k with copy error). Most of it is in-place change; wick ends grow
+  late.
 - **Two routes carry nearly all in-place losses.**
   - The site itself writes 44-47% of in-place losses. Most come from activations ignited at
     an offset other than 0, which run polite's data region as code. An inert operand byte
