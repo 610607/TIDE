@@ -264,6 +264,14 @@ public:
   int first_ip(int32_t site) const;           // ip of the lowest active slot, -1 if none
   uint16_t lineage(int32_t site) const { return lineage_[site]; }
   const uint8_t* bytes_at(int32_t site) const { return site_ptr(site); }
+  // Body (content identity; the site index unless rotations moved contents) whose activation
+  // last wrote the byte, -1 if none; and the tick of that write.
+  int32_t byte_writer(int32_t site, int offset) const {
+    return writer_[static_cast<size_t>(site) * cfg_.site_len + offset];
+  }
+  uint64_t byte_written_at(int32_t site, int offset) const {
+    return written_at_[static_cast<size_t>(site) * cfg_.site_len + offset];
+  }
   // code: non-inert bytes at the child; written: those last written by the parent's site
   // after the child's previous ignition (a copy has most bytes written, a re-ignition few).
   // by_parent / by_other: offsets last written by the parent / by any other site after the

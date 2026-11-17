@@ -156,6 +156,8 @@ inline TrialResult run_trial(const Config& run_cfg, const std::string& key,
   std::vector<bool> visited(c.site_len, false);
   std::vector<int> gen(kTrialSize * kTrialSize, 0);
   for (uint64_t k = 0; k < kTrialTicks; ++k) {
+    // Nothing can ignite once no site is active, so the result is final (a speed-up only).
+    if (t.active_count() == 0) break;
     const int at = t.first_ip(center);  // the instruction this tick executes
     if (at >= 0) r.op_mask |= uint64_t{1} << at;
     t.run(1);

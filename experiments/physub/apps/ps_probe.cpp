@@ -4,7 +4,7 @@
 // Usage: ps_probe ticks=N seed=S p_mut=X p_hydro=Y rival=0|1 [mass0=M] [census=0|1]
 //        [hydro_whole=0|1|live|dead] [p_rot=P] [physics=0|1]
 //        [decay_table=T decay_ratio=R] [classes=T1,T2,...] [anc=polite|copier]
-//        [fidelity=W]
+//        [fidelity=W] [fate=1]
 
 #include "ps_census.hpp"
 #include "ps_core.hpp"
@@ -12,6 +12,8 @@
 #include <algorithm>
 #include <array>
 #include <cstdlib>
+#include <cstring>
+#include <memory>
 #include <iostream>
 #include <map>
 #include <sstream>
@@ -534,6 +536,300 @@ void print_lineage(const World& w, std::map<std::string, TrialResult>& cache) {
   std::cout << std::endl;
 }
 
+// Activation fates (fate=1, needs census=1 and p_rot 0). Every activation gets the status of
+// its key at birth (census trial, cached). The status of a rep, loose or prop activation is
+// re-evaluated whenever a non-volatile byte of its live site changes without a birth ("in
+// place"). Changes of other activations are counted but not tested (they are about 98% of
+// all in-place changes); the census at each checkpoint finds any that became a replicator
+// and counts them as found_at_census, so the strict balance stays exact. After each tick
+// every tracked site is compared with a snapshot. Bytes change only by writes, apart from
+// whole-program decay, which empties the site and ends its activation, so each changed byte
+// was written this tick and World::byte_writer names the writing site. An activation ends by
+// decay when its site holds no non-inert byte after the tick, otherwise by wick: its ip
+// reached an inert byte (starvation would also land here; the window's starvation count is
+// printed). Flows of strict-replicator activations are printed at each checkpoint and checked
+// against the census. Observation only. The observer keeps its own trial cache and reads the
+// census cache, so the census output (including its trial count) is unchanged; prime() hands
+// the census the verdicts it would compute for the active sites.
+enum End { kEndDecay = 0, kEndWick, kEnds };
+constexpr const char* kEndName[kEnds] = {"decay", "wick"};
+// Writer of an in-place change: the site itself, or the status of the foreign writer's
+// activation (kWNone: the writer's site is not active).
+enum Writer { kWSelf = kStatuses, kWNone, kWriters };
+constexpr const char* kWriterName[kWriters] = {"rep", "loose", "prop", "other", "self", "none"};
+
+struct Fate {
+  bool on = false;
+  bool converted = false;  // was strict, lost strict status in place
+  int status = kOther;
+};
+
+struct FateTally {
+  uint64_t born[kStatuses][kKinds] = {};
+  uint64_t ends[kStatuses][kEnds] = {};
+  uint64_t ends_converted[kEnds] = {};
+  uint64_t change[kStatuses][kStatuses] = {};  // in-place key changes, from -> to status
+  uint64_t other_changes = 0;                   // key changes of other activations (untested)
+  uint64_t found[kStatuses] = {};               // other -> status, found at the census
+  uint64_t change_writer[kStatuses][kWriters] = {};  // the same changes by writer
+  // Strict -> not strict in place.
+  uint64_t out_writer[kWriters] = {};
+  uint64_t out_at[64] = {};  // changed offsets
+  uint64_t out_src = 0, out_src_only = 0;  // the source-pointer direction byte among them
+  uint64_t out_jump[3] = {};  // its new value v: ip after the closing jump, v mod len, is
+                              // 0 / another reference opcode offset / elsewhere
+  uint64_t vol_foreign_rep = 0;  // foreign writes into volatile offsets of strict sites
+  uint64_t stale = 0;            // changed bytes whose last write was not this tick
+  uint64_t replaced = 0;         // a birth into a site whose tracked activation was on
+  // Copy births by converted activations.
+  uint64_t conv_copies = 0, conv_child_rep = 0, conv_child_same = 0, conv_child_src = 0;
+  uint64_t start_starve = 0;
+};
+
+class FateObserver {
+public:
+  FateObserver(const World& w, const std::map<std::string, TrialResult>& census)
+      : w_(w), census_(census), len_(w.config().site_len),
+        sites_(w.config().width * w.config().height),
+        src_ptr_(g_ref->name == "polite" ? 30 : 23),
+        fate_(sites_), snap_(static_cast<size_t>(sites_) * len_) {
+    // The seeded founders are activations that no birth announced.
+    for (int32_t s = 0; s < sites_; ++s) {
+      if (w.site_active(s)) start(s);
+    }
+    rep_prev_ = count(kRep);
+  }
+
+  int status_of_key(const std::string& key) {
+    const auto c = census_.find(key);
+    if (c != census_.end()) return status_of(c->second);
+    auto it = cache_.find(key);
+    if (it == cache_.end()) it = cache_.emplace(key, run_trial(w_.config(), key)).first;
+    return status_of(it->second);
+  }
+
+  // Before a census: copy this observer's verdicts for the active sites' keys into the census
+  // cache (the trial is deterministic, so the census would compute the same verdicts).
+  void prime(std::map<std::string, TrialResult>& census) const {
+    for (int32_t s = 0; s < sites_; ++s) {
+      if (!w_.site_active(s)) continue;
+      const std::string key = masked(w_, s);
+      if (census.count(key)) continue;
+      const auto it = cache_.find(key);
+      if (it != cache_.end()) census.emplace(key, it->second);
+    }
+  }
+
+  // Call after every tick, before reading the census.
+  void observe() {
+    for (const auto& b : w_.births_this_tick()) {
+      Fate& f = fate_[b.child];
+      if (f.on) t_.replaced += 1;
+      const int kind = classify(b);
+      const Fate parent = fate_[b.parent];
+      start(b.child);
+      t_.born[fate_[b.child].status][kind] += 1;
+      if (kind == kCopy && parent.on && parent.converted) note_converted_copy(b);
+    }
+    for (int32_t s = 0; s < sites_; ++s) {
+      Fate& f = fate_[s];
+      if (!f.on) continue;
+      if (!w_.site_active(s)) {
+        end(s);
+        continue;
+      }
+      uint8_t* old = &snap_[static_cast<size_t>(s) * len_];
+      const uint8_t* now = w_.bytes_at(s);
+      if (std::memcmp(old, now, len_) != 0) changed(s, old, now);
+    }
+  }
+
+  // Checkpoint: flows since the last one, checked against the census of active sites.
+  void print(std::ostream& o) {
+    uint64_t mismatch = 0, untracked = 0;
+    for (int32_t s = 0; s < sites_; ++s) {
+      if (!w_.site_active(s)) continue;
+      if (!fate_[s].on) { untracked += 1; continue; }
+      const int now = status_of_key(masked(w_, s));
+      if (now == fate_[s].status) continue;
+      if (fate_[s].status == kOther) {
+        t_.found[now] += 1;
+        fate_[s].status = now;
+      } else {
+        mismatch += 1;
+      }
+    }
+    const uint64_t rep_now = count(kRep);
+    uint64_t born = 0, ended = 0, out = 0, in = 0;
+    for (int k = 0; k < kKinds; ++k) born += t_.born[kRep][k];
+    for (int e = 0; e < kEnds; ++e) ended += t_.ends[kRep][e];
+    for (int st = 0; st < kStatuses; ++st) {
+      if (st == kRep) continue;
+      out += t_.change[kRep][st];
+      in += t_.change[st][kRep];
+    }
+    in += t_.found[kRep];
+    const int64_t balance = static_cast<int64_t>(rep_prev_ + born + in) -
+                            static_cast<int64_t>(ended + out);
+    const uint64_t tick = w_.tick();
+    o << "# fate tick=" << tick << " rep_prev=" << rep_prev_ << " rep_now=" << rep_now
+      << " born_copy/reignite/self=" << t_.born[kRep][kCopy] << '/' << t_.born[kRep][kReignite]
+      << '/' << t_.born[kRep][kSelfIgnite] << " end_decay=" << t_.ends[kRep][kEndDecay]
+      << " end_wick=" << t_.ends[kRep][kEndWick] << " out_in_place=" << out
+      << " in_in_place=" << in << " (found_at_census=" << t_.found[kRep] << ")"
+      << " balance=" << balance << " census_mismatch=" << mismatch
+      << " untracked=" << untracked << " stale=" << t_.stale << " replaced=" << t_.replaced
+      << " starved=" << w_.stats().deaths_starve - t_.start_starve << std::endl;
+    o << "# fateborn tick=" << tick;
+    for (int st = 0; st < kStatuses; ++st) {
+      o << ' ' << kStatusName[st] << '=' << t_.born[st][kCopy] << '/' << t_.born[st][kReignite]
+        << '/' << t_.born[st][kSelfIgnite];
+    }
+    o << " (copy/reignite/self)" << std::endl;
+    o << "# fateend tick=" << tick;
+    for (int st = 0; st < kStatuses; ++st) {
+      o << ' ' << kStatusName[st] << '=' << t_.ends[st][kEndDecay] << '/' << t_.ends[st][kEndWick];
+    }
+    o << " converted=" << t_.ends_converted[kEndDecay] << '/' << t_.ends_converted[kEndWick]
+      << " (decay/wick)" << std::endl;
+    o << "# fatechange tick=" << tick;
+    for (int a = 0; a < kStatuses; ++a) {
+      o << ' ' << kStatusName[a] << ">";
+      for (int b = 0; b < kStatuses; ++b) o << (b ? "/" : "") << t_.change[a][b];
+    }
+    o << " (to rep/loose/prop/other) other_untested=" << t_.other_changes << " found_at_census="
+      << t_.found[kRep] << '/' << t_.found[kLoose] << '/' << t_.found[kProp] << " writers";
+    for (int a = 0; a < kStatuses; ++a) {
+      o << ' ' << kStatusName[a] << ':';
+      for (int k = 0; k < kWriters; ++k) o << (k ? "/" : "") << t_.change_writer[a][k];
+    }
+    o << " (rep/loose/prop/other/self/none)" << std::endl;
+    o << "# fateout tick=" << tick << " n=" << out << " writer";
+    for (int k = 0; k < kWriters; ++k) o << ' ' << kWriterName[k] << '=' << t_.out_writer[k];
+    o << " src_ptr=" << src_ptr_ << " with_src=" << t_.out_src << " only_src=" << t_.out_src_only
+      << " jump_0/op/other=" << t_.out_jump[0] << '/' << t_.out_jump[1] << '/' << t_.out_jump[2]
+      << " vol_foreign_rep=" << t_.vol_foreign_rep << " offsets:";
+    std::multimap<uint64_t, int, std::greater<>> top;
+    for (int k = 0; k < len_; ++k) if (t_.out_at[k]) top.insert({t_.out_at[k], k});
+    int shown = 0;
+    for (auto [n, k] : top) {
+      if (shown++ == 10) break;
+      o << ' ' << k << ':' << n;
+    }
+    o << std::endl;
+    uint64_t conv_alive = 0;
+    for (int32_t s = 0; s < sites_; ++s) conv_alive += fate_[s].on && fate_[s].converted;
+    o << "# fateconv tick=" << tick << " alive=" << conv_alive << " copies=" << t_.conv_copies
+      << " child_rep=" << t_.conv_child_rep << " child_same=" << t_.conv_child_same
+      << " child_src=" << t_.conv_child_src << std::endl;
+    rep_prev_ = rep_now;
+    t_ = FateTally{};
+    t_.start_starve = w_.stats().deaths_starve;
+  }
+
+private:
+  const World& w_;
+  const std::map<std::string, TrialResult>& census_;
+  std::map<std::string, TrialResult> cache_;
+  const int len_;
+  const int32_t sites_;
+  const int src_ptr_;
+  std::vector<Fate> fate_;
+  std::vector<uint8_t> snap_;
+  FateTally t_;
+  uint64_t rep_prev_ = 0;
+
+  uint64_t count(int status) const {
+    uint64_t n = 0;
+    for (const Fate& f : fate_) n += f.on && f.status == status;
+    return n;
+  }
+
+  void start(int32_t s) {
+    Fate& f = fate_[s];
+    f.on = true;
+    f.converted = false;
+    f.status = status_of_key(masked(w_, s));
+    std::memcpy(&snap_[static_cast<size_t>(s) * len_], w_.bytes_at(s), len_);
+  }
+
+  void end(int32_t s) {
+    Fate& f = fate_[s];
+    const uint8_t* b = w_.bytes_at(s);
+    const int cause = std::all_of(b, b + len_, [](uint8_t v) { return v == INERT; })
+                          ? kEndDecay : kEndWick;
+    t_.ends[f.status][cause] += 1;
+    if (f.converted) t_.ends_converted[cause] += 1;
+    f.on = false;
+  }
+
+  int writer_class(int32_t writer, int32_t s) const {
+    if (writer == s) return kWSelf;
+    if (writer < 0 || !fate_[writer].on) return kWNone;
+    return fate_[writer].status;
+  }
+
+  void changed(int32_t s, uint8_t* old, const uint8_t* now) {
+    Fate& f = fate_[s];
+    uint64_t mask = 0;
+    int32_t foreign = -1;
+    for (int k = 0; k < len_; ++k) {
+      if (old[k] == now[k]) continue;
+      const int32_t wr = w_.byte_writer(s, k);
+      if (w_.byte_written_at(s, k) + 1 != w_.tick()) t_.stale += 1;
+      if (is_volatile(k)) {
+        t_.vol_foreign_rep += wr != s && f.status == kRep;
+        continue;
+      }
+      mask |= uint64_t{1} << k;
+      if (wr != s && foreign < 0) foreign = wr;
+    }
+    if (mask != 0 && f.status == kOther) {
+      t_.other_changes += 1;
+      t_.change_writer[kOther][writer_class(foreign < 0 ? s : foreign, s)] += 1;
+    } else if (mask != 0) {
+      const int before = f.status;
+      const int after = status_of_key(masked(w_, s));
+      const int wc = writer_class(foreign < 0 ? s : foreign, s);
+      t_.change[before][after] += 1;
+      t_.change_writer[before][wc] += 1;
+      if (before == kRep && after != kRep) {
+        f.converted = true;
+        t_.out_writer[wc] += 1;
+        for (int k = 0; k < len_; ++k) t_.out_at[k] += mask >> k & 1;
+        if (mask >> src_ptr_ & 1) {
+          t_.out_src += 1;
+          t_.out_src_only += mask == uint64_t{1} << src_ptr_;
+          const uint8_t v = now[src_ptr_];
+          const int ip = v % len_;
+          const auto& ops = g_ref->ops;
+          t_.out_jump[ip == 0 ? 0 : std::find(ops.begin(), ops.end(), ip) != ops.end() ? 1 : 2] += 1;
+        }
+      }
+      f.status = after;
+    }
+    std::memcpy(old, now, len_);
+  }
+
+  // A copy by a converted activation: is the child strict, a copy of the parent, or a copy of
+  // the neighbor that the parent's source pointer names?
+  void note_converted_copy(const World::Birth& b) {
+    t_.conv_copies += 1;
+    t_.conv_child_rep += fate_[b.child].status == kRep;
+    const std::string child = masked(w_, b.child);
+    t_.conv_child_same += child == masked(w_, b.parent);
+    const uint8_t v = w_.bytes_at(b.parent)[src_ptr_];
+    if (v == INERT) return;
+    const int dir = (v - 1) % kDirs;
+    const Config& c = w_.config();
+    static constexpr int kDx[kDirs] = {0, 1, 0, -1}, kDy[kDirs] = {-1, 0, 1, 0};
+    const int x = b.parent % c.width, y = b.parent / c.width;
+    const int32_t src = ((y + kDy[dir] + c.height) % c.height) * c.width +
+                        (x + kDx[dir] + c.width) % c.width;
+    t_.conv_child_src += child == masked(w_, src);
+  }
+};
+
 // Cumulative counters of the optional physics (hydro_whole, p_rot).
 void print_physics(const World& w) {
   const Stats& s = w.stats();
@@ -572,6 +868,7 @@ int main(int argc, char** argv) {
   uint64_t interval = 10000;
   std::vector<int> class_tables;  // classes=...: per-op class measures (needs census=1)
   uint64_t fidelity = 0;          // fidelity=W: copy-birth window before each checkpoint
+  bool fate = false;              // fate=1: activation fates (needs census=1, p_rot 0)
   for (int i = 1; i < argc; ++i) {
     const std::string a = argv[i];
     const auto eq = a.find('=');
@@ -624,6 +921,7 @@ int main(int argc, char** argv) {
     else if (k == "height") cfg.height = std::atoi(v.c_str());
     else if (k == "interval") interval = std::max<long long>(1, std::atoll(v.c_str()));
     else if (k == "fidelity") fidelity = std::max<long long>(0, std::atoll(v.c_str()));
+    else if (k == "fate") fate = v == "1";
     else if (k == "anc") {
       g_ref = census::reference_named(v);
       if (!g_ref) {
@@ -648,6 +946,10 @@ int main(int argc, char** argv) {
     std::cerr << "fidelity needs census=1 and a window no longer than interval\n";
     return 1;
   }
+  if (fate && (!census || cfg.p_rot > 0.0)) {
+    std::cerr << "fate needs census=1 and p_rot 0\n";
+    return 1;
+  }
   World w(cfg);
   const int ax = rival ? cfg.width / 4 : cfg.width / 2;
   w.seed_program(ax, cfg.height / 2, ref_program());
@@ -662,6 +964,8 @@ int main(int argc, char** argv) {
   ErrTally errs;
   std::map<std::string, TrialResult> census_cache;  // program text -> trial (census=1)
   FidWindow fid;
+  std::unique_ptr<FateObserver> fates;
+  if (fate) fates = std::make_unique<FateObserver>(w, census_cache);
   std::cout << "tick\tactive\tbirths\texact%\tintact_parent%\ttop_count\ttop_dist\tdistinct"
                "\tcopies\treignites\tintact_copies\tblank\topen0\tdead\tpfx_active\tpfx_copies\text_erased\tstalls\tstarved\tenergy\n";
   const bool physics_line = physics || cfg.hydro_whole != Whole::Off || cfg.p_rot > 0.0;
@@ -724,7 +1028,9 @@ int main(int argc, char** argv) {
       const int c = current[s];
       if (c >= 0 && recs[c].died == 0 && !w.site_active(static_cast<int32_t>(s))) recs[c].died = w.tick();
     }
+    if (fates) fates->observe();
     if (census && w.tick() % interval == 0) {
+      if (fates) fates->prime(census_cache);
       print_census(w, recs, current, census_cache);
       if (!class_tables.empty()) print_classes(w, census_cache, class_tables);
       if (fidelity > 0) {
@@ -732,6 +1038,7 @@ int main(int argc, char** argv) {
         print_fidelity(w, fid, fidelity, census_cache);
         fid = FidWindow{};
       }
+      if (fates) fates->print(std::cout);
     }
     if (fidelity > 0 && (w.tick() + fidelity) % interval == 0) fid.start = w.stats();
     if (physics_line && w.tick() % interval == 0) print_physics(w);

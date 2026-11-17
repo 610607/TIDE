@@ -629,6 +629,14 @@ void test_census_trial() {
           const census::Diff d = census::diff_sources(w, birth, ref);
           cls = d.cls;
           assert(!dirty || d.n[census::kSrcResidue] == 1);
+          // Writer records: in an empty world every non-inert byte of the child was written
+          // by the founder in an earlier tick; untouched bytes have no writer.
+          for (int k = 0; !dirty && k < c.site_len; ++k) {
+            const int32_t wr = w.byte_writer(birth.child, k);
+            assert(wr == center || wr == -1);
+            assert(wr == -1 || w.byte_written_at(birth.child, k) < w.tick());
+            assert(w.bytes_at(birth.child)[k] == INERT || wr == center);
+          }
         }
       }
     }
@@ -636,7 +644,7 @@ void test_census_trial() {
   }
   std::cout << "[ps test 17] census trial: polite strict, depth " << a.depth << ", founder copies "
             << a.founder_exact << '/' << a.founder_copies
-            << "; knockout and redirected source fail; first copy exact, residue is env\n";
+            << "; knockout and redirected source fail; first copy exact, residue is env; writers recorded\n";
 }
 
 } // namespace

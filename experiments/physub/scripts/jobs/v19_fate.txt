@@ -1,0 +1,10 @@
+# v19: activation fates under form M to 500k ticks. Requested 2026-11-17: between checkpoints,
+# which active sites change status without a birth (in place), which offsets changed and who
+# wrote them, and how each activation ends (whole decay or wick), by status. Direct test of
+# the v18 inference that a neighbor's fill of offset 30 turns a strict replicator into a
+# program that copies from that neighbor. Settings as v18 m195 and nomut (identical runs and
+# output apart from the added # fate* lines), plus fate=1.
+m195_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000 fate=1
+m195_s2 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=2 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000 fate=1
+nomut_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill census=1 fidelity=5000 fate=1
+nomut_s2 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0 p_hydro=1.95e-6 hydro_whole=1 seed=2 ext_write=fill census=1 fidelity=5000 fate=1

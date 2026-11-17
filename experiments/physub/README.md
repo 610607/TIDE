@@ -117,9 +117,9 @@ python3 -m http.server 8765 -d viewer   # then open http://localhost:8765/?file=
 | `apps/ps_scan.cpp` | Isolated first-copy fidelity, knockout and substitution scans of genotypes listed by the probe |
 | `apps/ps_knockout.cpp` | Single-byte knockout of an ancestor without mutation or decay |
 | `apps/ps_copycut.cpp` | First-copy cut probability of polite alone under block rotation |
-| `tests/ps_test.cpp` | Ledgers, replay, walls, ancestor, starvation, bond barrier, act_cap, ext_write, p_dead, energy diffusion, bond storage, dead_quiet, whole decay, block rotation, whole decay per class, per-op decay tables, census trial and copy-difference classes |
+| `tests/ps_test.cpp` | Ledgers, replay, walls, ancestor, starvation, bond barrier, act_cap, ext_write, p_dead, energy diffusion, bond storage, dead_quiet, whole decay, block rotation, whole decay per class, per-op decay tables, census trial, copy-difference classes and writer records |
 | `viewer/index.html` | Replay viewer (layers, inspector, timeline) |
-| `scripts/run_jobs.sh`, `scripts/jobs/` | Parallel runner and the v8-v18 job lists |
+| `scripts/run_jobs.sh`, `scripts/jobs/` | Parallel runner and the v8-v19 job lists |
 
 `ps_probe` columns per interval: births, `exact%`, `intact_parent%`, top genotype, `copies`
 (child mostly written by the parent) and `reignites` (child code already present),
@@ -190,6 +190,44 @@ the program's own copying), counts knockouts (byte set to inert, as `ps_knockout
 substitutions (`subs` per byte) that are not strict replicators, and predicts the strict share
 from text substitutions alone: (1-u)^m + u(1-u)^(m-1) sum_k s_k over the m non-inert,
 non-volatile bytes, with s_k the strict share of substitutions at k.
+
+With `census=1` and `fate=1` (no rotation), `ps_probe` follows every activation from its
+birth (or the seeding) to its end and adds six lines per interval, covering the interval since
+the previous checkpoint. An activation takes the status (`rep`, `loose`, `prop`, `other`) of
+its key at birth. When a non-volatile byte of a live `rep`, `loose` or `prop` site changes
+without a birth (in place), its key is tested again. In-place changes of `other` sites are
+counted but not tested (about 98% of all in-place changes, and most produce a key never seen
+before); the census at the checkpoint finds any that became a replicator (`found_at_census`).
+The observer compares every tracked site with a snapshot after each tick. Between births a
+site's bytes change only by writes (whole decay empties the site and ends its activation), so
+each changed byte was written that tick and the writer records name the writing site.
+
+- `# fate`: strict-replicator activations at the previous and this checkpoint, strict births by
+  kind, strict ends by cause, strict activations lost and gained in place, and the balance
+  (previous + born + gained - ended - lost), which must equal the current count. Checks:
+  `census_mismatch` (tracked status differs from the census), `untracked` (active sites without
+  an activation), `stale` (changed bytes whose last write was not this tick) and `replaced` (a
+  birth into a site whose activation was still on) must all be 0. `starved`: starvation deaths
+  in the interval, which the end causes count as wick.
+- `# fateborn` / `# fateend`: births by status and kind; ends by status and cause. An
+  activation ends by `decay` when its site holds no non-inert byte after the tick (whole
+  decay), otherwise by `wick` (its ip reached an inert byte). `converted`: ends of activations
+  that had lost strict status in place.
+- `# fatechange`: in-place key changes by status before and after, and by writer: `self`, the
+  status of the foreign writer's activation, or `none` (the writer's site is no longer active).
+  When several sites wrote, the first foreign writer counts.
+- `# fateout`: strict activations lost in place: writer, whether the source-pointer direction
+  byte (`src_ptr`: 30 for polite, 23 for `ancestor()`) changed (`with_src`) or was the only
+  non-volatile change (`only_src`), where the closing jump then lands (polite's JMP 30 jumps to
+  [30] mod 64: offset 0, another opcode offset of the reference, or elsewhere), foreign writes
+  into volatile offsets of strict sites (not status changes), and the most changed offsets.
+- `# fateconv`: converted activations alive, their copy births, and how many children are
+  strict, equal to the parent's key, or equal to the key of the neighbor that the parent's
+  source pointer names.
+
+The observer runs extra trials for keys the census has not seen and hands the census the
+verdicts for active sites, so all other lines, including the census `trials` count, are the
+same as without `fate=1`.
 
 With `hydro_whole` on, `p_rot > 0` or `physics=1`, `ps_probe` adds a `# physics` line per
 interval and at the end with cumulative counters: whole-program decays (and how many hit an
