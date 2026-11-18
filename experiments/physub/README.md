@@ -125,7 +125,7 @@ python3 -m http.server 8765 -d viewer   # then open http://localhost:8765/?file=
 | `apps/ps_copycut.cpp` | First-copy cut probability of polite alone under block rotation |
 | `tests/ps_test.cpp` | Ledgers, replay, walls, ancestor, starvation, bond barrier, act_cap, ext_write, p_dead, energy diffusion, bond storage, dead_quiet, whole decay, block rotation, whole decay per class, per-op decay tables, census trial and its seeding limit, copy-difference classes, writer records and inert operands |
 | `viewer/index.html` | Replay viewer (layers, inspector, timeline) |
-| `scripts/run_jobs.sh`, `scripts/jobs/` | Parallel runner and the v8-v24 job lists |
+| `scripts/run_jobs.sh`, `scripts/jobs/` | Parallel runner and the v8-v25 job lists |
 
 `ps_probe` columns per interval: births, `exact%`, `intact_parent%`, top genotype, `copies`
 (child mostly written by the parent) and `reignites` (child code already present),
@@ -320,6 +320,77 @@ ignited at offset 0; entry off means elsewhere.
   - `not_ignite`: the instruction run that tick was not an `IGNITE`.
 
   The line ends with the most frequent pointer offsets.
+
+With `trace=1` and polite as the reference, `length=1` adds seven lines per interval
+(observation only; all other lines are unchanged). They follow the strict activations
+ignited at offset 0 (entry 0, as in `route`). The length z of a key is its non-inert byte
+count after the volatile reset, as the census seeds it (polite: 40). Only the extra offsets
+can lengthen a polite-like key: those where polite is INERT and not volatile (30, 34, 36,
+38, 40) and the tail 46-63.
+
+- `# length`: count and mean z at the last checkpoint and now, and a ledger of the change in
+  the mean. Each event that changes the set or a member's z changes the running mean
+  m = Z / N by an exact amount, credited to the event's category, so the credits of a window
+  sum to the change (`sum_dm` equals `dmean`). `check_n` and `check_z` recompute N and Z from
+  the tracked keys (both 0 when no event is missed). Per category: events, summed z (for
+  `copy_sp`, the summed z_child - z_parent; for in-place changes, the summed dz) and credit.
+  - Entries (credit (z - m) / (N + 1)): `copy_sp`, copy births by a strict entry-0 parent,
+    whose credit splits into transmission `trans` = sum of (z_child - z_parent) / (N + 1)
+    and the parent's place in the set, (z_parent - m) / (N + 1); `copy_op`, copy births by
+    other parents; `reignite`; `self` (self-ignition); `gain`, strict status gained in place;
+    `found`, sites strict at the first census.
+  - Exits (credit -(z - m) / (N - 1)): `decay` (whole decay), `wick` (also a birth into a
+    tracked site), `loss_f` and `loss_s`, strict status lost in place by a foreign writer or
+    by the site.
+  - In place, strict status kept (credit dz / N): `inplace_f` and `inplace_s`, by a foreign
+    writer or by the site.
+- `# lengthsrc`: where length comes from. For copy births by a strict entry-0 parent with a
+  strict child, each non-volatile offset where the child differs from the parent's key at
+  birth, by the writer record used in `census::diff_sources`: a byte added (parent INERT,
+  child not) was left in the child's site (`add_residue`), last written from another site
+  (`add_foreign`) or from the parent's site (`add_parent`); a byte lost (parent non-inert,
+  child INERT) was not written (`lost_gap`) or last written by the parent (`lost_parent`) or
+  another site (`lost_foreign`). Bytes and credit; z_child - z_parent = added - lost exactly.
+  `subs` counts substitutions (both non-inert), which keep z. Then bytes changed in place in
+  strict entry-0 activations, whatever their status after the change: made non-inert by a
+  foreign `MOV` at offset 15 (polite's copy loop) or another foreign instruction, or by the
+  site, and made INERT by the site or a foreign writer. The `MOV` at 15 is read from the
+  writer's bytes after the tick: source pointer p = [16], source offset [p+1]. The write is
+  `aligned` when the source is the writer's own site ([p] INERT) at the offset written,
+  `shift` when its own site at another offset, and `nbrsrc` when [p] names a neighbor.
+  Foreign additions are also counted by writer status (rep/loose/prop/other/self/none).
+- `# lengthoff`: the same transmission and in-place counts per extra offset; `rest` sums
+  the other offsets.
+- `# lengthuse`: for live strict entry-0 activations, how many hold each extra offset
+  non-inert. For exits in the window, per extra offset: how many held it non-inert, and of
+  those, how many executed it or read it as control during the activation. Each tick the
+  instruction an activation runs (ip and bytes at the start of the tick) marks its opcode
+  and operand offsets as executed. It marks as control reads the pointer pairs [p], [p+1] of
+  `MOV` and `IGNITE` and the operand target [x] of `INC`, `DEC`, `JZ`, `JMP`, `WALL` and
+  `UNWALL`; not the byte a `MOV` copies, nor `RND`'s target. Under `inert_operand=fail` an
+  instruction with an INERT operand marks nothing.
+- `# lengthbin`: per z bin (up to 40, 41-44, ..., 57-60, 61-64; the bin of the current z),
+  exposure in activation-ticks, copy births, those with a strict child, those whose child
+  carries the parent's key, whole decays, wick ends, and losses in place by a foreign writer
+  and by the site.
+- `# lengthcomp`: the same fields by composition: filled pointer directions among 34, 36,
+  38 and 40 (0, 1, 2 or more) by filled tail bytes (0, 1-6, 7-12, 13-18).
+
+- `# lengthptr` (from revision 3227e87): the same activations by the state of polite's
+  counter pointers. Polite sets its counters so ([31]) and do ([33]) to K at the start of
+  each cycle through the pointers whose directions are 36 and 38. With 36 or 38 filled,
+  that `MOV` writes into a neighbor and the own counter keeps its value. The state is none,
+  36 filled (`f36`), 38 filled (`f38`) or both, and in or off register: whether
+  [31] - [33] is 0 mod 64. The line gives, per state: live activations at the checkpoint
+  (bytes at the start of the tick, so a site between its two `INC`s counts as off
+  register); copy births in the window by such parents, as copies, strict children,
+  children carrying the parent's key, and `multi` and `env` children (`census::diff_sources`;
+  parent bytes after the birth tick); and bytes they added in place to strict entry-0
+  activations through the `MOV` at 15, all and by `rep` writers (writer bytes after the
+  tick). It ends with the in-place `shift` additions by (source offset - written offset)
+  mod 64.
+
+`length=1` needs `trace=1` and `anc=polite`.
 
 With `hydro_whole` on, `p_rot > 0` or `physics=1`, `ps_probe` adds a `# physics` line per
 interval and at the end with cumulative counters: whole-program decays (and how many hit an
@@ -1369,6 +1440,298 @@ do not alter the dynamics: the v9 baseline is byte-identical to v8.
       children.
     - The source of `multi` and of the fall of re-ignitions at 0 is not resolved.
     - The upper bound on off-entry writers uses the v21 writer shares, not this ledger.
+- **v25** (why strict keys grow longer; measurement only; revision 3227e87, job list
+  `v25_length.txt`; 6 jobs, the four copy-error runs in 70 minutes on 4 cores). The research
+  channel asked four questions:
+  - where the added bytes come from: foreign writes, children written past the program,
+    point errors, or residue copied in;
+  - which offsets they occupy, and whether they are executed;
+  - whether long keys copy faster, more faithfully or survive better, enough to offset the
+    M hazard;
+  - or whether the growth is neutral drift or a by-product of the write rules.
+
+  The runs repeat v24 (`zero` and `fail`, seeds 1-2) and v23 `zero_nomut_s1` /
+  `fail_nomut_s1` (no copy error) with `length=1`. A first attempt at c3eae86, without
+  `# lengthptr`, was stopped at 100k; its outputs equal the rerun's to that point apart from
+  that line. Ranges cover the four copy-error runs; lists are `zero` s1 / s2 and `fail`
+  s1 / s2.
+  - **Checks.**
+    - Apart from the `# length*` lines, the copy-error outputs equal v24 line for line, and
+      the controls equal v23 `zero_nomut_s1` and `fail_nomut_s1`.
+    - In every window `check_n` and `check_z` are 0 and no event found the set empty.
+    - The credits sum to the change of the mean; the residual over a run is below 1e-7.
+  - **Length.** z is the key's non-inert byte count after the volatile reset (polite: 40);
+    an extra byte can only sit at 30, 34, 36, 38, 40 or 46-63. The site counts in v17 and
+    v22 (41.6-42.4 rising to 52.7-54.7) also include filled volatile counters.
+
+    Whole decay per strict entry-0 site in each z bin implies, under 1 − (1 − 1.95e-6)^n
+    per tick, an n within or just above the bin's range: late, 46.4-47.1 at 45-48,
+    55.0-55.7 at 53-56 and 58.6-58.9 at 57-60. The M hazard follows key length, as the rule
+    says. Mean z of strict entry-0 activations, with their count:
+
+    | tick | `zero` s1 | `zero` s2 | `fail` s1 | `fail` s2 | `zero` no copy error | `fail` no copy error |
+    | --- | --- | --- | --- | --- | --- | --- |
+    | 50k | 40.9 (6,517) | 41.3 (6,366) | 40.9 (6,643) | 41.2 (6,551) | 40.0 (8,677) | 40.0 (8,722) |
+    | 100k | 42.0 (5,832) | 42.3 (6,001) | 42.0 (5,823) | 42.6 (5,996) | 40.1 (8,657) | 40.0 (8,679) |
+    | 150k | 44.0 (5,405) | 44.0 (5,485) | 44.6 (5,378) | 45.0 (5,324) | 40.2 (8,619) | 40.0 (8,657) |
+    | 200k | 46.3 (4,782) | 46.1 (4,558) | 47.4 (4,184) | 47.7 (4,263) | 40.3 (8,593) | 40.0 (8,681) |
+    | 250k | 48.4 (3,898) | 47.9 (3,876) | 49.4 (3,722) | 49.7 (3,643) | 40.5 (8,496) | 40.1 (8,615) |
+    | 300k | 50.1 (3,419) | 49.0 (3,619) | 50.8 (3,470) | 51.5 (3,249) | 40.7 (8,436) | 40.1 (8,598) |
+    | 350k | 51.4 (3,284) | 50.1 (3,603) | 51.9 (3,236) | 52.4 (3,331) | 41.0 (8,418) | 40.2 (8,613) |
+    | 400k | 52.4 (3,238) | 50.9 (3,437) | 52.6 (3,049) | 52.6 (3,124) | 41.4 (8,293) | 40.3 (8,577) |
+    | 450k | 52.9 (3,322) | 51.8 (3,182) | 53.6 (3,122) | 53.0 (3,220) | 41.9 (8,240) | 40.5 (8,602) |
+    | 500k | 53.4 (2,926) | 52.3 (3,229) | 54.0 (3,001) | 53.7 (3,020) | 42.5 (8,078) | 40.7 (8,587) |
+
+    At 500k a strict site holds 0.83-1.05 filled pointer directions (34, 36, 38, 40) and
+    11.4-13.0 filled tail bytes (46-63); 40 plus these equals the mean z.
+  - **Ledger of the mean, 0 to 500k.** Each credit is the exact change of the running mean
+    caused by one kind of event (see `# length`). Credits for entries and exits are not
+    effects in themselves: an entry raises the mean when its key is longer than the mean
+    at that moment.
+
+    | credit | `zero` s1 | `zero` s2 | `fail` s1 | `fail` s2 | `zero` no copy error | `fail` no copy error |
+    | --- | --- | --- | --- | --- | --- | --- |
+    | bytes added in place by foreign writes, strict status kept | +36.30 | +38.19 | +35.27 | +34.74 | +1.39 | +0.15 |
+    | bytes changed in place by own writes, strict status kept | +0.02 | +0.01 | +0.01 | +0.02 | +0.00 | +0.00 |
+    | copies by strict entry-0 parents: transmission, z_child − z_parent | +7.08 | +7.42 | +7.25 | +8.28 | +0.53 | +0.15 |
+    | copies by strict entry-0 parents: the parent's z against the mean | +1.05 | −0.39 | +3.41 | +0.90 | −0.21 | −0.10 |
+    | re-ignitions at 0 | +13.88 | +13.19 | +13.88 | +13.97 | +3.16 | +0.74 |
+    | strict copies by other parents | +1.17 | +1.18 | +1.20 | +1.47 | +0.02 | +0.00 |
+    | strict status gained in place, and found at the census | +1.13 | +1.45 | +2.25 | +7.98 | +0.02 | +0.00 |
+    | whole decay | −28.27 | −28.78 | −30.11 | −28.97 | −1.87 | −0.21 |
+    | strict status lost in place, foreign writer | −17.94 | −19.21 | −17.94 | −17.55 | −0.50 | −0.04 |
+    | strict status lost in place, own write | −0.03 | −0.26 | −1.11 | −6.77 | −0.00 | +0.00 |
+    | wick ends | −1.00 | −0.46 | −0.14 | −0.36 | −0.01 | +0.00 |
+    | sum: change of the mean since tick 0 | +13.37 | +12.33 | +13.98 | +13.71 | +2.53 | +0.69 |
+
+    Mean z by event, pooled over the run:
+    - copying parents: 46.6-47.9, with children 0.19-0.21 bytes longer than their parents;
+    - re-ignited keys: 46.9-47.8;
+    - whole decays: 47.1-48.3;
+    - foreign losses of strict status in place: 51.7-52.7.
+
+    In `fail_s2`, gains of strict status in place and own-write losses (+8.0 and −6.8) are
+    larger than in the other runs, with mean z 52.5 and 52.3; they nearly cancel.
+  - **Where the bytes come from** (bytes over the run):
+
+    | source | `zero` s1 | `zero` s2 | `fail` s1 | `fail` s2 | `zero` no copy error | `fail` no copy error |
+    | --- | --- | --- | --- | --- | --- | --- |
+    | in place: foreign `MOV` at 15, shifted | 97,451 | 104,014 | 90,657 | 88,407 | 8,191 | 971 |
+    | in place: foreign `MOV` at 15, aligned | 40,294 | 39,641 | 42,564 | 41,829 | 1,651 | 250 |
+    | in place: foreign `MOV` at 15, source in a neighbor | 17,144 | 19,374 | 15,665 | 17,315 | 1,341 | 68 |
+    | in place: other foreign instruction | 11,739 | 12,408 | 10,370 | 10,257 | 1,101 | 150 |
+    | in place: own write | 2,637 | 2,485 | 1,394 | 2,721 | 0 | 0 |
+    | in place: erased by own write | 113 | 75 | 84 | 84 | 0 | 0 |
+    | in place: erased by foreign write | 0 | 0 | 0 | 0 | 0 | 0 |
+    | copy: added, foreign write | 32,547 | 34,860 | 31,212 | 35,509 | 4,837 | 1,098 |
+    | copy: added, residue | 2,499 | 2,284 | 3,070 | 2,547 | 166 | 24 |
+    | copy: added, parent write | 1,928 | 1,799 | 2,193 | 1,982 | 742 | 669 |
+    | copy: lost, not written | 3,437 | 3,422 | 3,562 | 3,032 | 14 | 14 |
+    | copy: lost, parent write | 1,111 | 1,167 | 1,153 | 1,276 | 98 | 0 |
+    | copy: lost, foreign write | 2,441 | 2,453 | 2,337 | 2,246 | 1,346 | 646 |
+    | copy: substituted (z unchanged) | 41,134 | 40,989 | 41,226 | 45,519 | 1,555 | 163 |
+
+    - In-place additions are 80-82% of all bytes added to strict entry-0 keys. They come at
+      0.40-0.42 bytes per strict site per 5k ticks: 0.25-0.31 in the windows to 100k and
+      0.49-0.57 at 250-300k.
+    - The in-place additions split by the writer's `MOV` at 15 (shares of in-place adds):
+      - shifted source: 55-59%;
+      - aligned: 22-27%;
+      - source in a neighbor: 10-11%.
+
+      Other foreign instructions add 6-7% and own writes 1-2%. Writers are census-strict
+      in 57-60% and `other` in 36-38%.
+    - Nothing foreign removes a byte (the `fill` rule), and own writes remove 75-113 per
+      run.
+    - Point errors substitute 41-46 thousand bytes in children without changing z
+      (inspection: a copy error replaces a non-inert byte with a non-inert one). Residue
+      adds 2.3-3.1 thousand. Parent writes where the parent's key is INERT (a shifted
+      copy, or a parent key changed since) add 1.8-2.2 thousand. Foreign writes into
+      children under construction add 31-36 thousand, against 6.4-7.4 thousand lost to
+      gaps, parent writes and foreign writes.
+  - **Where they sit and whether they run.**
+    - In-place additions fall on the tail 46-63 (68-69%), on 36, 38 and 40 (18-19%), on
+      30 (8-9%, which ends strict status) and on 34 (3-4%).
+    - The standing share of strict sites with 34 filled rises from 6-10% at 50k to 72-92%
+      at 500k. Over the run, only 7.4-8.3 thousand fills of 34 reach strict sites in place
+      or in their children, against 112-142 thousand exits with 34 filled. The fill spreads
+      mostly by inheritance. Why filled-34 lineages spread is not resolved: per site they
+      copy no better (below).
+
+    | tick | strict sites with 34 filled (%) | 36 (%) | 38 (%) | 40 (%) | filled tail bytes per site |
+    | --- | --- | --- | --- | --- | --- |
+    | 100k | 18.8-31.7 | 2.5-3.7 | 1.5-2.0 | 1.6-2.1 | 1.7-2.4 |
+    | 150k | 41.5-55.1 | 3.1-5.0 | 1.9-3.0 | 2.2-2.9 | 3.3-4.5 |
+    | 200k | 59.2-74.6 | 4.5-5.8 | 2.6-3.3 | 2.8-3.7 | 5.2-7.0 |
+    | 250k | 69.2-83.2 | 5.0-6.2 | 3.0-4.1 | 3.1-4.4 | 6.9-9.0 |
+    | 300k | 73.6-87.4 | 4.9-7.5 | 3.1-3.8 | 3.5-4.2 | 8.1-10.6 |
+    | 350k | 74.8-89.8 | 5.0-7.0 | 2.4-3.8 | 2.8-3.8 | 9.2-11.5 |
+    | 400k | 74.9-92.0 | 5.1-6.8 | 2.4-3.7 | 3.2-3.9 | 10.0-11.8 |
+    | 450k | 70.8-92.4 | 4.6-6.4 | 2.5-3.7 | 2.6-4.2 | 10.8-12.6 |
+    | 500k | 72.5-91.3 | 4.4-6.3 | 2.8-3.6 | 3.0-3.5 | 11.4-13.0 |
+
+    - At exits, a filled 34 had been read as a pointer direction during the activation in
+      99.0-99.7% of cases, and a filled 36, 38 or 40 in 94.7-97.3%. A filled tail byte had
+      been executed in 0.3-0.7% and read as control in 0.1-0.3%. The tail bytes are
+      carried and copied but almost never run.
+  - **Who writes them.** `# lengthptr` splits parents and writers by polite's counter
+    pointers. Off register means the copy loop's source and destination counters differ
+    mod 64, so the copy is shifted. Whole run:
+
+    | so/do pointer state | copies by such strict entry-0 parents (% of all) | strict children (%) | share of all `multi` children (%) | share of `MOV`-at-15 additions in place (%) |
+    | --- | --- | --- | --- | --- |
+    | none, in register | 88.2-88.9 | 76-79 | 11-13 | 20-25 |
+    | none, off register | 7.2-7.3 | 2 | 60-63 | 45-46 |
+    | 36 filled, in | 0.6-0.9 | 70-75 | 0 | 1 |
+    | 36 filled, off | 2.0-2.5 | 0 | 17-21 | 8-10 |
+    | 38 filled, in | 0.3-0.4 | 71-76 | 0 | 1 |
+    | 38 filled, off | 0.4-0.5 | 0-1 | 3-4 | 6-7 |
+    | both filled, in | 0.1 | 63-66 | 0 | 3-4 |
+    | both filled, off | 0.4-0.5 | 0-1 | 3-4 | 10-11 |
+
+    Off-register parents of every pointer state make 10.1-10.5% of copies by strict entry-0
+    parents. Their children are almost never strict; they are 87-88% of all `multi`
+    children, which resolves v24's unattributed `multi` term. They make 70-74% of the
+    in-place additions through the `MOV` at 15. Their share of copies rises from 2.6-3.6%
+    at 50k to 13.5-15.4% at 500k.
+
+    The most frequent shifts of in-place additions are 31 (15-18%), 62 (15-17%) and 63
+    (7-8%). Code inspection: polite resets so ([31]) and do ([33]) to K = 192 each cycle.
+    A copy-born child starts with the values its parent's loop copied, so = 31 and
+    do = 33 mod 64. Leaving one of them unreset gives a shift of 31, and leaving both
+    gives 62 (−2).
+
+    Scratch checks (not tracked, mutation and decay off, 9x9 worlds) show three ways a
+    census-strict key copies off register:
+    - *Filled 36.* All 255 values of a filled 36 pass the census, which starts from reset
+      counters. Started from copy-born counters, none is strict (one seed: 5 copies, none
+      exact). Single substitutions at offsets 0-2 (the so reset) and 5 give another 120
+      such keys (28, 8, 76 and 8). Offsets 3, 4, 34, 35, 38 and 42 give none, under either
+      `inert_operand`.
+    - *A copy error in a counter reset.* A `MOV` copy error can hit the reset of so or do
+      (copy errors apply to every `MOV`). If do then starts off K, the probe reads the
+      target at that offset. A live polite is INERT at 23 of its 64 offsets, so the probe
+      can report it empty. Polite with do starting at offsets 30, 44 or 58 then wrote 22,
+      18 or 6 bytes into a live polite neighbor whenever `RND` chose it (50 of 200 seeds
+      each). Starting at offsets 4 or 18 (non-inert there), or at 0, it wrote nothing.
+      Filling 30 this way ends the neighbor's replication.
+    - *A walled read of K through a filled 34.* The pointer at 34 then reads K from a
+      neighbor across an edge. Each read crosses a wall with probability 1/(W + 1), so
+      MOV 0 and MOV 3 can fail separately. Copy-born polite with 34 filled made an exact
+      first copy in 100 of 100 seeds without a wall. With one wall unit on that edge it
+      made an exact first copy in 41 of 96, and 51 were `multi`.
+
+    Wall units in the runs grow from about 3 thousand at 50k to 15.6-17.0 thousand at 500k
+    (v24 matter table). This route fits the rise of off-register copies with the spread of
+    filled 34, but its share in the runs was not measured.
+  - **Do long keys gain anything?** Rates per strict entry-0 site per 5k ticks, by current
+    z:
+
+    | z | share of exposure (%) | copies | strict children (%) | children with the parent's key (%) | whole decay | n implied by decay | foreign losses in place | strict children − exits |
+    | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+    | ≤40 | 0.9-2.4 | 0.585-0.704 | 68-71 | 56-60 | 0.396-0.432 | 40.6-44.3 | 0.012-0.025 | −0.162 to +0.052 |
+    | 41-44 | 9.7-18.4 | 0.626-0.683 | 67-69 | 56-59 | 0.412-0.426 | 42.3-43.7 | 0.024-0.040 | −0.027 to +0.005 |
+    | 45-48 | 14.1-19.7 | 0.678-0.690 | 66-69 | 54-57 | 0.453-0.459 | 46.4-47.1 | 0.037-0.041 | −0.050 to −0.029 |
+    | 49-52 | 15.9-17.1 | 0.715-0.768 | 62-68 | 50-56 | 0.498-0.511 | 51.1-52.4 | 0.049-0.054 | −0.123 to −0.082 |
+    | 53-56 | 18.8-20.5 | 0.750-0.803 | 61-63 | 47-49 | 0.536-0.543 | 55.0-55.7 | 0.059-0.061 | −0.158 to −0.103 |
+    | 57-60 | 22.0-35.7 | 0.801-0.840 | 60-63 | 46-49 | 0.571-0.575 | 58.6-58.9 | 0.081-0.090 | −0.182 to −0.154 |
+    | 61-64 | 1.2-1.5 | 0.119-0.224 | 16-18 | 7-12 | 0.567-0.622 | 58.2-63.8 | 0.606-0.798 | −1.400 to −1.168 |
+
+    Late, longer keys make more copies per site (0.59-0.70 up to 40 bytes, 0.80-0.84 at
+    57-60). Fewer of those copies are strict (68-71% against 60-63%) or exact (56-60%
+    against 46-49%). Whole decay rises from 0.40-0.43 to 0.57 and foreign losses in place
+    from 0.01-0.03 to 0.08-0.09.
+
+    Strict children minus exits falls with length: from −0.03 to +0.01 at 41-44 bytes to
+    −0.18 to −0.15 at 57-60. The bin up to 40 bytes holds 0.9-2.4% of exposure late.
+    Within pointer classes 0 and 1 (`# lengthcomp`), keys with 13-18 filled tail bytes have
+    a lower balance than those with 1-6 in every run. The faster copying of long keys is an
+    association; its cause was not measured. It does not make up for their losses.
+
+    Early (50k-150k) copy rates overlap: 0.43-0.45 up to 40 bytes, 0.41-0.51 at 57-60.
+  - **Without copy error** (`zero_nomut_s1` / `fail_nomut_s1`):
+    - Mean z rises from 40.0 to 42.5 / 40.7 at 500k (table above), against 52.3-54.0 with
+      copy error.
+    - In-place additions arrive at 0.015 / 0.0017 bytes per strict site per 5k ticks, 27 and
+      240 times fewer than with copy error. Off-register parents make 0.0-0.2% of copies.
+    - Most of the rise in `zero_nomut_s1` is a filled 34: 93% of strict sites at 500k hold
+      it, with 1.58 filled tail bytes per site. In `fail_nomut_s1` 34 is filled in 28%, with
+      0.41 tail bytes. Filled 34 therefore spreads without copy error too, while per-site
+      rates do not favor it. Late, keys up to 40 bytes (which cannot hold a filled 34) make
+      0.255-0.256 copies and 0.397-0.398 whole decays per site per 5k ticks, against
+      0.256-0.260 and 0.410-0.413 at 41-44 bytes; all their copies by strict entry-0
+      parents are strict in 98-100%.
+  - **Literature** (sources; pages are printed pages unless noted; cached PDFs in
+    `docs/references/`):
+    - Tierra, Ray 1991:
+      - mutations "cannot result in a change in the size of a creature" (p. 383);
+      - the slicer gives CPU time in proportion to genome size raised to a power, size
+        neutral at 1 (p. 378);
+      - in size-neutral long runs communities moved from sizes in the 80s to 400-800
+        (p. 387);
+      - where the mutation rate was not lowered, mean size grew by an order of magnitude
+        and two communities died, genomes having "melted" (p. 390).
+    - Standish 2004 (arXiv preprint), Tierra with SlicePow = 1 (no parsimony): length
+      rapidly increases with "junk" until the soup dies; SlicePow < 0.9 gave shorter
+      genomes (p. 1).
+    - Avida, Ofria and Wilke 2004:
+      - insertions and deletions at division (pp. 200, 207);
+      - an offspring size-range check, default 2.0, against out-of-control size change
+        (p. 206);
+      - optional death after a number of executed instructions, constant or proportional
+        to genome length (p. 204).
+    - Gupta et al. 2016 (Avida, equal insertion and deletion rates):
+      - 19,262 insertions against 16,998 deletions on the lines of descent; insertions
+        mostly beneficial, deletions mostly deleterious (p. 5, figure legend);
+      - insertions preceded 87% of innovations (p. 4);
+      - higher mutation rates gave smaller genomes through mutational load (p. 2).
+    - Nordin and Banzhaf 1995 (linear GP): introns shield effective code from destructive
+      crossover, and absolute length grows while effective length stays small; parsimony
+      removes introns (PDF p. 7).
+    - Dignum and Poli 2007 (tree GP): under size-neutral crossover "mean program size
+      evolves as if selection only was acting" (p. 1591).
+    - Batut et al. 2013 (aevol): relaxed selection shrank genomes by about 35% and removed
+      about 55% of noncoding sequence (p. 1).
+
+    Comparison (inference from these sources and the runs above):
+    - Point errors here cannot change length, as in Tierra. Unlike Tierra and Avida,
+      where a creature's own allocation and division set its size, a key here lengthens
+      when other sites write into it.
+    - The change operator is not size neutral. Under `fill`, foreign writes only add, and
+      only a site's own writes or whole decay remove. The Dignum-Poli condition does not
+      hold. Gupta et al.'s excess of insertions came from selection under symmetric
+      operators; here the excess is in the operator.
+    - M is a parsimony pressure, like SlicePow < 1 or length-proportional death. Standish
+      and Ray report runaway length without one; here it is present and slows the growth
+      without stopping it.
+    - No intron-like protection is seen: long keys lose strict status in place more often,
+      not less. The tail bytes are non-coding, as in Standish's "junk" and Nordin and
+      Banzhaf's introns, but they arrive by foreign writes rather than by selection for
+      robustness.
+  - **Answer** (executed runs, with code inspection and scratch checks where stated):
+    - The bytes come mostly from neighbors' copy loops writing into live strict sites
+      (80-82% of added bytes, in place), and from foreign writes into children under
+      construction (the rest, apart from about 2% residue and parent writes). Point errors
+      add none.
+    - They sit on the tail 46-63 and on pointer directions. Tail bytes are not executed.
+      Filled directions are read and redirect the pointer.
+    - Long keys make more copies per site late, but a smaller share of those copies is
+      strict or exact. They decay and are overwritten more, and their per-site balance is
+      lower. No offsetting advantage was found.
+    - The growth is not drift: it is a directional flux of additions that exits only partly
+      remove. It is a by-product of the write rules. A copy loop off register, through a
+      copy error in a counter reset, a filled 36, or a failed read of K, probes and writes
+      into occupied sites, and `fill` lets such writes add but never remove. Without copy
+      error the flux nearly vanishes (0.015 / 0.0017 against 0.40-0.42 added bytes per
+      strict site per 5k ticks).
+  - **Limits.**
+    - Two seeds per rule and one seed per control.
+    - The ledger is an accounting of the running mean, not a counterfactual.
+    - Re-ignited keys are longer than the mean, but where inactive keys lengthen is not
+      followed.
+    - The shares of the three off-register routes in the runs are not measured; the scratch
+      checks show each can occur.
+    - The rise of filled 34 is not explained.
 
 Working interpretation (v13 and code inspection): saturation starts the decline in every
 run, and the space then fills with activations that no longer replicate. An activation ends
@@ -1741,9 +2104,26 @@ census; mechanisms marked as inference or code inspection):
    topped up by default (`census_topup=1`); v23 recomputes v17-v22. v13-v16 still use the
    seed-limited verdict, so their strict counts are lower bounds wherever programs passed 48
    bytes.
+7. Census (observer, not dynamics), open: the trial seeds the founder with its volatile
+   offsets reset, so polite's counters so ([31]) and do ([33]) start equal. A copy-born child
+   starts with the counter values its parent's loop copied (31 and 33 mod 64). Keys whose
+   counter reset does not take effect, such as a filled 36 or some substitutions at offsets
+   0-2 and 5, pass the census but copy off register when copy-born (v25 scratch checks), so
+   strict counts include some keys that rarely copy themselves faithfully in the run.
 
 ## Open proposals (none agreed)
 
+- **Length-growth controls** (from v25; none run; each changes one mechanism and needs
+  agreement first):
+  - `ext_write=erase` (an existing option) against `fill`, so foreign writes can also
+    remove bytes; tests whether the one-way write rule drives the growth. It also changes
+    write costs (`e_erase`) and in-place losses.
+  - A census trial from copy-born counters as well as reset ones (observer only; changes
+    strict counts in v13-v25; Known issue 7).
+  - Copy errors on cross-site writes only (new option): removes the counter-reset route to
+    off-register copying while keeping errors in children.
+  - Refuse foreign writes into active sites (new mode, closer to the kernel default that a
+    program writes only to its own allocation): removes in-place additions altogether.
 - **Per-op decay rates and size-dependent mobility** (requested 2026-11-17): sources, code
   observations and candidate designs are in
   [the decay and mobility note](../../docs/research/decay-and-mobility.md). The uniform
