@@ -153,6 +153,20 @@ and counts as a non-replicator, whatever it does in the run (v22). That seed-lim
 is the one v13-v22 first recorded; v23 recomputes v17-v22 with the default, and v13-v16
 keep the seed-limited counts.
 
+A strict replicator is a replicator all of whose copies by the trial founder carry its key.
+By default (`census_born=1`, from revision 34839f4) a key that is strict from the reset
+volatile offsets is tried again in a second fresh trial, with its volatile offsets set to
+the values an exact copy of the reference carries at birth (polite: so 223, direction 72,
+do 225, probe 0; copier: 216, 72, 218; a test checks them against a trial). It is strict
+only when both trials are. A key whose counter reset does not take effect (polite with 36
+filled, for instance) copies in register from reset counters but off register when
+copy-born (v25), so it now counts as a loose replicator. The two-carrier replicator verdict
+and the other census fields keep the reset trial. With `census_born=1` the `# census` line
+ends with `strict`, `born_fail` (active sites strict from reset values only) and
+`born_fail_genotypes`. `census_born=0` gives the reset-only verdict of v18-v25 byte for byte;
+the second trial adds about a quarter to the run time of v25's settings. v27 recomputes
+v18-v25.
+
 With `census=1` and `classes=1,2,...`, `ps_probe` adds two lines per interval and listed
 table, whether or not the table is the run's `decay_table`. `# classes` gives the share of
 non-inert bytes in the table's fast classes and the mean hazard at the run's `p_hydro` and
