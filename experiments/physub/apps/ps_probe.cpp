@@ -5,7 +5,7 @@
 //        [hydro_whole=0|1|live|dead] [p_rot=P] [physics=0|1]
 //        [decay_table=T decay_ratio=R] [classes=T1,T2,...] [anc=polite|copier]
 //        [fidelity=W] [fate=1] [trace=1] [route=1] [length=1] [inert_operand=zero|fail]
-//        [census_topup=1|0]
+//        [census_topup=1|0] [census_born=1|0]
 
 #include "ps_census.hpp"
 #include "ps_core.hpp"
@@ -166,11 +166,14 @@ void print_window(const World& w, const Window& win, const Stats& prev) {
 // world (census::run_trial in ps_census.hpp). Trial worlds never touch the run's world, so
 // the run's dynamics and digest are unchanged. Results are cached by text. census_topup=1
 // (the default) tops up the trial founder's site so that keys past mass0 bytes can be
-// seeded; census_topup=0 gives the earlier seed-limited verdict.
+// seeded; census_topup=0 gives the earlier seed-limited verdict. census_born=1 (the default,
+// from v27) also requires a strict key to be strict from the volatile values its own copy
+// wrote (census::run_trial); census_born=0 gives the reset-only verdict of v13-v26.
 bool g_census_topup = true;
+bool g_census_born = true;
 
 TrialResult run_trial(const Config& run_cfg, const std::string& key) {
-  return census::run_trial(run_cfg, key, *g_ref, g_census_topup);
+  return census::run_trial(run_cfg, key, *g_ref, g_census_topup, g_census_born);
 }
 
 // Kind of the activation now running at a site; seeded founders count as self.
@@ -181,7 +184,7 @@ int activation_kind(const std::vector<Record>& recs, const std::vector<int>& cur
 void print_census(const World& w, const std::vector<Record>& recs,
                   const std::vector<int>& current, std::map<std::string, TrialResult>& cache) {
   const int32_t n = w.config().width * w.config().height;
-  int rep = 0, rep_pfx = 0;
+  int rep = 0, rep_pfx = 0, strict = 0, born_fail = 0, born_fail_genotypes = 0;
   int other[kKinds] = {};
   uint64_t age[2] = {}, count[2] = {}, span[2] = {}, spanned[2] = {};
   std::map<std::string, bool> seen;  // genotypes active now -> replicator
@@ -191,6 +194,9 @@ void print_census(const World& w, const std::vector<Record>& recs,
     auto it = cache.find(key);
     if (it == cache.end()) it = cache.emplace(key, run_trial(w.config(), key)).first;
     const bool r = it->second.replicator;
+    strict += it->second.strict();
+    born_fail += it->second.reset_strict() && !it->second.born_strict;
+    born_fail_genotypes += it->second.reset_strict() && !it->second.born_strict && !seen.count(key);
     seen[key] = r;
     rep += r;
     rep_pfx += r && prefix_intact(w.bytes_at(s));
@@ -214,7 +220,13 @@ void print_census(const World& w, const std::vector<Record>& recs,
             << other[kReignite] << " mean_age_rep/nonrep="
             << (count[1] ? age[1] / count[1] : 0) << '/' << (count[0] ? age[0] / count[0] : 0)
             << " ip_span_rep/nonrep=" << mean(span[1], spanned[1]) << '/'
-            << mean(span[0], spanned[0]) << " trials=" << cache.size() << std::endl;
+            << mean(span[0], spanned[0]) << " trials=" << cache.size();
+  // census_born=1: strict sites, and sites strict from reset volatile offsets only.
+  if (g_census_born) {
+    std::cout << " strict=" << strict << " born_fail=" << born_fail
+              << " born_fail_genotypes=" << born_fail_genotypes;
+  }
+  std::cout << std::endl;
 }
 
 // Per-op decay classes (classes=...): for each listed table, the share of non-inert bytes in
@@ -1221,7 +1233,8 @@ private:
     if (g_census_topup) return status_of(trial_of(key));
     auto it = topped_.find(key);
     if (it == topped_.end()) {
-      it = topped_.emplace(key, status_of(census::run_trial(w_.config(), key, *g_ref, true)))
+      it = topped_.emplace(key, status_of(census::run_trial(w_.config(), key, *g_ref, true,
+                                                            g_census_born)))
                .first;
     }
     return it->second;
@@ -2008,6 +2021,7 @@ int main(int argc, char** argv) {
     else if (k == "route") route = v == "1";
     else if (k == "length") length = v == "1";
     else if (k == "census_topup") g_census_topup = v == "1";
+    else if (k == "census_born") g_census_born = v == "1";
     else if (k == "anc") {
       g_ref = census::reference_named(v);
       if (!g_ref) {

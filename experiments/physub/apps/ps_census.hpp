@@ -13,12 +13,16 @@ namespace ps::census {
 
 // A seeded program and the offsets it rewrites while it runs (counters, direction, probe).
 // Those offsets are masked out of genotype keys and reset to the program's values in
-// trials. ops: offsets of the program's opcode bytes.
+// trials. ops: offsets of the program's opcode bytes. born_values: the bytes at the volatile
+// offsets of the program's own exact copy at birth, in volatile_offsets order (its counters
+// read K + offset when the copy loop copies them; the direction and probe bytes are rewritten
+// before they are read). The census test checks them against a trial.
 struct Reference {
   std::string name;
   const std::vector<uint8_t>* program = nullptr;
   std::vector<int> volatile_offsets;
   std::vector<int> ops;
+  std::vector<uint8_t> born_values;
 
   bool is_volatile(int k) const {
     return std::find(volatile_offsets.begin(), volatile_offsets.end(), k) !=
@@ -29,9 +33,10 @@ struct Reference {
 // "polite" or "copier" (ancestor()); nullptr for any other name.
 inline const Reference* reference_named(const std::string& name) {
   static const Reference kPolite{"polite", &polite(), {31, 32, 33, 44},
-                                 {0, 3, 6, 8, 11, 13, 15, 18, 20, 22, 24, 26, 28}};
+                                 {0, 3, 6, 8, 11, 13, 15, 18, 20, 22, 24, 26, 28},
+                                 {223, 72, 225, 0}};
   static const Reference kCopier{"copier", &ancestor(), {24, 25, 26},
-                                 {0, 3, 6, 8, 11, 13, 15, 17, 19, 21}};
+                                 {0, 3, 6, 8, 11, 13, 15, 17, 19, 21}, {216, 72, 218}};
   if (name == kPolite.name) return &kPolite;
   if (name == kCopier.name) return &kCopier;
   return nullptr;
@@ -119,6 +124,16 @@ inline bool ref_inert_filled(const uint8_t* bytes, const Reference& ref) {
 // copy births by the founder; founder_exact: those whose child carries the tested key. A
 // strict replicator is a replicator all of whose founder copies are exact (the two-carrier
 // test alone passes a program whose first copy is exact and later ones are not).
+// Copy-born trial (born, the default): a key that is strict from reset volatile offsets is
+// tested again in a second fresh trial, with its volatile offsets set to the reference's
+// born_values (the values an exact copy carries at birth) instead of the reference's own; the
+// key is strict only when that trial is strict too. A program whose counter reset does not
+// take effect (polite with offset 36 filled, for instance) copies in register from reset
+// counters but off register from copy-born ones. replicator, ip_span, op_mask, depth and the
+// founder counts stay those of the reset trial, so such a key counts as a loose replicator.
+// (The founder's own first child is not used: with 36 filled, the founder's misdirected
+// counter reset can land in that child's so byte when the child lies in the direction 36
+// names.)
 // Seeding draws the founder's bytes from the center site's free monomers (mass0). With top_up
 // (the default) the center's free monomers are first raised to the key's non-inert byte count
 // after the volatile reset, so every key can be seeded; this adds monomers to the trial world
@@ -136,10 +151,13 @@ struct TrialResult {
   uint64_t op_mask = 0;
   int depth = 0;
   int founder_copies = 0, founder_exact = 0;
+  bool born_tested = false;  // the copy-born trial ran (born on and reset_strict())
+  bool born_strict = true;   // its verdict; true when it did not run
 
-  bool strict() const {
+  bool reset_strict() const {
     return replicator && founder_copies > 0 && founder_exact == founder_copies;
   }
+  bool strict() const { return reset_strict() && born_strict; }
 };
 
 // The program a trial seeds: the key with the volatile offsets reset to the reference's values.
@@ -149,24 +167,46 @@ inline std::vector<uint8_t> trial_program(const std::string& key, const Referenc
   return program;
 }
 
-inline int trial_bytes(const std::string& key, const Reference& ref) {
+// The program the copy-born trial seeds: the key with the reference's born_values.
+inline std::vector<uint8_t> born_program(const std::string& key, const Reference& ref) {
+  std::vector<uint8_t> program(key.begin(), key.end());
+  for (size_t i = 0; i < ref.volatile_offsets.size(); ++i) {
+    program[ref.volatile_offsets[i]] = ref.born_values[i];
+  }
+  return program;
+}
+
+inline int program_bytes(const std::vector<uint8_t>& program) {
   int n = 0;
-  for (uint8_t b : trial_program(key, ref)) n += b != INERT;
+  for (uint8_t b : program) n += b != INERT;
   return n;
+}
+
+inline int trial_bytes(const std::string& key, const Reference& ref) {
+  return program_bytes(trial_program(key, ref));
+}
+
+// Seeds a program as the trial founder at the center of a trial world (see run_trial on
+// top_up).
+inline bool seed_program_at_center(World& t, const std::vector<uint8_t>& program, bool top_up) {
+  const int32_t center = t.site_index(kTrialSize / 2, kTrialSize / 2);
+  if (top_up) {
+    const int need = program_bytes(program);
+    if (need > t.free_mass(center)) t.set_free_mass(center, need);
+  }
+  return t.seed_program(kTrialSize / 2, kTrialSize / 2, program);
 }
 
 // Seeds the trial founder at the center of a trial world (see run_trial on top_up).
 inline bool seed_founder(World& t, const std::string& key, const Reference& ref, bool top_up) {
-  const int32_t center = t.site_index(kTrialSize / 2, kTrialSize / 2);
-  if (top_up) {
-    const int need = trial_bytes(key, ref);
-    if (need > t.free_mass(center)) t.set_free_mass(center, need);
-  }
-  return t.seed_program(kTrialSize / 2, kTrialSize / 2, trial_program(key, ref));
+  return seed_program_at_center(t, trial_program(key, ref), top_up);
 }
 
-inline TrialResult run_trial(const Config& run_cfg, const std::string& key,
-                             const Reference& ref, bool top_up = true) {
+// One trial of a seeded program against a key. first_child, when given, receives the bytes of
+// the founder's first copy child at its birth (empty if there was none).
+inline TrialResult trial_of_program(const Config& run_cfg, const std::vector<uint8_t>& program,
+                                    const std::string& key, const Reference& ref, bool top_up,
+                                    std::vector<uint8_t>* first_child) {
   Config c = run_cfg;
   c.width = kTrialSize;
   c.height = kTrialSize;
@@ -180,7 +220,8 @@ inline TrialResult run_trial(const Config& run_cfg, const std::string& key,
   World t(c);
   TrialResult r;
   const int32_t center = t.site_index(kTrialSize / 2, kTrialSize / 2);
-  if (!seed_founder(t, key, ref, top_up)) return r;
+  if (first_child) first_child->clear();
+  if (!seed_program_at_center(t, program, top_up)) return r;
   r.seeded = true;
   std::vector<bool> visited(c.site_len, false);
   std::vector<int> gen(kTrialSize * kTrialSize, 0);
@@ -197,6 +238,10 @@ inline TrialResult run_trial(const Config& run_cfg, const std::string& key,
       if (copy && b.parent == center) {
         r.founder_copies += 1;
         r.founder_exact += masked(t, b.child, ref) == key;
+        if (first_child && first_child->empty()) {
+          const uint8_t* cb = t.bytes_at(b.child);
+          first_child->assign(cb, cb + c.site_len);
+        }
       }
     }
     if (k < kTrialTicks - kSpanTicks) continue;
@@ -212,6 +257,18 @@ inline TrialResult run_trial(const Config& run_cfg, const std::string& key,
     carriers += t.site_active(s) && masked(t, s, ref) == key;
   }
   r.replicator = carriers >= 2;
+  return r;
+}
+
+inline TrialResult run_trial(const Config& run_cfg, const std::string& key,
+                             const Reference& ref, bool top_up = true, bool born = true) {
+  TrialResult r = trial_of_program(run_cfg, trial_program(key, ref), key, ref, top_up, nullptr);
+  if (born && r.reset_strict()) {
+    const TrialResult b = trial_of_program(run_cfg, born_program(key, ref), key, ref, top_up,
+                                           nullptr);
+    r.born_tested = true;
+    r.born_strict = b.reset_strict();
+  }
   return r;
 }
 

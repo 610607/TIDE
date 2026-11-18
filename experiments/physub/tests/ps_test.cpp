@@ -578,7 +578,8 @@ void test_block_rotation() {
 
 // Census trial and copy-difference classes (apps/ps_census.hpp): polite is a strict
 // replicator; a knocked-out IGNITE or a source pointer redirected to a neighbor is not; trials
-// are deterministic; a clean copy is exact and a refused fill-mode write leaves residue.
+// are deterministic; a filled 36 is strict from reset counters only (copy-born trial); a clean
+// copy is exact and a refused fill-mode write leaves residue.
 void test_census_trial() {
   Config cfg;
   cfg.mass0 = 48;
@@ -598,12 +599,39 @@ void test_census_trial() {
   std::string redirected = key;
   redirected[30] = static_cast<char>(192);  // source pointer: a neighbor instead of own site
   assert(!census::run_trial(cfg, redirected, ref).replicator);
+  // Copy-born trial: each reference's born_values are the volatile bytes of its own first
+  // copy at birth, under either inert_operand.
+  for (const char* name : {"polite", "copier"}) {
+    const census::Reference& rf = *census::reference_named(name);
+    std::string k0(cfg.site_len, 0);
+    for (size_t k = 0; k < rf.program->size(); ++k) k0[k] = static_cast<char>((*rf.program)[k]);
+    for (int v : rf.volatile_offsets) k0[v] = 0;
+    for (InertOperand io : {InertOperand::Zero, InertOperand::Fail}) {
+      Config c = cfg;
+      c.inert_operand = io;
+      std::vector<uint8_t> child;
+      const census::TrialResult t = census::trial_of_program(
+          c, census::trial_program(k0, rf), k0, rf, true, &child);
+      assert(t.reset_strict() && !child.empty());
+      for (size_t i = 0; i < rf.volatile_offsets.size(); ++i) {
+        assert(child[rf.volatile_offsets[i]] == rf.born_values[i]);
+      }
+      const census::TrialResult r = census::run_trial(c, k0, rf);
+      assert(r.born_tested && r.born_strict && r.strict());
+    }
+  }
   // Alone, a fill of another own-site pointer byte or of the tail leaves a strict replicator
-  // (the neighbors it names are empty).
+  // from reset volatile offsets (the neighbors it names are empty). From copy-born ones, a
+  // filled 36 does not: MOV 0 then sets a neighbor's so instead of its own, so the child keeps
+  // so = 223 (31 mod 64) from the copy while do is reset to K, and copies off register.
+  assert(a.born_tested && a.born_strict);
   for (int off : {34, 36, 38, 40, 50}) {
     std::string filled_key = key;
     filled_key[off] = static_cast<char>(192);
-    assert(census::run_trial(cfg, filled_key, ref).strict());
+    const census::TrialResult r = census::run_trial(cfg, filled_key, ref);
+    assert(r.reset_strict() && r.born_tested && r.replicator);
+    assert(r.strict() == (off != 36));
+    assert(census::run_trial(cfg, filled_key, ref, true, false).strict());
   }
   // Seeding limit: the founder's bytes come from the center's mass0 free monomers. Polite
   // (40 bytes after the volatile reset) with 8 tail fills seeds and stays strict either way;
@@ -667,7 +695,7 @@ void test_census_trial() {
   }
   std::cout << "[ps test 17] census trial: polite strict, depth " << a.depth << ", founder copies "
             << a.founder_exact << '/' << a.founder_copies
-            << "; knockout and redirected source fail, other fills stay strict; first copy exact, residue is env;"
+            << "; knockout and redirected source fail, other fills stay strict (filled 36 only from reset counters); first copy exact, residue is env;"
             << " writers recorded\n";
 }
 

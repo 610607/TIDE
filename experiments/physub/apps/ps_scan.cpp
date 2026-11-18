@@ -11,12 +11,14 @@
 //   substitutions: `subs` values per such byte, drawn as copy errors are (1 + h % 255).
 //   census_topup: as ps_probe's; it applies to the census verdicts and to the founder of the
 //     first copies (a key past mass0 bytes is seeded only when topped up).
+//   census_born: as ps_probe's; it applies to the census verdicts only. The first copies
+//     start from reset volatile offsets either way.
 //   pred: the strict share expected from text substitutions alone, to first order:
 //     (1-u)^m + u (1-u)^(m-1) sum_k s_k, with m non-inert non-volatile bytes and s_k the share
 //     of substitutions at k that leave a strict replicator. Copy errors in the program's own
 //     bookkeeping moves (counter set-up, probe) are not in pred but are in the first copies.
 // Usage: ps_scan [anc=polite|copier] [first=200] [subs=4] [label=NAME] [p_mut=0.003]
-//                [mass0=48] [ext_write=fill] [census_topup=1|0] < probe.tsv
+//                [mass0=48] [ext_write=fill] [census_topup=1|0] [census_born=1|0] < probe.tsv
 
 #include "ps_census.hpp"
 #include "ps_core.hpp"
@@ -98,7 +100,7 @@ int main(int argc, char** argv) {
   cfg.p_mut = 0.003;
   cfg.ext_write = ExtWrite::FillOnly;
   int first = 200, subs = 4;
-  bool top_up = true;
+  bool top_up = true, born = true;
   std::string label = "-";
   const Reference* ref = reference_named("polite");
   for (int i = 1; i < argc; ++i) {
@@ -113,6 +115,7 @@ int main(int argc, char** argv) {
     else if (k == "mass0") cfg.mass0 = std::atoi(v.c_str());
     else if (k == "ext_write" && parse_ext_write(v, cfg.ext_write)) {}
     else if (k == "census_topup") top_up = v == "1";
+    else if (k == "census_born") born = v == "1";
     else {
       std::cerr << "bad argument: " << a << '\n';
       return 1;
@@ -125,7 +128,7 @@ int main(int argc, char** argv) {
   std::map<std::string, TrialResult> cache;
   auto verdict = [&](const std::string& key) -> const TrialResult& {
     auto it = cache.find(key);
-    if (it == cache.end()) it = cache.emplace(key, run_trial(cfg, key, *ref, top_up)).first;
+    if (it == cache.end()) it = cache.emplace(key, run_trial(cfg, key, *ref, top_up, born)).first;
     return it->second;
   };
   std::cout << "label\ttick\trank\tstatus\trun_births\trun_child_strict%\tlen\tm"
