@@ -125,7 +125,7 @@ python3 -m http.server 8765 -d viewer   # then open http://localhost:8765/?file=
 | `apps/ps_copycut.cpp` | First-copy cut probability of polite alone under block rotation |
 | `tests/ps_test.cpp` | Ledgers, replay, walls, ancestor, starvation, bond barrier, act_cap, ext_write, p_dead, energy diffusion, bond storage, dead_quiet, whole decay, block rotation, whole decay per class, per-op decay tables, census trial and its seeding limit, copy-difference classes, writer records and inert operands |
 | `viewer/index.html` | Replay viewer (layers, inspector, timeline) |
-| `scripts/run_jobs.sh`, `scripts/jobs/` | Parallel runner and the v8-v25 job lists |
+| `scripts/run_jobs.sh`, `scripts/jobs/` | Parallel runner and the v8-v27 job lists |
 
 `ps_probe` columns per interval: births, `exact%`, `intact_parent%`, top genotype, `copies`
 (child mostly written by the parent) and `reignites` (child code already present),
@@ -770,15 +770,16 @@ do not alter the dynamics: the v9 baseline is byte-identical to v8.
     - Polite's region is intact in 0-39 replicators per run at 500k (controls: 6-54).
 
 - **v18** (copy fidelity under form M to 500k ticks; revision 80f9fcf, job list
-  `v18_fidelity.txt`; 12 jobs in 22 minutes on 4 cores; counts recomputed in v23). Four runs
-  repeat v17 `m195_s1`, `m195_s2`, `t2_s1` and `t3_s1` with `fidelity=5000`: every copy
-  birth in the last 5,000 ticks before each 50k point is classified, and parent and child
-  are judged by the census. Their rows and their census, class, substitution and physics
-  lines equal v17's to 500k (trial counts aside). Below, a strict parent or child is one
-  whose genotype is a strict replicator in the topped-up census trial (v23 runs
-  `zero_m195_s1/s2`, `t2_s1` and `t3_s1`). `ps_scan` then tested the three strict genotypes
-  with the most copies per run and point, 120 genotype-points in all (`ps_scan label=RUN
-  first=400 subs=4 < runs/v23/RUN.tsv`, at revision b4b4ea1).
+  `v18_fidelity.txt`; 12 jobs in 22 minutes on 4 cores; counts recomputed in v23; strict
+  verdict from reset counters, see v27). Four runs repeat v17 `m195_s1`, `m195_s2`, `t2_s1`
+  and `t3_s1` with `fidelity=5000`: every copy birth in the last 5,000 ticks before each 50k
+  point is classified, and parent and child are judged by the census. Their rows and their
+  census, class, substitution and physics lines equal v17's to 500k (trial counts aside).
+  Below, a strict parent or child is one whose genotype is a strict replicator in the
+  topped-up census trial (v23 runs `zero_m195_s1/s2`, `t2_s1` and `t3_s1`). `ps_scan` then
+  tested the three strict genotypes with the most copies per run and point, 120
+  genotype-points in all (`ps_scan label=RUN first=400 subs=4 < runs/v23/RUN.tsv`, at
+  revision b4b4ea1).
 
   Copies by strict parents in the window / strict children among them (%):
 
@@ -941,15 +942,15 @@ do not alter the dynamics: the v9 baseline is byte-identical to v8.
     exact copies of the parent at every point (four runs). The seed-limited census found
     22-43%, because it counted long strict parents as `other`.
 - **v19** (activation fates under form M to 500k ticks; revision 2280ebf, job list
-  `v19_fate.txt`; 4 jobs in 43 minutes on 4 cores; counts recomputed in v23). The runs
-  repeat v18 `m195_s1`, `m195_s2`, `nomut_s1` and `nomut_s2` with `fate=1`. Every other line
-  equals v18's to 500k (v18's m195 outputs print `multi` as `shift`). At all 40 checkpoints
-  the strict balance equals the strict count, and the census mismatch, untracked, stale and
-  replaced counts are 0, under the seed-limited census and again under the topped-up one.
-  Earlier runs of the same jobs at 8368700 and 9cc7ff8, before the start and fill counts
-  were added, gave the same counts on every shared line. Below, "strict" is the census
-  status (topped-up, from the v23 runs `zero_m195_s1/s2` and `zero_nomut_s1/s2`); "in place"
-  means without a birth.
+  `v19_fate.txt`; 4 jobs in 43 minutes on 4 cores; counts recomputed in v23; strict verdict
+  from reset counters, see v27). The runs repeat v18 `m195_s1`, `m195_s2`, `nomut_s1` and
+  `nomut_s2` with `fate=1`. Every other line equals v18's to 500k (v18's m195 outputs print
+  `multi` as `shift`). At all 40 checkpoints the strict balance equals the strict count, and
+  the census mismatch, untracked, stale and replaced counts are 0, under the seed-limited
+  census and again under the topped-up one. Earlier runs of the same jobs at 8368700 and
+  9cc7ff8, before the start and fill counts were added, gave the same counts on every shared
+  line. Below, "strict" is the census status (topped-up, from the v23 runs `zero_m195_s1/s2`
+  and `zero_nomut_s1/s2`); "in place" means without a birth.
 
   Strict activations per 50k window with copy error (s1 / s2). Births are copy births plus
   re-ignitions (no self-ignitions occurred). A neighbor's fill of 30 is an in-place loss
@@ -1039,14 +1040,15 @@ do not alter the dynamics: the v9 baseline is byte-identical to v8.
     late, to 66-79% at 450-500k, as wick ends rise.
 
 - **v20** (inert operands fail under form M to 500k ticks; revision 857bf01, job list
-  `v20_inert_operand.txt`; 4 jobs in 39 minutes on 4 cores; counts recomputed in v23). The
-  runs repeat v19 `m195_s1`, `m195_s2`, `nomut_s1` and `nomut_s2` with one change,
-  `inert_operand=fail`; v19 is the baseline. At 857bf01 the default `zero` reproduces v19
-  `m195_s1` line for line to 50k (census trial counts and the physics line included), and
-  `ps_test` keeps its digest. At all 40 v20 checkpoints the strict balance equals the strict
-  count, and the census mismatch, untracked, stale and replaced counts are 0, under both
-  census verdicts. Instructions that failed on an inert operand: 144k by 50k and 10.2-11.8
-  million by 500k with copy error; 37-38k by 50k and 67-73k by 500k without.
+  `v20_inert_operand.txt`; 4 jobs in 39 minutes on 4 cores; counts recomputed in v23; strict
+  verdict from reset counters, see v27). The runs repeat v19 `m195_s1`, `m195_s2`,
+  `nomut_s1` and `nomut_s2` with one change, `inert_operand=fail`; v19 is the baseline. At
+  857bf01 the default `zero` reproduces v19 `m195_s1` line for line to 50k (census trial
+  counts and the physics line included), and `ps_test` keeps its digest. At all 40 v20
+  checkpoints the strict balance equals the strict count, and the census mismatch,
+  untracked, stale and replaced counts are 0, under both census verdicts. Instructions that
+  failed on an inert operand: 144k by 50k and 10.2-11.8 million by 500k with copy error;
+  37-38k by 50k and 67-73k by 500k without.
 
   Choice of split. INERT has four roles: it embodies no monomer (an empty byte, which `fill`
   lets other sites write), it is the own-site direction of a pointer, it is the value 0 of
@@ -1136,7 +1138,8 @@ do not alter the dynamics: the v9 baseline is byte-identical to v8.
     with copy error (59-86% against 57-84%, by point).
 - **v21** (who writes the remaining in-place losses and who ignites strict code off entry;
   measurement only; revision 76ef87b, job list `v21_trace.txt`; 4 jobs in 43 minutes on 4
-  cores, the last 7 shared with v22; counts recomputed in v23). `trace=1` under v20
+  cores, the last 7 shared with v22; counts recomputed in v23; strict verdict from reset
+  counters, see v27). `trace=1` under v20
   settings: `m195_s1` and `m195_s2` (`inert_operand=fail`, copy error), `nomut_s1` (`fail`,
   no copy error), and `zero_s1`, which is v19 `m195_s1` (the default `zero`). Apart from the
   `# trace*` lines, each output equals its v20 or v19 counterpart line for line. Counts are
@@ -1221,7 +1224,8 @@ do not alter the dynamics: the v9 baseline is byte-identical to v8.
   - Without copy error, free monomers stay at 71.6-76.5k and no write is refused.
 - **v22** (the census seeding limit; measurement only; revision b56495b, job list
   `v22_seed_limit.txt`; 4 jobs in 49 minutes on 4 cores, the first 7 minutes shared with
-  v21; tables recomputed in v23). Found while tracing v21. The census trial drew the
+  v21; tables recomputed in v23; strict verdict from reset counters, see v27). Found while
+  tracing v21. The census trial drew the
   founder's bytes from the trial center's `mass0` (48) free monomers. A key with more than
   48 non-inert bytes after the volatile reset therefore could not be seeded, and the census
   called it a non-replicator (`other`) whatever it did in the run. Since b4b4ea1 the census
@@ -1304,7 +1308,8 @@ do not alter the dynamics: the v9 baseline is byte-identical to v8.
     re-ignitions, exact births, active sites, decays) are unchanged.
 - **v24** (what share of the strict decline each loss route carries, under the topped-up
   census; measurement only; revision 6a6bdc0, job list `v24_loss_routes.txt`; 4 jobs in
-  1 hour 15 minutes on 4 cores). A container restart stopped a first attempt at 450k /
+  1 hour 15 minutes on 4 cores; strict verdict from reset counters, see v27). A container
+  restart stopped a first attempt at 450k /
   400k. The rerun started from tick 0, and the first attempt's outputs equal the rerun's up
   to where they stopped. The research channel asked what share of the decline comes from
   three routes:
@@ -1455,8 +1460,8 @@ do not alter the dynamics: the v9 baseline is byte-identical to v8.
     - The source of `multi` and of the fall of re-ignitions at 0 is not resolved.
     - The upper bound on off-entry writers uses the v21 writer shares, not this ledger.
 - **v25** (why strict keys grow longer; measurement only; revision 3227e87, job list
-  `v25_length.txt`; 6 jobs, the four copy-error runs in 70 minutes on 4 cores). The research
-  channel asked four questions:
+  `v25_length.txt`; 6 jobs, the four copy-error runs in 70 minutes on 4 cores; strict
+  verdict from reset counters, see v27). The research channel asked four questions:
   - where the added bytes come from: foreign writes, children written past the program,
     point errors, or residue copied in;
   - which offsets they occupy, and whether they are executed;
@@ -1746,6 +1751,121 @@ do not alter the dynamics: the v9 baseline is byte-identical to v8.
     - The shares of the three off-register routes in the runs are not measured; the scratch
       checks show each can occur.
     - The rise of filled 34 is not explained.
+- **v26** (`ext_write=erase` against `fill`: does the one-way write rule drive length
+  growth? Revision 34839f4, job list `v26_erase.txt`; 4 jobs in one queue with v27's 12 on
+  4 cores, 1 hour 42 minutes to 2 hours 25 minutes per run). The research channel asked for
+  this control and for its effects on write cost and in-place losses, reported separately.
+  - **Setup.** The runs repeat v25's copy-error runs (`zero` and `fail`, seeds 1-2) with
+    one rule changed: a neighbor's write may also erase a byte to INERT. Substitution of a
+    non-inert byte stays refused. The `fill` runs compared are v27 `zero_m195_s1/s2` and
+    `fail_m195_s1/s2`, whose dynamics equal v25's and whose census is the same copy-born
+    verdict (v27). Cells are `erase` / `fill`; ranges cover four runs per rule.
+  - **Price** (code inspection, `World::write_cost`, `World::pay_energy`,
+    `World::apply_writes`). A write that changes a non-inert byte plans a barrier on top of
+    `e_op`: `e_bond` (1), or `e_erase` (1) for a foreign erasure under `erase`. The price is
+    paid before writes are applied, and a refused write keeps it paid. So the price of each
+    write is the same under both rules. Under `fill`, a foreign erasure pays and is
+    refused; under `erase` it pays and takes effect, and the freed monomer goes to the
+    target site's pool.
+  - **Checks.** The ledger of the mean closes in every run (residual below 5e-8 over the
+    run). The `fill` runs' checks are under v27.
+  - **Length.** Mean z of strict entry-0 activations, with their count:
+
+    | tick | `zero` s1 | `zero` s2 | `fail` s1 | `fail` s2 |
+    | --- | --- | --- | --- | --- |
+    | 50k | 40.4 (5,760) / 40.6 (6,265) | 40.3 (5,548) / 41.0 (6,166) | 40.5 (4,620) / 40.6 (6,442) | 40.7 (4,448) / 41.0 (6,344) |
+    | 100k | 40.8 (4,207) / 41.8 (5,604) | 40.6 (5,060) / 42.0 (5,750) | 41.5 (2,497) / 41.8 (5,626) | 41.2 (3,384) / 42.4 (5,824) |
+    | 150k | 41.0 (4,508) / 43.7 (5,152) | 40.9 (4,937) / 43.6 (5,180) | 42.1 (2,668) / 44.4 (5,194) | 41.4 (3,852) / 44.8 (5,114) |
+    | 200k | 41.3 (4,772) / 46.0 (4,522) | 41.1 (4,532) / 45.7 (4,263) | 42.3 (3,039) / 47.0 (3,960) | 41.4 (3,742) / 47.4 (4,036) |
+    | 250k | 41.5 (4,445) / 48.1 (3,649) | 41.2 (4,378) / 47.5 (3,597) | 42.2 (3,233) / 49.1 (3,497) | 41.6 (3,951) / 49.4 (3,421) |
+    | 300k | 41.7 (4,318) / 49.6 (3,114) | 41.4 (4,405) / 48.7 (3,362) | 42.3 (3,674) / 50.4 (3,254) | 41.8 (4,505) / 51.2 (3,064) |
+    | 350k | 41.9 (4,232) / 51.0 (3,013) | 41.3 (4,427) / 49.9 (3,346) | 42.2 (3,990) / 51.6 (3,008) | 41.7 (4,243) / 52.1 (3,140) |
+    | 400k | 42.0 (4,036) / 52.1 (2,986) | 41.5 (4,527) / 50.7 (3,190) | 42.0 (4,236) / 52.4 (2,869) | 41.9 (4,168) / 52.4 (2,938) |
+    | 450k | 42.1 (4,052) / 52.6 (3,069) | 41.5 (4,584) / 51.5 (2,952) | 42.3 (4,165) / 53.3 (2,940) | 42.0 (3,911) / 52.8 (3,056) |
+    | 500k | 42.2 (4,315) / 53.1 (2,723) | 41.6 (4,350) / 52.0 (3,006) | 42.5 (4,050) / 53.8 (2,822) | 42.1 (4,094) / 53.5 (2,866) |
+
+    - By 500k the mean rises 1.6-2.5 bytes under `erase` against 12.0-13.8 under `fill`.
+      Strict sites hold a filled 34 in 21-54% against 71-91%, and 1.3-2.4 filled tail bytes
+      against 11.2-12.9.
+    - Ledger of the mean, 0 to 500k (as in v25): bytes added in place by foreign writes,
+      strict status kept, +9.8 to +15.6 against +18.6 to +19.1; transmission +0.12 to
+      +0.21 against +6.0 to +7.4; re-ignitions +0.7 to +2.7 against +14.9 to +16.0; whole
+      decay −3.7 to −10.3 against −26.4 to −28.7. Foreign losses in place (−10.4 to −39.9)
+      and gains in place (+2.7 to +22.1) are larger under `erase`.
+    - In place, per strict entry-0 site per 5k ticks over the run: foreign writes add
+      0.44-0.79 bytes and erase 0.33-0.66, against 0.24-0.25 added and none erased. The net
+      change of keys that stay strict is +0.10 to +0.14 bytes against +0.18 to +0.19.
+    - In copies by strict entry-0 parents, the child is 0.003-0.005 bytes longer than its
+      parent, against 0.153-0.177; bytes written into the child by other sites, where the
+      parent is INERT, fall from 0.172-0.191 to 0.008-0.010 per copy. Code inspection:
+      polite's loop also copies its INERT bytes. Under `fill`, that write is refused where
+      a neighbor has already filled the byte in the child, so the neighbor's byte stays;
+      under `erase` the parent's copy erases it.
+    - Off-register parents make 4.1-5.4% of copies by strict entry-0 parents (4.5-5.2% in
+      the last window), against 7.4-7.5% (10.7-11.6%).
+  - **Write cost** (separately).
+    - Foreign writes refused after paying, per 5k window from 350k: 249-273 thousand
+      against 699-720 thousand. Foreign erasures applied: 66-73 thousand per 5k. Writes
+      that paid the barrier from outside (refused or erased) are thus 314-344 thousand per
+      5k against 699-720 thousand. To 500k, 23.4-27.5 million refused and 6.1-7.3 million
+      erasures, against 60.2-61.5 million refused.
+    - Activations that could not pay their instruction price (stalls), per 50k from 350k:
+      4.4-5.0 million against 9.3-9.8 million. Stored site energy is 1.5-2.0% higher
+      (578-580 thousand against 569 thousand).
+    - Erasure returns matter: at 500k, 78-85 thousand free monomers against 18-28 thousand,
+      and 350-357 thousand code bytes against 397-408 thousand. After the first window no
+      write is refused for lack of a free monomer, against 25.8-105.5 thousand per 50k
+      window from 250k under `fill` (v24 table).
+  - **In-place losses** (separately; per strict entry-0 site per 5k ticks, early =
+    windows to 100k and 150k, late = 350k-500k, as v24).
+
+    | term | early | late |
+    | --- | --- | --- |
+    | lost in place, foreign writer | 0.107-0.390 / 0.033-0.036 | 0.123-0.170 / 0.082-0.089 |
+    | of which: pointers 34-40 only | 0.041-0.169 / 0.019-0.021 | 0.053-0.080 / 0.050-0.054 |
+    | of which: fill of 30 by the `MOV` at 15 | 0.012-0.027 / 0.012-0.014 | 0.009-0.012 / 0.025-0.028 |
+    | of which: other offsets (none under `fill`) | 0.052-0.218 / 0.000 | 0.052-0.096 / 0.000 |
+    | lost in place, own write | 0.003-0.012 / 0.009-0.015 | 0.002-0.022 / 0.001-0.010 |
+    | gained in place | 0.026-0.156 / 0.009-0.016 | 0.029-0.053 / 0.002-0.011 |
+    | net in-place loss | 0.084-0.295 / 0.032-0.035 | 0.089-0.141 / 0.081-0.087 |
+
+    - Foreign losses in place are 1.5-1.9 times as frequent late and 3-12 times early. The
+      new route is the erasure of key bytes; erasures at pointer directions add to the
+      fills. Late fills of 30 fall to a third to a half.
+    - Gains in place are also more frequent. That an erasure removes an earlier fill of 30
+      or of a pointer is a likely route (inference; not traced).
+    - Net, late in-place losses are 1.1-1.6 times those under `fill`; early, 2.4-9.2
+      times. In the `fail` runs the strict count falls to 2,497 and 3,384 at 100k before
+      it recovers.
+    - Keys lost in place by a foreign writer average 41.9-43.2 bytes, against 49.2-50.6.
+  - **Population.** Late (350k-500k), `erase` holds 4,122-4,490 strict sites (census)
+    against 2,972-3,170, and 5,500-5,838 active sites against 5,059-5,313. Its strict count
+    is lower to 150k, and higher from 200k (`zero`) or 250-300k (`fail`). Late per strict
+    site, whole decay
+    (0.397-0.405 against 0.494-0.507 per 5k) and non-strict children (0.13-0.18 against
+    0.25-0.28) are lower, and copies by strict parents also (0.49-0.60 against 0.72-0.76).
+    Re-ignitions per 50k fall from 155-184 thousand to 88-97 thousand, and exact copies
+    are 13.4-14.7% of births against 6.3-7.4%.
+  - **Answer** (executed runs; mechanisms marked as inference or code inspection):
+    - The one-way rule drives the growth. With erasure allowed, mean z rises by about
+      2 bytes to 500k against about 13 under `fill`. Both routes shrink: in place,
+      foreign erasures remove most of what foreign writes add; in copies, the parent's
+      own copy erases what neighbors wrote into the child (code inspection).
+    - Write cost: the price per write is unchanged. About half as many foreign writes
+      pay the barrier, half as many activations stall, and the free monomers that `fill`
+      exhausts stay available.
+    - In-place losses: more frequent, through a new route (erasure of key bytes), partly
+      offset by more gains in place. The net loss is much larger early and close to
+      `fill` late.
+  - **Limits.**
+    - One rule with several effects: erasure removes bytes, returns monomers and can undo
+      earlier fills. The runs do not separate which of these keeps keys short or raises
+      the late strict count.
+    - Two seeds per rule; one erasure price (`e_erase` 1).
+    - Rates are per strict entry-0 site, and the strict sets differ in size and length
+      between rules.
+- **v27** (v18-v25 recomputed with the copy-born census trial): runs in progress; the entry
+  follows.
 
 Working interpretation (v13 and code inspection): saturation starts the decline in every
 run, and the space then fills with activations that no longer replicate. An activation ends
@@ -1823,7 +1943,7 @@ mechanisms are inference):
   but copy fidelity per genotype was not measured (v18 measures it).
 
 v18 reading (counts from executed runs, recomputed in v23 with the topped-up census; which
-mechanism fills each class is inference):
+mechanism fills each class is inference; v27 lists what the copy-born census changes):
 
 - **The genotypes' own fidelity does not fall.**
   - Alone, the leading strict genotypes give 91-94% strict first copies at every point from
@@ -1904,7 +2024,7 @@ mechanism fills each class is inference):
   this measurement.)
 
 v19 reading (counts from executed runs, recomputed in v23 with the topped-up census;
-mechanisms marked as inference):
+mechanisms marked as inference; v27 lists what the copy-born census changes):
 
 - **The offset-30 route is one of the two main in-place routes.** After 150k a neighbor's
   fill of offset 30 turns a strict activation into a non-replicator 11,513 and 12,111 times,
@@ -1961,7 +2081,7 @@ mechanisms marked as inference):
     why copy error raises their share.
 
 v20 reading (counts from executed runs, recomputed in v23 with the topped-up census;
-mechanisms marked as inference):
+mechanisms marked as inference; v27 lists what the copy-born census changes):
 
 - **The minimal split removes the self-overwrite route in both conditions.** An inert operand
   no longer reaches offset 0, and self-written losses at offset 0 almost vanish.
@@ -2008,7 +2128,8 @@ mechanisms marked as inference):
     ignites strict code off entry. (v21.)
 
 v21 and v22 reading (counts from executed runs, recomputed in v23 with the topped-up
-census; mechanisms marked as inference or code inspection):
+census; mechanisms marked as inference or code inspection; v27 lists what the copy-born
+census changes):
 
 - **The seed-limited census missed long replicators** (v22). It could not seed a key past 48
   bytes, so it counted such a program as `other`. With copy error, strict genotypes grow
@@ -2118,22 +2239,21 @@ census; mechanisms marked as inference or code inspection):
    topped up by default (`census_topup=1`); v23 recomputes v17-v22. v13-v16 still use the
    seed-limited verdict, so their strict counts are lower bounds wherever programs passed 48
    bytes.
-7. Census (observer, not dynamics), open: the trial seeds the founder with its volatile
-   offsets reset, so polite's counters so ([31]) and do ([33]) start equal. A copy-born child
-   starts with the counter values its parent's loop copied (31 and 33 mod 64). Keys whose
-   counter reset does not take effect, such as a filled 36 or some substitutions at offsets
-   0-2 and 5, pass the census but copy off register when copy-born (v25 scratch checks), so
-   strict counts include some keys that rarely copy themselves faithfully in the run.
+7. Census (observer, not dynamics), resolved in 34839f4: the trial seeded the founder with
+   its volatile offsets reset, so polite's counters so ([31]) and do ([33]) started equal. A
+   copy-born child starts with the counter values its parent's loop copied (31 and 33 mod
+   64). Keys whose counter reset does not take effect, such as a filled 36 or some
+   substitutions at offsets 0-2 and 5, passed the census but copy off register when
+   copy-born (v25 scratch checks). The census now also tries such a key from copy-born
+   values (`census_born=1`, default) and counts it as `loose` when that trial fails; v27
+   recomputes v18-v25. The born values are the reference's; a variant whose own children
+   carry other counter values is still tried with them.
 
 ## Open proposals (none agreed)
 
-- **Length-growth controls** (from v25; none run; each changes one mechanism and needs
-  agreement first):
-  - `ext_write=erase` (an existing option) against `fill`, so foreign writes can also
-    remove bytes; tests whether the one-way write rule drives the growth. It also changes
-    write costs (`e_erase`) and in-place losses.
-  - A census trial from copy-born counters as well as reset ones (observer only; changes
-    strict counts in v13-v25; Known issue 7).
+- **Length-growth controls** (from v25; each changes one mechanism and needs agreement
+  first). Done at the research channel's request: `ext_write=erase` against `fill` (v26)
+  and the copy-born census trial (34839f4, v27). Not run:
   - Copy errors on cross-site writes only (new option): removes the counter-reset route to
     off-register copying while keeping errors in children.
   - Refuse foreign writes into active sites (new mode, closer to the kernel default that a
