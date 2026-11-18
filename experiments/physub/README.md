@@ -125,7 +125,7 @@ python3 -m http.server 8765 -d viewer   # then open http://localhost:8765/?file=
 | `apps/ps_copycut.cpp` | First-copy cut probability of polite alone under block rotation |
 | `tests/ps_test.cpp` | Ledgers, replay, walls, ancestor, starvation, bond barrier, act_cap, ext_write, p_dead, energy diffusion, bond storage, dead_quiet, whole decay, block rotation, whole decay per class, per-op decay tables, census trial and its seeding limit, copy-difference classes, writer records and inert operands |
 | `viewer/index.html` | Replay viewer (layers, inspector, timeline) |
-| `scripts/run_jobs.sh`, `scripts/jobs/` | Parallel runner and the v8-v27 job lists |
+| `scripts/run_jobs.sh`, `scripts/jobs/` | Parallel runner and the v8-v28 job lists |
 
 `ps_probe` columns per interval: births, `exact%`, `intact_parent%`, top genotype, `copies`
 (child mostly written by the parent) and `reignites` (child code already present),
@@ -1257,7 +1257,8 @@ do not alter the dynamics: the v9 baseline is byte-identical to v8.
   it is still strict; with 9 it is `other` without top-up, and strict once the founder site
   is topped up to its byte count (`ps_test`). Alone, polite stays strict with any single
   fill of 34, 36, 38, 40 or 46-63 and is a non-replicator with any fill of 30 (all 255
-  values; scratch check with `mass0` 48 and `inert_operand=fail`).
+  values; scratch check with `mass0` 48 and `inert_operand=fail`). From copy-born counters
+  a fill of 36 is not strict either (v28).
 
   The runs repeat v20 `m195_s1` and `m195_s2` (`fail`) and v19 `m195_s1` and `m195_s2`
   (`zero`) with `trace=1`. Apart from `# tracekey`, the outputs equal v21 and v19 `m195_s2`
@@ -2055,6 +2056,121 @@ do not alter the dynamics: the v9 baseline is byte-identical to v8.
       children carry other counter values is still tried with polite's.
     - A key that fails only the born trial may still copy faithfully from other starting
       values; `loose` means it does not from these.
+- **v28** (the roles of INERT in in-place losses, gains, length and copies; measurement
+  only; revision 14dea48, job list `v28_role.txt`; 6 jobs on 4 cores, 14:12 to 16:53,
+  the four copy-error runs in 2 hours 28 minutes). The research channel asked to separate
+  the own-site direction role of INERT from its other meanings in the ledger without
+  changing the dynamics, to re-attribute the in-place loss routes (fill of 36, fill of 30
+  and so on), and to say which conclusions of v22, v25 and v27 change. `role=1` (above)
+  classes each byte that an in-place change or a copy touched by the role INERT had there
+  in the key before: own-site direction (`dir`), operand, value, empty slot (`none`), or
+  substituted (`sub`). It then tries each strict loss and gain with the `dir` bytes another
+  site wrote put back to INERT. This stands in, to first order, for an own-site direction
+  code that `fill` does not let other sites overwrite (Open proposals). The runs repeat v27
+  `zero_m195_s1/s2`, `fail_m195_s1/s2`, `zero_nomut_s1` and `fail_nomut_s1` with `role=1`,
+  which needs `route=1 length=1`; the nomut runs of v27 had neither. Lists are `zero` s1 /
+  s2; `fail` s1 / s2.
+  - **Checks.**
+    - Without the `# role` and `# rolelen` lines (and the `# route*` lines in the nomut
+      runs), each output equals its v27 run line for line.
+    - In all 60 windows the classes of each loss route sum to the `# route` count, and the
+      gain classes to its gains; the `# rolelen` bytes and exits equal the `# length`
+      in-place and loss terms (credits to print precision).
+    - Every kept loss holds exactly one foreign `dir` byte: over each run the foreign `dir`
+      bytes in losses sum to the kept count, give or take 1.
+  - **Entry-0 in-place strict losses by route** (% of the losses). The five fill rows are
+    the losses kept by the counterfactual: another site filled one own-site direction byte,
+    and nothing outside own-site direction bytes changed.
+
+    | route | 0-500k | 150k-500k |
+    | --- | --- | --- |
+    | losses (count) | 26,391 / 26,159; 26,092 / 26,375 | 19,824 / 19,034; 19,322 / 19,309 |
+    | foreign fill of 36 | 49.2 / 50.9; 48.0 / 45.6 | 51.3 / 55.3; 51.7 / 48.8 |
+    | foreign fill of 30 | 32.9 / 34.3; 34.2 / 35.9 | 33.3 / 36.0; 36.0 / 36.9 |
+    | foreign fill of 38 | 4.1 / 4.4; 5.4 / 5.0 | 4.6 / 5.1; 6.3 / 5.8 |
+    | foreign fill of 40 | 0.9 / 0.6; 0.7 / 0.5 | 1.1 / 0.6; 0.9 / 0.5 |
+    | foreign fill of 34 | 0.4 / 0.3; 0.4 / 0.5 | 0.2 / 0.1; 0.2 / 0.2 |
+    | other foreign changes | 1.4 / 1.3; 1.4 / 1.3 | 1.4 / 1.2; 1.3 / 1.2 |
+    | the site itself | 11.0 / 8.2; 9.9 / 11.2 | 8.2 / 1.7; 3.5 / 6.6 |
+
+    - **Own-site direction fills by other sites** are 87.5-90.5% of the losses over the
+      run and 90.4-97.1% after 150k. A loss that fills an own-site direction byte and
+      also changes another kind of byte (`dir_mixed`) occurs 0-4 times per run. So the
+      counterfactual adds nothing beyond the class: a loss whose only change is a foreign
+      own-site direction fill is kept by construction.
+    - **The rest.** The site itself writes 8.2-11.2% (1.7-8.2% after 150k), mostly into
+      its own empty slots (`none`, 4.8-8.6% of all losses) or over non-inert bytes (`sub`,
+      1.8-5.0%); it fills its own direction bytes in 0.2-2.0%, mostly before 150k. Other
+      foreign changes are mostly fills of tail bytes read as values (0.9-1.2%).
+    - **Alone** (scratch check at 14dea48: census trial from reset and copy-born counters,
+      each of the 255 values, both operand rules), polite is not strict with 30 or 36
+      filled and is strict with 34, 38, 40 or 50 filled. The losses at 38 and 40 are in
+      evolved keys (inference).
+    - **Gains in place**: 2,019-2,985 over the run. 4.0-6.6% need a foreign own-site
+      direction fill (`undone`): 108-140, against 23,077-23,667 kept losses.
+    - **Off-entry losses** (4,495-8,647) are 91-97% substitutions, mostly by the site
+      itself; 3.0-6.9% are kept.
+  - **Share of D** (v24's decomposition, D as in v27: 0.365 / 0.324; 0.393 / 0.356 per
+    site per 5k ticks).
+    - The kept losses carry 13.6 / 14.4; 14.0 / 13.5% of D. They are v27's fills of 30 and
+      foreign pointer fills (4.6-5.1% and 8.4-9.4%), now shown to change nothing else.
+    - All entry-0 in-place losses carry 14.2 / 11.1; 10.6 / 11.0%, less than the kept part
+      in three runs because the site's own losses fall from early to late.
+    - Whole decay (23.5-25.0%), `env` and `multi` children (23-26% and 14-15%) and the fall
+      of re-ignitions (10-14%) lie outside in-place losses; the counterfactual does not
+      touch them.
+  - **Length** (v25's ledger, 0-500k).
+    - Foreign in-place additions to keys that stay strict credit +18.57 / +18.96; +18.55 /
+      +19.10 to the mean z. Own-site direction fills give +2.47 / +2.58; +2.57 / +2.70
+      (13-14%), at 34, 40 and 38; 36 almost never, since a filled 36 leaves the strict set.
+      Empty slots give +15.87 / +16.16; +15.74 / +16.18 (85%), operand and value fills
+      +0.22 to +0.24.
+    - Exits by foreign loss in place credit −11.70 / −12.27; −11.78 / −11.35, and 99-100%
+      of that is kept losses.
+    - So length comes mostly from fills of empty slots, which a direction split leaves
+      alone. To first order the split removes the direction fills (+2.5 to +2.7) and
+      postpones the kept exits; how those sites would end instead is not followed.
+  - **Copies.**
+    - Strict children of strict entry-0 parents: of the bytes added by foreign writes
+      (26,540-30,253), 7.9-8.8% are at own-site direction offsets of the parent's key;
+      of residue, 3.4-6.2%; of the parent's own writes, 3.6-5.4%.
+    - Non-strict `env` children: 38.9-42.0% have a foreign-written difference at an
+      own-site direction offset of the parent's key, and 4.5-5.2% have no other foreign
+      difference. A non-inert own-site code would protect a child's byte only once the
+      parent had written it, which was not recorded, so 4.5-5.2% is an upper bound on the
+      `env` children it could keep strict at first order.
+  - **Without copy error** (`zero_nomut_s1` / `fail_nomut_s1`).
+    - Entry-0 in-place losses: 1,453 / 185, every one a foreign fill of a single own-site
+      direction byte: 36 in 69.6 / 55.7%, 30 in 27.9 / 41.6%, 38 in 2.1 / 2.2%, 40 and 34
+      in under 1%. The site itself causes none. Gains: 51 / 124, of which 3 / 0 undone.
+    - In-place credit to the mean z: +0.56 / +0.07, of which own-site direction fills
+      +0.18 / +0.04 (32 / 47%), mostly at 34. Of the bytes foreign writes add to strict
+      children, 31 / 43% (of 3,354 / 836) are at own-site direction offsets. This is the
+      filled 34 that spreads in `zero_nomut_s1` (v25); alone it leaves polite strict.
+  - **Which conclusions change.**
+    - *v22.* Polite alone with 36 filled is not strict from copy-born counters (above), so
+      "stays strict with any single fill of 34, 36, 38, 40 or 46-63" now holds for 34, 38
+      and 40 and for offset 50, the one tail byte rechecked. The direction path of Answer 1
+      (v21 and v22 reading; recomputed in v27) is now measured by role: own-site direction
+      fills by other sites are 87.5-90.5% of entry-0 in-place losses, each a single byte.
+      The 2-fold decline is unchanged.
+    - *v25.* The answer stands: length comes from foreign writes, mostly in place, as a
+      by-product of the write rule. The in-place part is 85% fills of empty slots and
+      13-14% fills of own-site direction bytes, so a direction split would not remove the
+      source of length.
+    - *v27.* The ranking stands, measured directly: fills of 36 first, of 30 second, then
+      38, 40 and 34. v27 inferred from offsets that both routes use the own-site direction
+      role; the role classes confirm it, with no other byte changed. "Holds for a larger
+      share" refers to in-place losses: they carry 13.5-14.4% of D, and the decline's larger
+      terms lie elsewhere.
+    - v24's in-place shares, v20 and v21 are unchanged; v28 changes no count.
+  - **Limits.**
+    - First order: no feedback on the run. The refused writer's next steps, the cost of a
+      non-inert own-site code (monomers, decay), and what kept sites do later are not
+      modeled.
+    - Roles come from the key and its census trial (`op_mask`), not from the run; a byte
+      read both as a direction and as a value (polite's 30) counts as `dir`.
+    - Two seeds per rule with copy error, one without.
 
 Working interpretation (v13 and code inspection): saturation starts the decline in every
 run, and the space then fills with activations that no longer replicate. An activation ends
@@ -2415,7 +2531,9 @@ census changes):
    filled from outside even under `fill`. Mutation and `RND` never produce INERT. An inert
    operand byte also names offset 0, so a program that runs its own data as code overwrites
    its first byte (v19 counts both effects as routes of in-place loss). `inert_operand=fail`
-   removes the second effect (v20); the own-site direction role remains.
+   removes the second effect (v20); the own-site direction role remains. v28 measures it:
+   foreign fills of own-site direction bytes are 87.5-90.5% of entry-0 in-place strict
+   losses.
 2. Re-ignition is cheap relative to copying, and corpse sites sit at full energy.
 3. Without `bond_store`, `e_bond` also charges in-site counter updates.
 4. Walls drop bytes during cross-edge copying while the counters still advance.
@@ -2455,8 +2573,30 @@ census changes):
 - **Bond release to the actor**: an external write that breaks a bond releases `e_bond` at
   the writer's site instead of the byte's site, so clearing dead code pays the clearer.
 - **Reclaiming ancestor**: a seeded replicator that clears its target before copying.
-- **Cut 1, direction encoding**: direction = `v % 5` with 0 = own site, so self-pointers are
-  non-inert; needs new ancestor encodings.
+- **Split the own-site direction from INERT** (refines Cut 1 after v28; changes dynamics;
+  not agreed). INERT is at once an empty slot that `fill` lets other sites write, the
+  own-site direction, the value 0 and the operand that names offset 0 (Known issue 1). In
+  v28, foreign fills of own-site direction bytes are 87.5-90.5% of entry-0 in-place strict
+  losses but carry 13.5-14.4% of v24's D and 13-14% of the in-place length credit; to first
+  order a split removes those and leaves the rest. Two encodings, each with new ancestor
+  bytes:
+  - *A: direction = `v % 5`, 0 = own site* (Cut 1 as first proposed). Every multiple of 5
+    names the own site, so a non-inert self-pointer exists. All neighbor codes change, and
+    `RND` names the own site in 51 of 255 draws. A value read of a non-inert own-site code
+    is not 0, so polite's `JMP 30`, which reads the INERT at 30 as address 0, needs another
+    layout, and the 0 it reads would stay INERT and fillable.
+  - *B: a reserved zero code Z* (one non-inert value, e.g. 255). Every read decodes Z as it
+    decodes INERT: own-site direction, value 0 (`JZ` skips, `JMP` goes to 0), operand naming
+    offset 0, no edge for `WALL` and `UNWALL`. Every write rule and every count of matter
+    treats Z as non-inert: it holds a monomer, decays, and `fill` refuses a foreign write to
+    it. Polite with Z at 30, 34, 36, 38 and 40 is otherwise unchanged, and `JMP 30` still
+    goes to 0. Costs: 5 more monomers per copy (z 40 to 45), 5 more bytes open to copy
+    error, and under whole decay a 12.5% higher hazard. Open: what `INC` and `DEC` give on
+    Z; whether copy error and `RND` may produce Z (1 in 255); what an ip on Z does (INERT
+    there ends the activation by wick); the modulo bias of the 254 remaining codes.
+  - B separates the empty slot from every read role, for the bytes that hold Z; A separates
+    the direction only. The v28 counterfactual corresponds to B with Z at every own-site
+    direction byte a key reads.
 - **Cut 2, re-ignition**: deprioritized after v9; `e_ignite` 256 would cut re-ignitions ~10x.
 - **Cut 3, costs**: charge the bond barrier only for cross-edge breaks.
 
