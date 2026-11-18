@@ -1,0 +1,23 @@
+# v27: v18-v25 recomputed with the copy-born census trial (census_born=1, revision 34839f4,
+# now the default). Measurement only: a key strict from reset volatile offsets must also be
+# strict from the values an exact copy carries at birth. Run dynamics are unchanged; every
+# line that uses the strict verdict can change (fidelity, fate, trace, route, length). The
+# two-carrier replicator verdict is unchanged, so v13-v17 (census, classes) need no rerun,
+# nor do v17's table runs without fidelity lines (t1_s1/s2, t2_s2, t3_s2, t4_s1/s2).
+# One run per distinct dynamics, as v23, with every observer line that v18-v25 used:
+#   zero_m195_s1/s2, fail_m195_s1/s2: v18-v22 m195, v24 and v25 (route=1, length=1);
+#   zero_nomut_s1/s2, fail_nomut_s1/s2: v18-v21 nomut and v25 controls (length=1);
+#   t2_s1, t3_s1: v18's table runs with fidelity lines; anc_s1/s2: v18's short ancestor.
+# ps_scan then reads the # fidtop lines of zero_m195_s1/s2, t2_s1, t3_s1 and anc_s1/s2.
+zero_m195_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000 fate=1 trace=1 route=1 length=1
+zero_m195_s2 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=2 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000 fate=1 trace=1 route=1 length=1
+fail_m195_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000 fate=1 inert_operand=fail trace=1 route=1 length=1
+fail_m195_s2 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=2 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000 fate=1 inert_operand=fail trace=1 route=1 length=1
+zero_nomut_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill census=1 fidelity=5000 fate=1 trace=1 length=1
+zero_nomut_s2 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0 p_hydro=1.95e-6 hydro_whole=1 seed=2 ext_write=fill census=1 fidelity=5000 fate=1 trace=1 length=1
+fail_nomut_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill census=1 fidelity=5000 fate=1 inert_operand=fail trace=1 length=1
+fail_nomut_s2 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0 p_hydro=1.95e-6 hydro_whole=1 seed=2 ext_write=fill census=1 fidelity=5000 fate=1 inert_operand=fail trace=1 length=1
+t2_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 decay_table=2 seed=1 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000
+t3_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 decay_table=3 seed=1 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000
+anc_s1 ps_probe anc=copier width=96 height=96 ticks=500000 interval=5000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill census=1 fidelity=5000
+anc_s2 ps_probe anc=copier width=96 height=96 ticks=500000 interval=5000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=2 ext_write=fill census=1 fidelity=5000

@@ -1,0 +1,10 @@
+# v26: ext_write=erase against fill (v25), to test whether one-way foreign writes drive the
+# growth of strict keys. Requested 2026-11-18 by the research channel. One mechanism changed:
+# a neighbor's write may also erase a byte to INERT (price e_erase = 1, as e_bond for any
+# other change of a non-inert byte); substitution stays refused. Otherwise as v25's
+# copy-error runs. Census verdict: census_born=1 (revision 34839f4); compare with v27's
+# fill runs, which use the same verdict.
+zero_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=erase census=1 classes=1,2,3,4 fidelity=5000 fate=1 trace=1 route=1 length=1
+zero_s2 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=2 ext_write=erase census=1 classes=1,2,3,4 fidelity=5000 fate=1 trace=1 route=1 length=1
+fail_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=erase census=1 classes=1,2,3,4 fidelity=5000 fate=1 inert_operand=fail trace=1 route=1 length=1
+fail_s2 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=2 ext_write=erase census=1 classes=1,2,3,4 fidelity=5000 fate=1 inert_operand=fail trace=1 route=1 length=1
