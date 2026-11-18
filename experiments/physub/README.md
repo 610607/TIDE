@@ -125,7 +125,7 @@ python3 -m http.server 8765 -d viewer   # then open http://localhost:8765/?file=
 | `apps/ps_copycut.cpp` | First-copy cut probability of polite alone under block rotation |
 | `tests/ps_test.cpp` | Ledgers, replay, walls, ancestor, starvation, bond barrier, act_cap, ext_write, p_dead, energy diffusion, bond storage, dead_quiet, whole decay, block rotation, whole decay per class, per-op decay tables, census trial and its seeding limit, copy-difference classes, writer records and inert operands |
 | `viewer/index.html` | Replay viewer (layers, inspector, timeline) |
-| `scripts/run_jobs.sh`, `scripts/jobs/` | Parallel runner and the v8-v23 job lists |
+| `scripts/run_jobs.sh`, `scripts/jobs/` | Parallel runner and the v8-v24 job lists |
 
 `ps_probe` columns per interval: births, `exact%`, `intact_parent%`, top genotype, `copies`
 (child mostly written by the parent) and `reignites` (child code already present),
@@ -1217,6 +1217,158 @@ do not alter the dynamics: the v9 baseline is byte-identical to v8.
     at 500k (v22). The short-ancestor control changes from 5k, where a site with the
     ancestor and residue can be past 48. Counts that do not use the census (births,
     re-ignitions, exact births, active sites, decays) are unchanged.
+- **v24** (what share of the strict decline each loss route carries, under the topped-up
+  census; measurement only; revision 6a6bdc0, job list `v24_loss_routes.txt`; 4 jobs in
+  1 hour 15 minutes on 4 cores). A container restart stopped a first attempt at 450k /
+  400k. The rerun started from tick 0, and the first attempt's outputs equal the rerun's up
+  to where they stopped. The research channel asked what share of the decline comes from
+  three routes:
+  - the fill of offset 30 by polite's copy `MOV` at 15, which ends replication in place;
+  - ignitions off offset 0 by `other` sites through filled pointers 36 and 38;
+  - monomer depletion.
+
+  The runs repeat v23 `zero_m195_s1/s2` (`inert_operand=zero`) and `fail_m195_s1/s2`
+  (`fail`) with `route=1`. Ranges cover all four runs; lists are `zero` s1 / s2 and `fail`
+  s1 / s2.
+  - **Checks.** Apart from the `# route*` lines, each output equals its v23 run line for
+    line. In all 40 windows:
+    - both entry ledgers close (the balance equals the count);
+    - entry 0 plus entry off equals the census strict count.
+  - **Method.** The ledger follows strict activations ignited at offset 0 (entry 0). These
+    are the census strict count apart from 5-83 activations ignited elsewhere.
+    - Inflow: strict children of copies by strict entry-0 parents, strict children of
+      other parents, re-ignitions at 0, and gains in place.
+    - Outflow: whole decay, wick ends, in-place losses by route, and copies whose child is
+      not strict, by difference class.
+    - Rates are per strict entry-0 site per 5,000 ticks (window count / mean count / 10).
+      "Early" is the windows ending at 100k and 150k; "late" is those ending at 350k-500k.
+    - Per window: copies − non-strict children + other parents' strict children +
+      re-ignitions + gains − decay − wick − in-place losses = net change. The residual is
+      below 2e-16.
+
+    From early to late the mean entry-0 count falls from 5,600-6,270 to 3,060-3,610. Copies
+    per strict site rise from 0.365-0.383 to 0.700-0.751: as density falls, each site makes
+    more copies, and the count settles where copies match losses.
+
+    The last column takes each term's change toward decline: a rise in a per-site loss, or
+    a fall in a per-site inflow other than copies. It divides that change by their sum D
+    (0.351 / 0.313 for `zero`, 0.379 / 0.349 for `fail`, per site per 5k ticks).
+
+    If the copy rate depends only on density, the drop in the settled count is, to first
+    order, proportional to D, and the column gives each route's share of the decline
+    (inference from that balance). It is an accounting, not a counterfactual: removing one
+    route would change the others.
+
+  | term (per strict entry-0 site per 5k ticks) | early | late | share of D, % (`zero` s1 / s2; `fail` s1 / s2) |
+  | --- | --- | --- | --- |
+  | copies by strict parents (all) | 0.365-0.383 | 0.700-0.751 | |
+  | strict copies by other parents | 0.003 | 0.011-0.014 | -2 / -2 / -3 / -3 |
+  | strict re-ignitions at 0 | 0.127-0.137 | 0.086-0.096 | +11 / +11 / +12 / +14 |
+  | gains in place | 0.011-0.027 | 0.005-0.013 | -1 / +3 / +4 / +6 |
+  | whole decay | 0.415-0.421 | 0.495-0.510 | +24 / +25 / +24 / +25 |
+  | wick ends | 0.001-0.002 | 0.002-0.009 | +2 / +0 / +0 / +0 |
+  | in place: fill of 30 by the `MOV` at 15 | 0.016-0.018 | 0.044-0.047 | +7 / +9 / +8 / +8 |
+  | in place: fill of 30, other instruction | 0.002 | 0.006-0.007 | +1 / +1 / +1 / +1 |
+  | in place: foreign, pointers 34-40 only | 0.005-0.006 | 0.010-0.014 | +2 / +2 / +2 / +2 |
+  | in place: foreign, tail 46-63 only | 0.001 | 0.001-0.002 | +0 / +0 / +0 / +0 |
+  | in place: foreign, other | 0.000 | 0.000-0.001 | +0 / +0 / +0 / +0 |
+  | in place: self, offset 0 | 0.000-0.005 | 0.000-0.001 | +0 / -1 / -0 / -0 |
+  | in place: self, other | 0.009-0.025 | 0.002-0.010 | +0 / -2 / -4 / -6 |
+  | non-strict children: `point` | 0.020-0.021 | 0.031-0.035 | +3 / +3 / +3 / +4 |
+  | non-strict children: `gap` | 0.002 | 0.024-0.040 | +9 / +9 / +10 / +6 |
+  | non-strict children: `multi` | 0.012-0.018 | 0.071-0.080 | +18 / +17 / +18 / +18 |
+  | non-strict children: `env` | 0.038-0.041 | 0.119-0.128 | +24 / +26 / +23 / +23 |
+  | net change | -0.011 to -0.007 | -0.004 to -0.002 | |
+
+  - **Fill of offset 30.** In place it is 8.5-9.7% of D; the `MOV` at 15 alone is 7.3-8.6%.
+    Late, it is 5.9-6.3% of entry-0 outflow. The `MOV` fills alone are 59-67% of entry-0
+    in-place losses, and 84-88% of their victims held keys past 48 bytes.
+    - The same fill reaches children under construction. Of the `env` non-strict children
+      of entry-0 parents, late, 23-26% have offset 30 written by another site, and in
+      0.8-1.3% it is the only foreign difference.
+    - Who last wrote that 30, late: strict sites 52-54%, `other` 27-28%, no writer recorded
+      10-13%.
+    - The rise of these children is 5.7-6.8% of D. This is an upper bound for that part:
+      v22 shows that a fill of 30 alone stops polite, but these children also carry other
+      differences.
+  - **Ignitions off offset 0.** From 350k, strict births off 0 are re-ignitions in
+    99.2-99.7% and are ignited by `other` sites in 89-100% per window. The pointer the
+    igniter's `IGNITE` read, pooled over 150k-500k:
+
+    | pointer | share of births (%) |
+    | --- | --- |
+    | a filled 36 or 38 | 32-44 |
+    | a filled 30, 34 or 40 | 8-14 |
+    | polite's 32 | 17-24 |
+    | another offset | 28-38 |
+    | an inert operand (`zero` only) | 1 |
+
+    To 100k, a filled 36 or 38 is 39-85%.
+
+    These activations are a separate population of 5-83 sites at a time. In every window
+    their births equal their ends plus in-place losses, give or take 25 (net -25 to +19).
+    As in v21, they end by wick. They take nothing directly from the entry-0 count: the
+    direct share is 0. Two indirect paths were checked:
+    - *Their writes into entry-0 strict sites.* In v21 the writer was ignited at 0 in 94-97%
+      of foreign-written losses, and foreign in-place losses here are 10.4-11.8% of D.
+      Off-entry writers can therefore account for at most about 0.7% of D.
+    - *The pool of inactive strict sites.* Under `zero` they overwrite their own offset 0
+      in 396-2,484 sites per window, removing those keys; under `fail`, in 2-68.
+      Re-ignitions at 0 per site fall by 0.039 / 0.036 under `zero` and 0.046 / 0.049
+      under `fail`. The drop is not larger where keys are removed, so no effect through the
+      pool is visible.
+
+    `fail` has 3.1-3.6 times as many off-entry births over the run, and the slightly larger
+    drop (1.6-3.8% of D per seed). The `fail` rule also changes other ignitions, so this
+    does not isolate an effect of off-entry ignition.
+  - **Depletion.** Copies with a write refused for lack of a free monomer and no foreign or
+    residue difference (`gap`) are 6.3-10.2% of D and 2.9-4.7% of late outflow. This is a
+    lower bound: a copy with a refusal and any foreign difference counts as `env`.
+
+    Refused writes per 50k window are under 300 to 150k and 25,846-105,476 from 250k.
+    Between 50k and 500k, 136-158 thousand monomers left the free pool and active strict
+    sites. They went to:
+    - inactive sites, 54-58%;
+    - active `other` sites, 33-37%;
+    - walls, 8-9%.
+
+    Inactive sites rose from 1,330-1,407 to 3,255-3,415. Those whose key is already known as
+    strict rose from 125-160 to 252-316.
+
+    Matter (`# tracemass`, thousands; refused writes per 50k window from `# route`):
+
+  | tick | free | walls | active strict bytes | active `other` bytes | inactive bytes | refused writes |
+  | --- | --- | --- | --- | --- | --- | --- |
+  | 50k | 65.2 / 61.0; 65.7 / 61.8 | 3.3 / 3.1; 2.9 / 3.0 | 272.6 / 269.2; 278.2 / 276.6 | 54.9 / 58.3; 49.4 / 52.6 | 40.0 / 43.8; 39.6 / 42.5 | 251 / 269; 266 / 274 |
+  | 150k | 37.7 / 35.4; 34.0 / 30.9 | 7.4 / 7.7; 6.8 / 7.6 | 243.3 / 246.9; 246.2 / 245.4 | 81.2 / 79.1; 82.9 / 81.8 | 68.5 / 68.5; 68.1 / 71.9 | 10 / 26; 68 / 294 |
+  | 250k | 22.7 / 24.1; 20.2 / 23.2 | 12.7 / 14.0; 12.4 / 13.0 | 193.9 / 189.4; 188.6 / 186.3 | 99.2 / 101.5; 105.4 / 101.3 | 108.8 / 107.5; 110.7 / 114.5 | 35,419 / 26,304; 65,448 / 54,694 |
+  | 350k | 18.0 / 22.8; 20.0 / 18.8 | 15.3 / 15.3; 14.3 / 14.5 | 172.9 / 185.5; 173.7 / 180.0 | 108.9 / 102.2; 104.5 / 100.7 | 121.4 / 110.0; 124.8 / 122.3 | 45,431 / 25,846; 77,364 / 75,283 |
+  | 500k | 28.0 / 20.9; 18.5 / 20.0 | 17.0 / 15.9; 15.6 / 16.0 | 161.0 / 173.5; 167.8 / 167.8 | 109.1 / 103.4; 108.3 / 104.3 | 121.0 / 122.8; 126.4 / 129.5 | 63,123 / 59,536; 82,032 / 105,476 |
+
+  - **The other terms.**
+    - Whole decay of strict activations rises from 0.415-0.421 to 0.495-0.510 per site per
+      5k ticks, 24-25% of D. Under form M a site with n non-inert bytes decays with
+      probability 1 − (1 − 1.95e-6)^n per tick. These rates fit a mean of about 43 bytes
+      early and 51-52 late, consistent with v22's growth past 48. This is inference from
+      the rule; key length per strict activation was not recorded.
+    - `env` children without a foreign 30: 16-20% of D. `multi`: 17-18% (its source is not
+      resolved). Point errors: 3-4%. The fall of re-ignitions at 0: 11-14% (not attributed).
+  - **Answer to the three questions** (accounting from executed runs):
+    - The fill of 30 by the `MOV` at 15, in place: 7.3-8.6% of D. All fills of 30 in place:
+      8.5-9.7%. With children whose 30 another site wrote: at most 14-16%.
+    - Off-entry ignitions through filled 36/38: no direct share. No indirect share is
+      visible; writes by off-entry activations are at most about 0.7%.
+    - Depletion: at least 6.3-10.2%, as refused writes in children.
+
+    The largest single terms are whole decay of longer keys (24-25%) and foreign
+    differences in children other than at 30 (16-20%).
+  - **Limits.**
+    - First-order accounting over two periods, not a counterfactual.
+    - Two seeds per rule.
+    - `gap` is a lower bound for depletion, and `env` an upper bound for foreign writes in
+      children.
+    - The source of `multi` and of the fall of re-ignitions at 0 is not resolved.
+    - The upper bound on off-entry writers uses the v21 writer shares, not this ledger.
 
 Working interpretation (v13 and code inspection): saturation starts the decline in every
 run, and the space then fills with activations that no longer replicate. An activation ends
