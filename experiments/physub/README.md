@@ -285,6 +285,42 @@ unchanged). The age of an activation is the ticks since its ignition, in buckets
   copy births, those whose child carries the parent's key, and both again for parents whose
   key exceeds `mass0`.
 
+With `trace=1` and polite as the reference, `route=1` adds three lines per interval
+(observation only; all other lines are unchanged). Entry 0 means the activation was
+ignited at offset 0; entry off means elsewhere.
+
+- `# route`: writes refused for lack of a free monomer in the window (`no_mass`), and for
+  each entry the strict ledger: count at the last checkpoint and now, the balance (equal to
+  the count when every flow is caught), births by kind, gains in place (and found at the
+  census), ends by decay and wick, and in-place losses by route. Each route is split by
+  whether the old key holds at most `mass0` non-inert bytes or more. The routes, by the
+  non-volatile offsets that changed and the writer credited as in `fate`:
+  - `f30_mov15`: offset 30 alone, by a foreign writer whose instruction that tick was the
+    `MOV` at offset 15 (polite's copy loop);
+  - `f30_other`: offset 30 alone, by any other foreign instruction;
+  - `f_ptr`: foreign, only the own-site pointer directions 34, 36, 38 and 40;
+  - `f_tail`: foreign, only offsets 46-63;
+  - `f_other`: any other foreign change;
+  - `self_0` and `self_other`: the site wrote every changed byte, with offset 0 among them
+    or not.
+- `# routecopy`: every copy birth in the window by a strict parent, by the parent's entry
+  and difference class (as `# fidcopy`), with the strict children in parentheses. For
+  non-strict `env` children of entry-0 parents, it counts those whose foreign-written
+  differing offsets are offset 30 alone, include 30, or are none (residue only). It also
+  gives who last wrote the child's offset 30 and the most frequent foreign offsets.
+- `# routeign`: strict births off offset 0 by igniter status and by the pointer that the
+  igniter's `IGNITE` read, at p = [ip+1] mod 64 (direction [p], entry [p+1]). The pointer
+  classes are:
+  - `filled_36_38`: p is 36 or 38 and that own-site direction is filled;
+  - `filled_ref`: p is offset 30, 34 or 40, filled;
+  - `inert`: the operand byte is INERT, so p = 0 (none under `inert_operand=fail`, where such
+    an `IGNITE` fails);
+  - `dest_32`: polite's own neighbor pointer;
+  - `other`: any other p;
+  - `not_ignite`: the instruction run that tick was not an `IGNITE`.
+
+  The line ends with the most frequent pointer offsets.
+
 With `hydro_whole` on, `p_rot > 0` or `physics=1`, `ps_probe` adds a `# physics` line per
 interval and at the end with cumulative counters: whole-program decays (and how many hit an
 active site), wick deaths, rotations, rotations stopped by walls, copies started, cut, ended
