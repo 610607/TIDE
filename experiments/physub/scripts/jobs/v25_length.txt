@@ -1,0 +1,12 @@
+# v25: why strict keys grow longer. Measurement only (length=1 adds the # length* lines; every
+# other line equals v24 for the copy-error runs and v23 for the no-copy-error runs). Requested
+# 2026-11-18 by the research channel: where the added bytes come from, where they sit, whether
+# they are executed, and whether long strict keys replicate, copy or survive differently.
+# Copy-error runs as v24 (v23 zero_m195_s1/s2, fail_m195_s1/s2); no-copy-error controls as v23
+# zero_nomut_s1 and fail_nomut_s1.
+zero_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000 fate=1 trace=1 route=1 length=1
+zero_s2 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=2 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000 fate=1 trace=1 route=1 length=1
+fail_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000 fate=1 inert_operand=fail trace=1 route=1 length=1
+fail_s2 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=2 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000 fate=1 inert_operand=fail trace=1 route=1 length=1
+zero_nomut_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill census=1 fidelity=5000 fate=1 trace=1 length=1
+fail_nomut_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill census=1 fidelity=5000 fate=1 inert_operand=fail trace=1 length=1

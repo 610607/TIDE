@@ -4,7 +4,7 @@
 // Usage: ps_probe ticks=N seed=S p_mut=X p_hydro=Y rival=0|1 [mass0=M] [census=0|1]
 //        [hydro_whole=0|1|live|dead] [p_rot=P] [physics=0|1]
 //        [decay_table=T decay_ratio=R] [classes=T1,T2,...] [anc=polite|copier]
-//        [fidelity=W] [fate=1] [trace=1] [route=1] [inert_operand=zero|fail]
+//        [fidelity=W] [fate=1] [trace=1] [route=1] [length=1] [inert_operand=zero|fail]
 //        [census_topup=1|0]
 
 #include "ps_census.hpp"
@@ -671,6 +671,86 @@ struct RouteTally {
   uint64_t no_mass_start = 0;          // writes refused for lack of a free monomer (run counter)
 };
 
+// length=1 (needs trace=1 and anc=polite): the length of strict keys ignited at offset 0. The
+// length z of a key is its non-inert byte count after the volatile reset (census::trial_bytes;
+// polite: 40). Extra offsets: those where polite is INERT and not volatile (30, 34, 36, 38, 40)
+// and the tail 46-63; only they can add length to a polite-like key.
+//
+// Ledger of the mean: every event that changes the set of strict entry-0 activations or the z
+// of one of them changes the running mean m = Z / N by an exact amount, credited to the event's
+// category, so the credits of a window sum to m_now - m_prev. Entries (z joins: m changes by
+// (z - m) / (N + 1)): copy births by a strict entry-0 parent, split into transmission
+// (z_child - z_parent) / (N + 1) and the rest (z_parent - m) / (N + 1); copy births by other
+// parents; re-ignitions; self-ignitions; gains in place; found at the census. Exits (m changes
+// by -(z - m) / (N - 1)): whole decay, wick (also a birth into a still-tracked site), and loss
+// of strict status in place by a foreign writer or by the site itself. Changes of z in place
+// that keep strict status (dz / N), by a foreign writer or the site itself.
+//
+// Transmission sources, per offset of a copy birth by a strict entry-0 parent with a strict
+// child (child against the parent's key at birth, volatile offsets excluded; the same writer
+// record as census::diff_sources): a byte added (parent INERT, child not) was left in the
+// child's site (residue), last written from another site (foreign), or from the parent's site
+// (parent); a byte lost (parent non-inert, child INERT) was not written (gap), or last written
+// by the parent's or another site. z_child - z_parent = added - lost exactly; substitutions
+// keep z. In place: bytes of strict entry-0 activations made non-inert by a foreign MOV at
+// offset 15 (polite's copy loop), another foreign instruction or the site itself, and made
+// INERT by the site or a foreign writer (any status after the change). The MOV at 15 is read
+// from the writer's bytes after the tick: its source pointer p = [16] and destination pointer
+// q = [17] give source offset [p+1] and destination offset [q+1]; the write is aligned when the
+// source is the writer's own site ([p] INERT) at the offset written, shifted when its own site
+// at another offset, and nbrsrc when [p] names a neighbor. Foreign additions are also counted
+// by the writer's status.
+//
+// Rates by class (strict entry-0 activations): exposure in activation-ticks, copy births, those
+// with a strict child and those whose child carries the parent's key, whole decays, wick ends,
+// losses in place by foreign writers and by the site; classed by the current z (bins <=40,
+// 41-44, ..., 57-60, 61-64) and by composition: filled pointer directions among 34, 36, 38, 40
+// (0, 1, 2 or more) x filled tail bytes (0, 1-6, 7-12, 13-18).
+//
+// Use of extra bytes: each tick, the instruction a strict entry-0 activation runs (ip and bytes
+// at the start of the tick) marks its opcode and operand offsets as executed, and as control
+// reads the bytes it reads to steer: the pointer pairs [p], [p+1] of MOV and IGNITE, and the
+// operand target [x] of INC, DEC, JZ, JMP, WALL, UNWALL (not the byte a MOV copies, nor RND's
+// target). Under inert_operand=fail an instruction with an INERT operand reads nothing. At each
+// exit, the extra offsets that are non-inert in the key are counted with these marks.
+enum LenCat { kLCopyS = 0, kLCopyO, kLReig, kLSelf, kLGain, kLFound, kLDecay, kLWick, kLLossF,
+              kLLossS, kLInF, kLInS, kLCats };
+constexpr const char* kLenCatName[kLCats] = {
+    "copy_sp", "copy_op", "reignite", "self", "gain", "found", "decay", "wick",
+    "loss_f",  "loss_s",  "inplace_f", "inplace_s"};
+enum TransSrc { kTAddRes = 0, kTAddFor, kTAddPar, kTLostGap, kTLostPar, kTLostFor, kTSrcs };
+constexpr const char* kTransSrcName[kTSrcs] = {"add_residue", "add_foreign", "add_parent",
+                                               "lost_gap",    "lost_parent", "lost_foreign"};
+enum InSrc { kIAddMovAl = 0, kIAddMovShift, kIAddMovNbr, kIAddFOther, kIAddSelf, kIRemSelf,
+             kIRemFor, kInSrcs };
+constexpr const char* kInSrcName[kInSrcs] = {"add_mov15_aligned", "add_mov15_shift",
+                                             "add_mov15_nbrsrc",  "add_foreign_other",
+                                             "add_self",          "rem_self", "rem_foreign"};
+enum BinField { kBExpo = 0, kBCopies, kBStrict, kBExact, kBDecay, kBWick, kBLossF, kBLossS,
+                kBFields };
+constexpr int kZBins = 7;
+constexpr int kComps = 12;
+inline int z_bin(int z) { return z <= 40 ? 0 : std::min(kZBins - 1, (z - 41) / 4 + 1); }
+struct LengthTally {
+  uint64_t n[kLCats] = {};
+  int64_t z[kLCats] = {};   // sum of z (entries, exits), of z changes (in place), of
+                            // z_child - z_parent (copy_sp)
+  double dm[kLCats] = {};   // change of the running mean credited to the category
+  double dm_trans = 0;      // copy_sp: the transmission part
+  int64_t zp = 0;           // copy_sp: sum of z_parent
+  uint64_t tsrc[kTSrcs] = {};
+  double dm_tsrc[kTSrcs] = {};  // the transmission part by source (lost bytes negative)
+  uint64_t tsrc_off[kTSrcs][64] = {};
+  uint64_t tsub = 0;            // copy_sp: substituted bytes
+  uint64_t in_off[kInSrcs][64] = {};
+  uint64_t in_wc[kWriters] = {};  // foreign additions by the writer's status
+  uint64_t bins[kZBins][kBFields] = {};
+  uint64_t comp[kComps][kBFields] = {};
+  uint64_t ex_n = 0;
+  uint64_t ex_off[64] = {}, ex_exec[64] = {}, ex_ctl[64] = {};
+  uint64_t empty = 0;  // events that left or found the set empty (the mean is undefined)
+};
+
 struct FateTally {
   uint64_t born[kStatuses][kKinds] = {};
   uint64_t ends[kStatuses][kEnds] = {};
@@ -710,12 +790,22 @@ struct FateTally {
 class FateObserver {
 public:
   FateObserver(const World& w, const std::map<std::string, TrialResult>& census,
-               bool trace = false, bool route = false)
+               bool trace = false, bool route = false, bool length = false)
       : w_(w), census_(census), len_(w.config().site_len),
         sites_(w.config().width * w.config().height),
         src_ptr_(g_ref->name == "polite" ? 30 : 23),
         fate_(sites_), snap_(static_cast<size_t>(sites_) * len_), next_ip_(sites_, 0),
-        trace_(trace), route_(route), prev_ip_(sites_, 0), last_(sites_) {
+        trace_(trace), route_(route), prev_ip_(sites_, 0), last_(sites_), length_(length),
+        z_(sites_, 0), comp_(sites_, 0), exec_(sites_, 0), ctl_(sites_, 0) {
+    const auto& ref = *g_ref->program;
+    for (int v : g_ref->volatile_offsets) {
+      vol_mask_ |= uint64_t{1} << v;
+      vol_z_ += v < static_cast<int>(ref.size()) && ref[v] != INERT;
+    }
+    for (int k = 0; k < len_; ++k) {
+      const bool inert = k >= static_cast<int>(ref.size()) || ref[k] == INERT;
+      if (inert && !(vol_mask_ >> k & 1)) ext_mask_ |= uint64_t{1} << k;
+    }
     // The seeded founders are activations that no birth announced.
     for (int32_t s = 0; s < sites_; ++s) {
       if (w.site_active(s)) start(s);
@@ -723,6 +813,13 @@ public:
     rep_prev_ = count(kRep);
     for (int e = 0; e < 2; ++e) rep_prev_entry_[e] = count_entry(e);
     r_.no_mass_start = w.stats().write_no_mass;
+    for (int32_t s = 0; s < sites_; ++s) {
+      if (!strict0(fate_[s])) continue;
+      l_n_ += 1;
+      l_z_ += z_[s];
+    }
+    l_n_prev_ = l_n_;
+    l_mean_prev_ = l_n_ ? static_cast<double>(l_z_) / l_n_ : 0.0;
   }
 
   int status_of_key(const std::string& key) {
@@ -748,13 +845,20 @@ public:
   // Call after every tick, before reading the census.
   void observe() {
     if (trace_) prev_ip_ = next_ip_;  // the instruction each tracked activation just ran
+    if (length_) {
+      for (int32_t s = 0; s < sites_; ++s) {
+        if (strict0(fate_[s])) l_mark(s);
+      }
+    }
     for (const auto& b : w_.births_this_tick()) {
       Fate& f = fate_[b.child];
       if (f.on) t_.replaced += 1;
+      if (length_ && strict0(f)) l_exit_act(b.child, kLWick, &snap_[static_cast<size_t>(b.child) * len_]);
       const int kind = classify(b);
       const Fate parent = fate_[b.parent];
       const LastEnd prev = last_[b.child];
       start(b.child);
+      if (length_) l_birth(b, kind, parent);
       t_.born[fate_[b.child].status][kind] += 1;
       t_.born_rep_start0 += fate_[b.child].status == kRep && fate_[b.child].start_ip == 0;
       if (kind == kCopy && parent.on && parent.converted) note_converted_copy(b, parent);
@@ -772,6 +876,10 @@ public:
       const uint8_t* now = w_.bytes_at(s);
       if (std::memcmp(old, now, len_) != 0) changed(s, old, now);
       next_ip_[s] = static_cast<int16_t>(w_.first_ip(s));
+      if (length_ && strict0(f)) {
+        l_.bins[z_bin(z_[s])][kBExpo] += 1;
+        l_.comp[comp_[s]][kBExpo] += 1;
+      }
     }
   }
 
@@ -787,6 +895,11 @@ public:
         t_.found[now] += 1;
         if (now == kRep) r_.found[fate_[s].start_ip != 0] += 1;
         fate_[s].status = now;
+        if (length_ && strict0(fate_[s])) {
+          z_[s] = zof(w_.bytes_at(s));
+          comp_[s] = static_cast<int8_t>(compof(w_.bytes_at(s)));
+          l_enter(kLFound, z_[s]);
+        }
       } else {
         mismatch += 1;
       }
@@ -887,6 +1000,7 @@ public:
       << " child_same=" << t_.fill_child_same << " child_src=" << t_.fill_child_src
       << " ends_decay/wick=" << t_.fill_ends[kEndDecay] << '/' << t_.fill_ends[kEndWick]
       << " life_sum=" << t_.fill_life << std::endl;
+    if (length_) print_length(o);
     if (route_) print_route(o);  // reads the trace tallies, so before print_trace resets them
     if (trace_) print_trace(o);
     rep_prev_ = rep_now;
@@ -914,6 +1028,18 @@ private:
   std::vector<int16_t> prev_ip_;  // trace: ip each tracked activation ran in this tick
   std::vector<LastEnd> last_;     // trace: how each site's previous activation ended
   TraceTally x_;
+  // length=1 (see LengthTally).
+  const bool length_;
+  std::vector<int8_t> z_;       // z of each tracked activation's key
+  std::vector<int8_t> comp_;    // its composition class
+  std::vector<uint64_t> exec_;  // offsets executed by a strict entry-0 activation
+  std::vector<uint64_t> ctl_;   // offsets it read as control (pointers, operand targets)
+  uint64_t vol_mask_ = 0, ext_mask_ = 0;
+  int vol_z_ = 0;               // non-inert reference values at the volatile offsets
+  int64_t l_n_ = 0, l_z_ = 0;   // strict entry-0 activations and their summed z
+  int64_t l_n_prev_ = 0;
+  double l_mean_prev_ = 0.0;
+  LengthTally l_;
 
   uint64_t count(int status) const {
     uint64_t n = 0;
@@ -939,6 +1065,11 @@ private:
     f.kind = kKinds;
     next_ip_[s] = static_cast<int16_t>(f.start_ip);
     std::memcpy(&snap_[static_cast<size_t>(s) * len_], w_.bytes_at(s), len_);
+    if (length_) {
+      z_[s] = static_cast<int8_t>(zof(w_.bytes_at(s)));
+      comp_[s] = static_cast<int8_t>(compof(w_.bytes_at(s)));
+      exec_[s] = ctl_[s] = 0;
+    }
   }
 
   void end(int32_t s) {
@@ -946,6 +1077,9 @@ private:
     const uint8_t* b = w_.bytes_at(s);
     const int cause = std::all_of(b, b + len_, [](uint8_t v) { return v == INERT; })
                           ? kEndDecay : kEndWick;
+    if (length_ && strict0(f)) {
+      l_exit_act(s, cause == kEndDecay ? kLDecay : kLWick, &snap_[static_cast<size_t>(s) * len_]);
+    }
     t_.ends[f.status][cause] += 1;
     if (f.converted) t_.ends_converted[cause] += 1;
     if (f.fill) {
@@ -970,6 +1104,7 @@ private:
 
   void changed(int32_t s, uint8_t* old, const uint8_t* now) {
     Fate& f = fate_[s];
+    const bool was0 = strict0(f);
     uint64_t mask = 0;
     int32_t foreign = -1;
     for (int k = 0; k < len_; ++k) {
@@ -1024,6 +1159,7 @@ private:
       }
       f.status = after;
     }
+    if (length_ && mask != 0) l_changed(s, old, now, was0, foreign);
     std::memcpy(old, now, len_);
   }
 
@@ -1219,6 +1355,295 @@ private:
       else via = kViaOther;
     }
     r_.via[via][wc] += 1;
+  }
+
+  // ---- length=1 (see LengthTally) ----
+  bool strict0(const Fate& f) const { return f.on && f.status == kRep && f.start_ip == 0; }
+
+  // Non-inert bytes after the volatile reset (census::trial_bytes without building a key).
+  int zof(const uint8_t* b) const {
+    int n = vol_z_;
+    for (int k = 0; k < len_; ++k) n += !(vol_mask_ >> k & 1) && b[k] != INERT;
+    return n;
+  }
+
+  // Composition class: filled pointer directions among 34, 36, 38, 40 (0, 1, 2+) x filled tail
+  // bytes 46-63 (0, 1-6, 7-12, 13-18).
+  static int compof(const uint8_t* b) {
+    int ptr = 0, tail = 0;
+    for (int k : {34, 36, 38, 40}) ptr += b[k] != INERT;
+    for (int k = 46; k < 64; ++k) tail += b[k] != INERT;
+    const int tb = tail == 0 ? 0 : tail <= 6 ? 1 : tail <= 12 ? 2 : 3;
+    return std::min(ptr, 2) * 4 + tb;
+  }
+
+  bool same_key(const uint8_t* a, const uint8_t* b) const {
+    for (int k = 0; k < len_; ++k) {
+      if (!(vol_mask_ >> k & 1) && a[k] != b[k]) return false;
+    }
+    return true;
+  }
+
+  // The instruction a strict entry-0 activation runs this tick (bytes at the start of the tick).
+  void l_mark(int32_t s) {
+    const int ip = next_ip_[s];
+    if (ip < 0) return;
+    const uint8_t* b = &snap_[static_cast<size_t>(s) * len_];
+    const uint8_t op = b[ip];
+    if (op == INERT) return;
+    const int n = op_length(op);
+    bool inert_operand = false;
+    for (int k = 0; k < n; ++k) {
+      exec_[s] |= uint64_t{1} << ((ip + k) % len_);
+      inert_operand |= k > 0 && b[(ip + k) % len_] == INERT;
+    }
+    if (inert_operand && w_.config().inert_operand == InertOperand::Fail) return;
+    auto pair = [&](int at) {
+      const int p = b[at % len_] % len_;
+      ctl_[s] |= uint64_t{1} << p | uint64_t{1} << ((p + 1) % len_);
+    };
+    switch (op_class(op)) {
+      case MOV: pair(ip + 1); pair(ip + 2); break;
+      case IGNITE: pair(ip + 1); break;
+      case RND: break;
+      default: ctl_[s] |= uint64_t{1} << (b[(ip + 1) % len_] % len_); break;
+    }
+  }
+
+  double l_mean() const { return l_n_ ? static_cast<double>(l_z_) / l_n_ : 0.0; }
+
+  double l_enter(int cat, int z) {
+    const double m0 = l_mean();
+    const bool empty = l_n_ == 0;
+    l_n_ += 1;
+    l_z_ += z;
+    const double d = empty ? 0.0 : l_mean() - m0;
+    l_.empty += empty;
+    l_.n[cat] += 1;
+    l_.z[cat] += z;
+    l_.dm[cat] += d;
+    return d;
+  }
+
+  void l_exit(int cat, int z) {
+    const double m0 = l_mean();
+    l_n_ -= 1;
+    l_z_ -= z;
+    const bool empty = l_n_ <= 0;
+    l_.empty += empty;
+    l_.n[cat] += 1;
+    l_.z[cat] += z;
+    l_.dm[cat] += empty ? 0.0 : l_mean() - m0;
+  }
+
+  void l_change(int cat, int dz) {
+    l_z_ += dz;
+    l_.n[cat] += 1;
+    l_.z[cat] += dz;
+    l_.dm[cat] += static_cast<double>(dz) / l_n_;
+  }
+
+  // A strict entry-0 activation leaves the set; key: its bytes before the event.
+  void l_exit_act(int32_t s, int cat, const uint8_t* key) {
+    const int field = cat == kLDecay ? kBDecay : cat == kLWick ? kBWick
+                      : cat == kLLossF ? kBLossF : kBLossS;
+    l_.bins[z_bin(z_[s])][field] += 1;
+    l_.comp[comp_[s]][field] += 1;
+    l_.ex_n += 1;
+    for (int k = 0; k < len_; ++k) {
+      if (!(ext_mask_ >> k & 1) || key[k] == INERT) continue;
+      l_.ex_off[k] += 1;
+      l_.ex_exec[k] += exec_[s] >> k & 1;
+      l_.ex_ctl[k] += ctl_[s] >> k & 1;
+    }
+    l_exit(cat, z_[s]);
+  }
+
+  // A birth (the child's fate is started; parent is the parent's fate before the birth).
+  void l_birth(const World::Birth& b, int kind, const Fate& parent) {
+    const Fate& c = fate_[b.child];
+    const bool parent0 = parent.on && parent.status == kRep && parent.start_ip == 0;
+    const uint8_t* cb = w_.bytes_at(b.child);
+    const uint8_t* pb = w_.bytes_at(b.parent);
+    if (kind == kCopy && parent0) {
+      const int zb = z_bin(z_[b.parent]), pc = comp_[b.parent];
+      const bool strict = c.status == kRep;
+      const bool exact = same_key(cb, pb);
+      l_.bins[zb][kBCopies] += 1;
+      l_.bins[zb][kBStrict] += strict;
+      l_.bins[zb][kBExact] += exact;
+      l_.comp[pc][kBCopies] += 1;
+      l_.comp[pc][kBStrict] += strict;
+      l_.comp[pc][kBExact] += exact;
+    }
+    if (!strict0(c)) return;
+    if (kind != kCopy || !parent0) {
+      l_enter(kind == kSelfIgnite ? kLSelf : kind == kReignite ? kLReig : kLCopyO, z_[b.child]);
+      return;
+    }
+    int cnt[kTSrcs] = {};
+    for (int k = 0; k < len_; ++k) {
+      if ((vol_mask_ >> k & 1) || cb[k] == pb[k]) continue;
+      const uint64_t bit = uint64_t{1} << k;
+      int src = -1;
+      if (pb[k] == INERT) {
+        src = (b.by_other & bit) ? kTAddFor : (b.by_parent & bit) ? kTAddPar : kTAddRes;
+      } else if (cb[k] == INERT) {
+        src = (b.by_other & bit) ? kTLostFor : (b.by_parent & bit) ? kTLostPar : kTLostGap;
+      } else {
+        l_.tsub += 1;
+        continue;
+      }
+      cnt[src] += 1;
+      l_.tsrc_off[src][k] += 1;
+    }
+    const int zc = z_[b.child], zp = zof(pb);
+    l_enter(kLCopyS, zc);
+    l_.z[kLCopyS] -= zp;  // l_enter added z_child; copy_sp keeps z_child - z_parent
+    l_.zp += zp;
+    const double tr = static_cast<double>(zc - zp) / l_n_;
+    l_.dm_trans += tr;
+    for (int k = 0; k < kTSrcs; ++k) {
+      l_.tsrc[k] += cnt[k];
+      l_.dm_tsrc[k] += (k < kTLostGap ? 1.0 : -1.0) * cnt[k] / l_n_;
+    }
+  }
+
+  // A tracked site's non-volatile bytes changed in place (status already updated).
+  void l_changed(int32_t s, const uint8_t* old, const uint8_t* now, bool was0, int32_t foreign) {
+    const int znew = zof(now);
+    if (was0) {
+      for (int k = 0; k < len_; ++k) {
+        if ((vol_mask_ >> k & 1) || old[k] == now[k]) continue;
+        const int32_t wr = w_.byte_writer(s, k);
+        int src = -1;
+        if (old[k] == INERT) {
+          if (wr == s) src = kIAddSelf;
+          else {
+            l_.in_wc[writer_class(wr, s)] += 1;
+            const int ip = wr >= 0 && fate_[wr].on ? prev_ip_[wr] : -1;
+            const uint8_t* wb = wr >= 0 ? w_.bytes_at(wr) : nullptr;
+            const uint8_t op = ip == 15 ? wb[15] : INERT;
+            if (op != INERT && op_class(op) == MOV) {
+              const int p = wb[16] % len_;
+              const int src_off = wb[(p + 1) % len_] % len_;
+              src = wb[p] != INERT ? kIAddMovNbr : src_off == k ? kIAddMovAl : kIAddMovShift;
+            } else {
+              src = kIAddFOther;
+            }
+          }
+        } else if (now[k] == INERT) {
+          src = wr == s ? kIRemSelf : kIRemFor;
+        } else {
+          continue;
+        }
+        l_.in_off[src][k] += 1;
+      }
+      if (strict0(fate_[s])) l_change(foreign < 0 ? kLInS : kLInF, znew - z_[s]);
+      else l_exit_act(s, foreign < 0 ? kLLossS : kLLossF, old);
+    } else if (strict0(fate_[s])) {
+      l_enter(kLGain, znew);
+    }
+    z_[s] = static_cast<int8_t>(znew);
+    comp_[s] = static_cast<int8_t>(compof(now));
+  }
+
+  void print_length(std::ostream& o) {
+    const uint64_t tick = w_.tick();
+    // Self-check: the set and its summed z, recomputed from the tracked keys.
+    int64_t n_chk = 0, z_chk = 0;
+    for (int32_t s = 0; s < sites_; ++s) {
+      if (!strict0(fate_[s])) continue;
+      n_chk += 1;
+      z_chk += zof(&snap_[static_cast<size_t>(s) * len_]);
+    }
+    double sum = 0.0;
+    for (int c = 0; c < kLCats; ++c) sum += l_.dm[c];
+    const auto prec = o.precision(9);
+    const double m = l_mean();
+    o << "# length tick=" << tick << " n=" << l_n_prev_ << '/' << l_n_ << " mean=" << l_mean_prev_
+      << '/' << m << " dmean=" << m - l_mean_prev_ << " sum_dm=" << sum
+      << " check_n=" << n_chk - l_n_ << " check_z=" << z_chk - l_z_ << " empty=" << l_.empty
+      << " (n/z/dm)";
+    for (int c = 0; c < kLCats; ++c) {
+      o << ' ' << kLenCatName[c] << '=' << l_.n[c] << '/' << l_.z[c] << '/' << l_.dm[c];
+    }
+    o << " trans=" << l_.dm_trans << " zp=" << l_.zp << std::endl;
+    o << "# lengthsrc tick=" << tick << " copy_sp(bytes/dm)";
+    for (int k = 0; k < kTSrcs; ++k) o << ' ' << kTransSrcName[k] << '=' << l_.tsrc[k] << '/' << l_.dm_tsrc[k];
+    o << " subs=" << l_.tsub << " inplace";
+    for (int k = 0; k < kInSrcs; ++k) {
+      uint64_t t = 0;
+      for (int i = 0; i < len_; ++i) t += l_.in_off[k][i];
+      o << ' ' << kInSrcName[k] << '=' << t;
+    }
+    o << " foreign_add_writer";
+    for (int k = 0; k < kWriters; ++k) o << (k ? "/" : "=") << l_.in_wc[k];
+    o << " (rep/loose/prop/other/self/none)" << std::endl;
+    o.precision(prec);
+    // Per extra offset; "rest" sums the other offsets.
+    auto per_off = [&](const char* tag, auto row) {
+      o << ' ' << tag;
+      uint64_t rest[8] = {};
+      int width = 0;
+      for (int k = 0; k <= len_; ++k) {
+        const bool last = k == len_;
+        const bool ext = !last && (ext_mask_ >> k & 1);
+        std::vector<uint64_t> v = last ? std::vector<uint64_t>(rest, rest + width) : row(k);
+        width = static_cast<int>(v.size());
+        if (!last && !ext) {
+          for (int i = 0; i < width; ++i) rest[i] += v[i];
+          continue;
+        }
+        o << ' ' << (last ? std::string("rest") : std::to_string(k)) << ':';
+        for (int i = 0; i < width; ++i) o << (i ? "/" : "") << v[i];
+      }
+    };
+    o << "# lengthoff tick=" << tick << " copy_sp(add_residue/add_foreign/add_parent/lost_gap/"
+         "lost_parent/lost_foreign)";
+    per_off("", [&](int k) {
+      std::vector<uint64_t> v;
+      for (int i = 0; i < kTSrcs; ++i) v.push_back(l_.tsrc_off[i][k]);
+      return v;
+    });
+    o << " | inplace(add_mov15_aligned/add_mov15_shift/add_mov15_nbrsrc/add_foreign_other/"
+         "add_self/rem_self/rem_foreign)";
+    per_off("", [&](int k) {
+      std::vector<uint64_t> v;
+      for (int i = 0; i < kInSrcs; ++i) v.push_back(l_.in_off[i][k]);
+      return v;
+    });
+    o << std::endl;
+    uint64_t alive[64] = {};
+    for (int32_t s = 0; s < sites_; ++s) {
+      if (!strict0(fate_[s])) continue;
+      const uint8_t* b = &snap_[static_cast<size_t>(s) * len_];
+      for (int k = 0; k < len_; ++k) alive[k] += b[k] != INERT;
+    }
+    o << "# lengthuse tick=" << tick << " alive=" << n_chk << ':';
+    for (int k = 0; k < len_; ++k) if (ext_mask_ >> k & 1) o << ' ' << k << ':' << alive[k];
+    o << " | exits=" << l_.ex_n << "(n/executed/control):";
+    for (int k = 0; k < len_; ++k) {
+      if (ext_mask_ >> k & 1) o << ' ' << k << ':' << l_.ex_off[k] << '/' << l_.ex_exec[k] << '/' << l_.ex_ctl[k];
+    }
+    o << std::endl;
+    static constexpr const char* kZBinName[kZBins] = {"<=40",  "41-44", "45-48", "49-52",
+                                                      "53-56", "57-60", "61-64"};
+    o << "# lengthbin tick=" << tick << " (expo/copies/strict/exact/decay/wick/loss_f/loss_s)";
+    for (int i = 0; i < kZBins; ++i) {
+      o << ' ' << kZBinName[i] << ':';
+      for (int f = 0; f < kBFields; ++f) o << (f ? "/" : "") << l_.bins[i][f];
+    }
+    o << std::endl;
+    o << "# lengthcomp tick=" << tick << " (pointers 34-40 filled p0/p1/p2+ x tail t0/t1-6/t7-12/t13-18)";
+    for (int i = 0; i < kComps; ++i) {
+      o << " p" << i / 4 << 't' << i % 4 << ':';
+      for (int f = 0; f < kBFields; ++f) o << (f ? "/" : "") << l_.comp[i][f];
+    }
+    o << std::endl;
+    l_ = LengthTally{};
+    l_n_prev_ = l_n_;
+    l_mean_prev_ = m;
   }
 
   void print_route(std::ostream& o) {
@@ -1468,6 +1893,7 @@ int main(int argc, char** argv) {
   bool fate = false;              // fate=1: activation fates (needs census=1, p_rot 0)
   bool trace = false;             // trace=1: writers, igniters and matter (needs fate=1)
   bool route = false;             // route=1: strict ledger by entry and loss route (needs trace=1)
+  bool length = false;            // length=1: length of strict keys (needs trace=1)
   for (int i = 1; i < argc; ++i) {
     const std::string a = argv[i];
     const auto eq = a.find('=');
@@ -1529,6 +1955,7 @@ int main(int argc, char** argv) {
     else if (k == "fate") fate = v == "1";
     else if (k == "trace") trace = v == "1";
     else if (k == "route") route = v == "1";
+    else if (k == "length") length = v == "1";
     else if (k == "census_topup") g_census_topup = v == "1";
     else if (k == "anc") {
       g_ref = census::reference_named(v);
@@ -1562,6 +1989,10 @@ int main(int argc, char** argv) {
     std::cerr << "route needs trace=1 and anc=polite\n";
     return 1;
   }
+  if (length && (!trace || g_ref->name != "polite")) {
+    std::cerr << "length needs trace=1 and anc=polite\n";
+    return 1;
+  }
   if (fate && (!census || cfg.p_rot > 0.0)) {
     std::cerr << "fate needs census=1 and p_rot 0\n";
     return 1;
@@ -1581,7 +2012,7 @@ int main(int argc, char** argv) {
   std::map<std::string, TrialResult> census_cache;  // program text -> trial (census=1)
   FidWindow fid;
   std::unique_ptr<FateObserver> fates;
-  if (fate) fates = std::make_unique<FateObserver>(w, census_cache, trace, route);
+  if (fate) fates = std::make_unique<FateObserver>(w, census_cache, trace, route, length);
   std::cout << "tick\tactive\tbirths\texact%\tintact_parent%\ttop_count\ttop_dist\tdistinct"
                "\tcopies\treignites\tintact_copies\tblank\topen0\tdead\tpfx_active\tpfx_copies\text_erased\tstalls\tstarved\tenergy\n";
   const bool physics_line = physics || cfg.hydro_whole != Whole::Off || cfg.p_rot > 0.0;
