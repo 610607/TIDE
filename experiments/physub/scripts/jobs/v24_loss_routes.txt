@@ -1,0 +1,10 @@
+# v24: loss routes under the topped-up census. Measurement only (route=1 adds # route,
+# # routecopy and # routeign lines; every other line equals v23). Requested 2026-11-17 by the
+# research channel: what share of the strict decline under form M comes from the fill of
+# offset 30 by polite's MOV at 15, from off-entry ignitions through filled pointers 36/38,
+# and from monomer depletion. Settings as v23 zero_m195_s1/s2 (inert_operand=zero) and
+# fail_m195_s1/s2 (inert_operand=fail).
+zero_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000 fate=1 trace=1 route=1
+zero_s2 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=2 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000 fate=1 trace=1 route=1
+fail_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000 fate=1 inert_operand=fail trace=1 route=1
+fail_s2 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=2 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000 fate=1 inert_operand=fail trace=1 route=1

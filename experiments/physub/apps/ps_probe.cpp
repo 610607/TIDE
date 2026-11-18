@@ -4,7 +4,8 @@
 // Usage: ps_probe ticks=N seed=S p_mut=X p_hydro=Y rival=0|1 [mass0=M] [census=0|1]
 //        [hydro_whole=0|1|live|dead] [p_rot=P] [physics=0|1]
 //        [decay_table=T decay_ratio=R] [classes=T1,T2,...] [anc=polite|copier]
-//        [fidelity=W] [fate=1] [trace=1] [inert_operand=zero|fail] [census_topup=1|0]
+//        [fidelity=W] [fate=1] [trace=1] [route=1] [inert_operand=zero|fail]
+//        [census_topup=1|0]
 
 #include "ps_census.hpp"
 #include "ps_core.hpp"
@@ -629,6 +630,47 @@ struct TraceTally {
   uint64_t cp_n = 0, cp_same = 0, cp_unseeded = 0, cp_unseeded_same = 0;
 };
 
+// route=1 (needs trace=1 and anc=polite): the strict ledger split by entry (the activation
+// was ignited at offset 0 or elsewhere), strict in-place losses by route, copy births by
+// strict parents by difference class over the whole window, and the pointer used by each
+// igniter of strict code off offset 0. Loss routes, by the non-volatile offsets that changed
+// (the mask) and the writer credited as in FateObserver::changed:
+//   f30_mov15: a foreign writer changed offset 30 alone, and its instruction this tick was the
+//              MOV at offset 15 (polite's copy loop);
+//   f30_other: offset 30 alone, by any other foreign instruction;
+//   f_ptr:     a foreign writer changed only own-site pointer directions 34, 36, 38, 40;
+//   f_tail:    a foreign writer changed only offsets 46-63 (outside polite);
+//   f_other:   any other foreign change;
+//   self_0 / self_other: the site wrote every changed byte, offset 0 among them / not.
+// Each loss is also split by the old key's trial bytes: at most mass0, or more.
+// Igniter pointer (off-entry strict births): IGNITE reads its pointer at p = [ip+1] mod 64,
+// direction [p], offset [p+1]. filled_36_38: p is 36 or 38 and that own-site direction is
+// filled; filled_ref: p is another reference-inert offset (30, 34, 40), filled; inert: the
+// operand byte is INERT (p = 0; under inert_operand=fail such an IGNITE fails, so none);
+// dest_32: polite's own neighbor pointer; other: any other p; not_ignite: the igniter's
+// instruction this tick was not an IGNITE (its bytes may have changed in the tick).
+enum LossRoute { kLF30Mov15 = 0, kLF30Other, kLFPtr, kLFTail, kLFOther, kLSelf0, kLSelfOther,
+                 kLossRoutes };
+constexpr const char* kLossRouteName[kLossRoutes] = {"f30_mov15", "f30_other", "f_ptr",  "f_tail",
+                                                     "f_other",   "self_0",    "self_other"};
+enum IgnVia { kViaFilled3638 = 0, kViaFilledRef, kViaInert, kViaDest, kViaOther, kViaNotIgnite,
+              kVias };
+constexpr const char* kViaName[kVias] = {"filled_36_38", "filled_ref", "inert",
+                                         "dest_32",      "other",      "not_ignite"};
+struct RouteTally {
+  uint64_t gain[2] = {}, found[2] = {};   // [off entry]: other/loose/prop -> strict in place
+  uint64_t loss[2][kLossRoutes][2] = {};  // [off entry][route][old key past mass0]
+  uint64_t cp[2][kDiffClasses][2] = {};   // copies by strict parents [parent off entry][class][child strict]
+  // Non-strict env children of strict parents ignited at 0: foreign-written differing offsets
+  // are {30} alone / include 30 / none (residue only); who last wrote the child's offset 30.
+  uint64_t env_n = 0, env_only30 = 0, env_has30 = 0, env_residue_only = 0;
+  uint64_t env_off[64] = {};
+  uint64_t env30_writer[kWriters] = {};
+  uint64_t via[kVias][kWriters] = {};  // off-entry strict births by pointer route x igniter
+  uint64_t via_ptr[64] = {};           // ... and the pointer offset p
+  uint64_t no_mass_start = 0;          // writes refused for lack of a free monomer (run counter)
+};
+
 struct FateTally {
   uint64_t born[kStatuses][kKinds] = {};
   uint64_t ends[kStatuses][kEnds] = {};
@@ -668,17 +710,19 @@ struct FateTally {
 class FateObserver {
 public:
   FateObserver(const World& w, const std::map<std::string, TrialResult>& census,
-               bool trace = false)
+               bool trace = false, bool route = false)
       : w_(w), census_(census), len_(w.config().site_len),
         sites_(w.config().width * w.config().height),
         src_ptr_(g_ref->name == "polite" ? 30 : 23),
         fate_(sites_), snap_(static_cast<size_t>(sites_) * len_), next_ip_(sites_, 0),
-        trace_(trace), prev_ip_(sites_, 0), last_(sites_) {
+        trace_(trace), route_(route), prev_ip_(sites_, 0), last_(sites_) {
     // The seeded founders are activations that no birth announced.
     for (int32_t s = 0; s < sites_; ++s) {
       if (w.site_active(s)) start(s);
     }
     rep_prev_ = count(kRep);
+    for (int e = 0; e < 2; ++e) rep_prev_entry_[e] = count_entry(e);
+    r_.no_mass_start = w.stats().write_no_mass;
   }
 
   int status_of_key(const std::string& key) {
@@ -715,6 +759,7 @@ public:
       t_.born_rep_start0 += fate_[b.child].status == kRep && fate_[b.child].start_ip == 0;
       if (kind == kCopy && parent.on && parent.converted) note_converted_copy(b, parent);
       if (trace_) trace_birth(b, kind, parent, prev);
+      if (route_ && kind == kCopy && parent.on && parent.status == kRep) route_copy(b, parent);
     }
     for (int32_t s = 0; s < sites_; ++s) {
       Fate& f = fate_[s];
@@ -740,6 +785,7 @@ public:
       if (now == fate_[s].status) continue;
       if (fate_[s].status == kOther) {
         t_.found[now] += 1;
+        if (now == kRep) r_.found[fate_[s].start_ip != 0] += 1;
         fate_[s].status = now;
       } else {
         mismatch += 1;
@@ -841,6 +887,7 @@ public:
       << " child_same=" << t_.fill_child_same << " child_src=" << t_.fill_child_src
       << " ends_decay/wick=" << t_.fill_ends[kEndDecay] << '/' << t_.fill_ends[kEndWick]
       << " life_sum=" << t_.fill_life << std::endl;
+    if (route_) print_route(o);  // reads the trace tallies, so before print_trace resets them
     if (trace_) print_trace(o);
     rep_prev_ = rep_now;
     t_ = FateTally{};
@@ -861,6 +908,9 @@ private:
   FateTally t_;
   uint64_t rep_prev_ = 0;
   const bool trace_;
+  const bool route_;
+  RouteTally r_;
+  uint64_t rep_prev_entry_[2] = {};
   std::vector<int16_t> prev_ip_;  // trace: ip each tracked activation ran in this tick
   std::vector<LastEnd> last_;     // trace: how each site's previous activation ended
   TraceTally x_;
@@ -868,6 +918,13 @@ private:
   uint64_t count(int status) const {
     uint64_t n = 0;
     for (const Fate& f : fate_) n += f.on && f.status == status;
+    return n;
+  }
+
+  // Strict activations ignited at offset 0 (off = 0) or elsewhere (off = 1).
+  uint64_t count_entry(int off) const {
+    uint64_t n = 0;
+    for (const Fate& f : fate_) n += f.on && f.status == kRep && (f.start_ip != 0) == off;
     return n;
   }
 
@@ -934,6 +991,8 @@ private:
       const int after = status_of_key(masked(w_, s));
       const int wc = writer_class(foreign < 0 ? s : foreign, s);
       t_.change[before][after] += 1;
+      if (route_ && before != kRep && after == kRep) r_.gain[f.start_ip != 0] += 1;
+      if (route_ && before == kRep && after != kRep) route_loss(s, old, mask, foreign, wc);
       t_.change_writer[before][wc] += 1;
       if (before == kRep && after != kRep) {
         if (trace_ && wc != kWSelf) trace_foreign(s, old, now, mask, foreign, wc);
@@ -1085,12 +1144,131 @@ private:
     x_.rb_ign[wc][parent.on ? age_bucket(w_.tick() - parent.born_at) : 0] += 1;
     const int ip = prev_ip_[b.parent];
     if (parent.on && ip >= 0) x_.rb_ign_ip[ip] += 1;
+    if (route_ && kind != kSelfIgnite) route_ignite(b, parent.on ? ip : -1, wc);
     x_.rb_entry[c.start_ip] += 1;
     x_.rb_same += masked(w_, b.parent) == masked(w_, b.child);
     if (prev.set && prev.status == kRep && prev.cause == kEndWick) {
       x_.rb_prev_wick[!prev.start0] += 1;
       x_.rb_prev_gap += w_.tick() - prev.tick;
     }
+  }
+
+  // route=1: a strict activation lost strict status in place (see RouteTally).
+  void route_loss(int32_t s, const uint8_t* old, uint64_t mask, int32_t writer, int wc) {
+    constexpr uint64_t kPtr = uint64_t{1} << 34 | uint64_t{1} << 36 | uint64_t{1} << 38 |
+                              uint64_t{1} << 40;
+    constexpr uint64_t kTail = ~((uint64_t{1} << 46) - 1);
+    std::string key(reinterpret_cast<const char*>(old), len_);
+    for (int v : g_ref->volatile_offsets) key[v] = 0;
+    const bool past = census::trial_bytes(key, *g_ref) > w_.config().mass0;
+    int r = kLFOther;
+    if (wc == kWSelf) {
+      r = (mask & 1) ? kLSelf0 : kLSelfOther;
+    } else if (mask == uint64_t{1} << 30) {
+      r = kLF30Other;
+      const int ip = writer >= 0 && fate_[writer].on ? prev_ip_[writer] : -1;
+      if (ip == 15) {
+        const uint8_t op = w_.bytes_at(writer)[15];
+        if (op != INERT && op_class(op) == MOV) r = kLF30Mov15;
+      }
+    } else if ((mask & ~kPtr) == 0) {
+      r = kLFPtr;
+    } else if ((mask & ~kTail) == 0) {
+      r = kLFTail;
+    }
+    r_.loss[fate_[s].start_ip != 0][r][past] += 1;
+  }
+
+  // route=1: a copy birth by a strict parent (fate_ of the child is already started).
+  void route_copy(const World::Birth& b, const Fate& parent) {
+    const census::Diff d = census::diff_sources(w_, b, *g_ref);
+    const bool strict = fate_[b.child].status == kRep;
+    const bool off = parent.start_ip != 0;
+    r_.cp[off][d.cls][strict] += 1;
+    if (off || strict || d.cls != census::kClsEnv) return;
+    const uint8_t* c = w_.bytes_at(b.child);
+    const uint8_t* p = w_.bytes_at(b.parent);
+    uint64_t fm = 0;
+    for (int k = 0; k < len_; ++k) {
+      if (is_volatile(k) || c[k] == p[k]) continue;
+      if (b.by_other >> k & 1) fm |= uint64_t{1} << k;
+    }
+    r_.env_n += 1;
+    r_.env_only30 += fm == uint64_t{1} << 30;
+    r_.env_has30 += fm >> 30 & 1;
+    r_.env_residue_only += fm == 0;
+    for (int k = 0; k < len_; ++k) r_.env_off[k] += fm >> k & 1;
+    if (fm >> 30 & 1) r_.env30_writer[writer_class(w_.byte_writer(b.child, 30), b.child)] += 1;
+  }
+
+  // route=1: a strict birth off offset 0; ip is the igniter's instruction this tick (-1 when
+  // the igniter is not a tracked activation), wc its class.
+  void route_ignite(const World::Birth& b, int ip, int wc) {
+    const auto& ref = *g_ref->program;
+    const uint8_t* wb = w_.bytes_at(b.parent);
+    int via = kViaNotIgnite;
+    if (ip >= 0 && wb[ip] != INERT && op_class(wb[ip]) == IGNITE) {
+      const uint8_t x = wb[(ip + 1) % len_];
+      const int p = x % len_;
+      r_.via_ptr[p] += 1;
+      const bool ref_inert = p < static_cast<int>(ref.size()) && ref[p] == INERT && !is_volatile(p);
+      if (x == INERT) via = kViaInert;
+      else if ((p == 36 || p == 38) && wb[p] != INERT) via = kViaFilled3638;
+      else if (ref_inert && wb[p] != INERT) via = kViaFilledRef;
+      else if (p == 32) via = kViaDest;
+      else via = kViaOther;
+    }
+    r_.via[via][wc] += 1;
+  }
+
+  void print_route(std::ostream& o) {
+    const uint64_t tick = w_.tick();
+    const uint64_t no_mass = w_.stats().write_no_mass;
+    o << "# route tick=" << tick << " no_mass=" << no_mass - r_.no_mass_start;
+    for (int e = 0; e < 2; ++e) {
+      const uint64_t now = count_entry(e);
+      uint64_t born = 0, ends = 0, lost = 0;
+      for (int k = 0; k < kKinds; ++k) born += x_.rb[e][k];
+      for (int c = 0; c < kEnds; ++c) ends += x_.re[e][c];
+      for (int r = 0; r < kLossRoutes; ++r) lost += r_.loss[e][r][0] + r_.loss[e][r][1];
+      const int64_t balance = static_cast<int64_t>(rep_prev_entry_[e] + born + r_.gain[e] +
+                                                   r_.found[e]) -
+                              static_cast<int64_t>(ends + lost);
+      o << (e ? " | entry_off:" : " | entry0:") << " prev=" << rep_prev_entry_[e] << " now=" << now
+        << " balance=" << balance << " born_self/copy/reignite=" << x_.rb[e][kSelfIgnite] << '/'
+        << x_.rb[e][kCopy] << '/' << x_.rb[e][kReignite] << " gain=" << r_.gain[e]
+        << " found=" << r_.found[e] << " end_decay/wick=" << x_.re[e][kEndDecay] << '/'
+        << x_.re[e][kEndWick] << " loss(key<=mass0/past)";
+      for (int r = 0; r < kLossRoutes; ++r) {
+        o << ' ' << kLossRouteName[r] << '=' << r_.loss[e][r][0] << '/' << r_.loss[e][r][1];
+      }
+      rep_prev_entry_[e] = now;
+    }
+    o << std::endl;
+    o << "# routecopy tick=" << tick;
+    for (int e = 0; e < 2; ++e) {
+      o << (e ? " parent_off:" : " parent_entry0:");
+      for (int c = 0; c < kDiffClasses; ++c) {
+        o << ' ' << kDiffClsName[c] << '=' << r_.cp[e][c][0] + r_.cp[e][c][1] << '(' << r_.cp[e][c][1]
+          << ')';
+      }
+    }
+    o << " env_nonstrict0: n=" << r_.env_n << " only30=" << r_.env_only30 << " has30="
+      << r_.env_has30 << " residue_only=" << r_.env_residue_only << " writer30=";
+    for (int k = 0; k < kWriters; ++k) o << (k ? "/" : "") << r_.env30_writer[k];
+    top(o, "offsets", r_.env_off, 64, 12);
+    o << std::endl;
+    o << "# routeign tick=" << tick << " via(" ;
+    for (int v = 0; v < kVias; ++v) o << (v ? "/" : "") << kViaName[v];
+    o << ")";
+    for (int k = 0; k < kWriters; ++k) {
+      o << ' ' << kWriterName[k] << ':';
+      for (int v = 0; v < kVias; ++v) o << (v ? "/" : "") << r_.via[v][k];
+    }
+    top(o, "ptr", r_.via_ptr, 64, 10);
+    o << std::endl;
+    r_ = RouteTally{};
+    r_.no_mass_start = no_mass;
   }
 
   static void top(std::ostream& o, const char* name, const uint64_t* a, int n, int k) {
@@ -1289,6 +1467,7 @@ int main(int argc, char** argv) {
   uint64_t fidelity = 0;          // fidelity=W: copy-birth window before each checkpoint
   bool fate = false;              // fate=1: activation fates (needs census=1, p_rot 0)
   bool trace = false;             // trace=1: writers, igniters and matter (needs fate=1)
+  bool route = false;             // route=1: strict ledger by entry and loss route (needs trace=1)
   for (int i = 1; i < argc; ++i) {
     const std::string a = argv[i];
     const auto eq = a.find('=');
@@ -1349,6 +1528,7 @@ int main(int argc, char** argv) {
     else if (k == "fidelity") fidelity = std::max<long long>(0, std::atoll(v.c_str()));
     else if (k == "fate") fate = v == "1";
     else if (k == "trace") trace = v == "1";
+    else if (k == "route") route = v == "1";
     else if (k == "census_topup") g_census_topup = v == "1";
     else if (k == "anc") {
       g_ref = census::reference_named(v);
@@ -1378,6 +1558,10 @@ int main(int argc, char** argv) {
     std::cerr << "trace needs fate=1\n";
     return 1;
   }
+  if (route && (!trace || g_ref->name != "polite")) {
+    std::cerr << "route needs trace=1 and anc=polite\n";
+    return 1;
+  }
   if (fate && (!census || cfg.p_rot > 0.0)) {
     std::cerr << "fate needs census=1 and p_rot 0\n";
     return 1;
@@ -1397,7 +1581,7 @@ int main(int argc, char** argv) {
   std::map<std::string, TrialResult> census_cache;  // program text -> trial (census=1)
   FidWindow fid;
   std::unique_ptr<FateObserver> fates;
-  if (fate) fates = std::make_unique<FateObserver>(w, census_cache, trace);
+  if (fate) fates = std::make_unique<FateObserver>(w, census_cache, trace, route);
   std::cout << "tick\tactive\tbirths\texact%\tintact_parent%\ttop_count\ttop_dist\tdistinct"
                "\tcopies\treignites\tintact_copies\tblank\topen0\tdead\tpfx_active\tpfx_copies\text_erased\tstalls\tstarved\tenergy\n";
   const bool physics_line = physics || cfg.hydro_whole != Whole::Off || cfg.p_rot > 0.0;
