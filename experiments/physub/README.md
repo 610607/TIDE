@@ -425,8 +425,8 @@ only), or `sub` (non-inert before). A change is `dir_only` when every changed by
 - `# rolelen`: for strict entry-0 activations (as `# length`), bytes changed in place with
   strict status kept, foreign and by the site, by kind (added as `dir`, `opnd`, `val` or
   `none`, removed, substituted) with their credit; exits by loss in place by class, with
-  their credit and the `kept` part; bytes added in copies (as `# lengthsrc`) by source and by
-  their role in the parent's key; for non-strict `env` children of strict entry-0 parents,
+  their credit and the `kept` part; bytes added in copies (as `# lengthsrc`) by source and
+  by their role in the parent's key; for non-strict `env` children of strict entry-0 parents,
   the foreign-written differing offsets by role in the parent's key; and the offsets of
   in-place `dir` additions.
 
