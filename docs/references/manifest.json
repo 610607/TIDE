@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "verified_at": "2026-11-17T03:26:01.933788+00:00",
+  "verified_at": "2026-11-18T03:11:24.926815+00:00",
   "papers": [
     {
       "path": "pdf/ray-1991-synthesis-of-life.pdf",
@@ -30,7 +30,9 @@
       "bytes": 205948,
       "pages": 39,
       "sha256": "ae0e395b3156154d6f6aa7b57d72953b5195b6caadfe0500be28186336af9bbc",
-      "validation": "PDF signature, pdfinfo parse, and opening-page text checked"
+      "validation": "PDF signature, pdfinfo parse, and opening-page text checked",
+      "restore_note": "2026-11-18: restored from source_url; byte count and SHA-256 match. The host serves an incomplete TLS chain (intermediate GandiCert missing); the download was verified with that intermediate fetched from the leaf certificate's AIA URL, with TLS verification kept on",
+      "reading_depth": "Sections 1.1 (p. 193), 2.2-2.3 (pp. 199-201), 3.1-3.2 (pp. 203-204), 4.1 (pp. 206-207) read for genome length"
     },
     {
       "path": "pdf/sayama-1998-evoloop.pdf",
@@ -211,7 +213,8 @@
       "bytes": 64847,
       "pages": 5,
       "sha256": "4df6b6519288976d0dfc6cbdf07804236697af52e2e5762807a966cd4b353279",
-      "validation": "PDF signature, pdfinfo parse, opening-page text and bibliographic identity checked"
+      "validation": "PDF signature, pdfinfo parse, opening-page text and bibliographic identity checked",
+      "restore_note": "2026-11-18: restored from source_url; byte count and SHA-256 match"
     },
     {
       "path": "pdf/zaman-et-al-2014-coevolution-complex-traits.pdf",
@@ -1049,6 +1052,74 @@
       "sha256": "19b590c81692f6105b241b0fc6c1507bd50af6b478e9190a3404848614d3dc22",
       "validation": "Original PDF bytes retained; pdfinfo parse and opening identity checked",
       "reading_depth": "Model section p. 4 read"
+    },
+    {
+      "path": "pdf/gupta-et-al-2016-genome-size-digital-organisms.pdf",
+      "title": "Evolution of Genome Size in Asexual Digital Organisms",
+      "authors": "Aditi Gupta; Thomas LaBar; Miriam Miyagi; Christoph Adami",
+      "year": "2016",
+      "version": "Published article, Scientific Reports 6:25786; DOI 10.1038/srep25786; CC BY 4.0",
+      "doi": "10.1038/srep25786",
+      "source_url": "https://pmc-oa-opendata.s3.amazonaws.com/PMC4867773.1/PMC4867773.1.pdf",
+      "resolved_url": "https://pmc-oa-opendata.s3.amazonaws.com/PMC4867773.1/PMC4867773.1.pdf",
+      "retrieved_on": "2026-11-18",
+      "access": "Open access (PMC OA bucket)",
+      "bytes": 1679389,
+      "pages": 9,
+      "sha256": "493a5093244061bf605da02d22af6bf8a9002c5a6a71fa8d71e4bb4473386056",
+      "validation": "Original PDF bytes retained; pdfinfo parse and opening identity checked",
+      "reading_depth": "Full text pp. 1-7 read; supplementary figures not retrieved",
+      "notes": "The arXiv preprint (1511.05548) has a different title and lists the third author as Michael Miyagi; the published PDF reads Miriam Miyagi"
+    },
+    {
+      "path": "pdf/nordin-banzhaf-1995-complexity-compression.pdf",
+      "title": "Complexity Compression and Evolution",
+      "authors": "Peter Nordin; Wolfgang Banzhaf",
+      "year": "1995",
+      "version": "Author-hosted copy of ICGA-95 paper, Genetic Algorithms: Proceedings of the Sixth International Conference, pp. 310-317 (Morgan Kaufmann); venue and pages from the GP bibliography record, not printed in the PDF",
+      "source_url": "https://www.cs.mun.ca/~banzhaf/papers/icga95-1.pdf",
+      "resolved_url": "https://www.cs.mun.ca/~banzhaf/papers/icga95-1.pdf",
+      "retrieved_on": "2026-11-18",
+      "access": "author-hosted public PDF",
+      "bytes": 205009,
+      "pages": 8,
+      "sha256": "023a92a7b76671f44147194d6982ea45f0b2a690b138bd9ccd089c149fb505bc",
+      "validation": "Original PDF bytes retained; pdfinfo parse; text layer uses unmapped Type 3 fonts, so identity was checked on rendered page images",
+      "reading_depth": "All 8 PDF pages read from rendered images; cite PDF pages (no printed page numbers)",
+      "notes": "The Dortmund copy listed by search (ls11-www.cs.tu-dortmund.de/downloads/papers/NorBan95c.pdf) returned HTTP 404 on 2026-11-18"
+    },
+    {
+      "path": "pdf/dignum-poli-2007-limiting-distribution-program-sizes.pdf",
+      "title": "Generalisation of the Limiting Distribution of Program Sizes in Tree-based Genetic Programming and Analysis of its Effects on Bloat",
+      "authors": "Stephen Dignum; Riccardo Poli",
+      "year": "2007",
+      "version": "GECCO '07 conference paper, pp. 1588-1595, ACM ISBN 978-1-59593-697-4; copy in the GECCO 2007 proceedings archive hosted by the GP bibliography",
+      "source_url": "https://gpbib.cs.ucl.ac.uk/gecco2007/docs/p1588.pdf",
+      "resolved_url": "https://gpbib.cs.ucl.ac.uk/gecco2007/docs/p1588.pdf",
+      "retrieved_on": "2026-11-18",
+      "access": "publicly hosted proceedings PDF (ACM copyright notice on p. 1588)",
+      "bytes": 302310,
+      "pages": 8,
+      "sha256": "e59cdd6027c97033d748ce1fbfb659f9ce8d16b4cac920d4fc64b74c7401e617",
+      "validation": "Original PDF bytes retained; pdfinfo parse and opening identity checked",
+      "reading_depth": "Abstract and introduction p. 1588, sections 4.2-4.3 pp. 1591-1592 and conclusions p. 1594 read"
+    },
+    {
+      "path": "pdf/batut-et-al-2013-in-silico-experimental-evolution.pdf",
+      "title": "In silico experimental evolution: a tool to test evolutionary scenarios",
+      "authors": "Bérénice Batut; David P. Parsons; Stephan Fischer; Guillaume Beslon; Carole Knibbe",
+      "year": "2013",
+      "version": "Published article, BMC Bioinformatics 14(Suppl 15):S11; DOI 10.1186/1471-2105-14-S15-S11; CC BY 2.0",
+      "doi": "10.1186/1471-2105-14-S15-S11",
+      "source_url": "https://pmc-oa-opendata.s3.amazonaws.com/PMC3851946.1/PMC3851946.1.pdf",
+      "resolved_url": "https://pmc-oa-opendata.s3.amazonaws.com/PMC3851946.1/PMC3851946.1.pdf",
+      "retrieved_on": "2026-11-18",
+      "access": "Open access (PMC OA bucket)",
+      "bytes": 1537996,
+      "pages": 11,
+      "sha256": "60dfd70421d44364b974f2674ed0f847b711c83d81be24f386160ff11ab79a84",
+      "validation": "Original PDF bytes retained; pdfinfo parse and opening identity checked",
+      "reading_depth": "Abstract p. 1, model p. 3, results and discussion pp. 7-9 read"
     }
   ]
 }

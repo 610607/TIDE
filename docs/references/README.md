@@ -1,8 +1,8 @@
 # Cached Research References
 
-Retrieved and verified: 2026-11-15; decay and mobility additions 2026-11-17.
+Retrieved and verified: 2026-11-15; decay and mobility additions 2026-11-17; genome-length additions 2026-11-18.
 
-The cache contains **64 distinct PDFs**. Read local copies before downloading again. The [manifest](manifest.json) records source URLs, versions, byte counts, page counts, and SHA-256 hashes. Original downloaded bytes are preserved.
+The cache contains **68 distinct PDFs**. Read local copies before downloading again. The [manifest](manifest.json) records source URLs, versions, byte counts, page counts, and SHA-256 hashes. Original downloaded bytes are preserved.
 
 Reference PDFs are local-only and ignored by Git. Public availability is not treated as a redistribution license. The generated review PDF is a separate authored artifact.
 
@@ -122,6 +122,24 @@ Read through abstracts only and not cached; see [unavailable references](unavail
   [DOI](https://doi.org/10.1073/pnas.98.3.944),
   [PMC14689](https://pmc.ncbi.nlm.nih.gov/articles/PMC14689/), PMID 11158575. A subagent
   read the HTML; no page numbers were recorded.
+
+## Genome-length additions (2026-11-18)
+
+Sources on why genome or program length grows in variable-length evolving systems, added as
+four original PDFs. The Ofria and Wilke 2004 and Standish 2004 copies were restored from their
+manifest source URLs and match the manifest hashes (`restore_note` in the manifest). The
+Nordin and Banzhaf copy has no printed page numbers; cite its PDF pages.
+
+| Reference | Cached version | Pages | Online source |
+| --- | --- | --- | --- |
+| [Evolution of Genome Size in Asexual Digital Organisms](pdf/gupta-et-al-2016-genome-size-digital-organisms.pdf) | Published article, Scientific Reports 6:25786; DOI 10.1038/srep25786; CC BY 4.0 | 9 | [Source](https://pmc-oa-opendata.s3.amazonaws.com/PMC4867773.1/PMC4867773.1.pdf) |
+| [In silico experimental evolution: a tool to test evolutionary scenarios](pdf/batut-et-al-2013-in-silico-experimental-evolution.pdf) | Published article, BMC Bioinformatics 14(Suppl 15):S11; DOI 10.1186/1471-2105-14-S15-S11; CC BY 2.0 | 11 | [Source](https://pmc-oa-opendata.s3.amazonaws.com/PMC3851946.1/PMC3851946.1.pdf) |
+| [Complexity Compression and Evolution](pdf/nordin-banzhaf-1995-complexity-compression.pdf) | Published conference paper, ICGA-95 proceedings pp. 310-317; author-hosted copy without printed page numbers; venue from the GP bibliography record | 8 | [Source](https://www.cs.mun.ca/~banzhaf/papers/icga95-1.pdf) |
+| [Generalisation of the Limiting Distribution of Program Sizes in Tree-based Genetic Programming and Analysis of its Effects on Bloat](pdf/dignum-poli-2007-limiting-distribution-program-sizes.pdf) | Published conference paper, GECCO '07 pp. 1588-1595; proceedings copy hosted by the GP bibliography | 8 | [Source](https://gpbib.cs.ucl.ac.uk/gecco2007/docs/p1588.pdf) |
+
+Not cached; see [unavailable references](unavailable.md): Knibbe et al. 2007 (Aevol,
+noncoding DNA), Soule and Foster 1998 (removal bias), and Langdon and Poli 1997 (fitness
+causes bloat).
 
 ## Reading notes
 
