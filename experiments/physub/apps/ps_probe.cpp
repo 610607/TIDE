@@ -4,7 +4,7 @@
 // Usage: ps_probe ticks=N seed=S p_mut=X p_hydro=Y rival=0|1 [mass0=M] [census=0|1]
 //        [hydro_whole=0|1|live|dead] [p_rot=P] [physics=0|1]
 //        [decay_table=T decay_ratio=R] [classes=T1,T2,...] [anc=polite|copier]
-//        [fidelity=W] [fate=1] [trace=1] [route=1] [length=1] [inert_operand=zero|fail]
+//        [fidelity=W] [fate=1] [trace=1] [route=1] [length=1] [role=1] [inert_operand=zero|fail]
 //        [census_topup=1|0] [census_born=1|0]
 
 #include "ps_census.hpp"
@@ -782,6 +782,61 @@ struct LengthTally {
   uint64_t pd[64] = {};               // shift additions by (source - written offset) mod 64
 };
 
+// role=1 (needs route=1 and length=1): the roles INERT plays in the bytes that in-place
+// changes and copies touch, read from the key before the change (census::key_roles on its
+// census trial's op_mask, volatile offsets reset). INERT is at once an empty slot (a byte
+// that fill lets other sites write), the own-site direction, offset 0 as an operand, and the
+// value 0. A changed byte is:
+//   dir / opnd / val: INERT before, and the key read that offset as a pointer direction / an
+//                     operand / a value (the first that applies);
+//   none:             INERT before and not read in those ways (an empty slot only);
+//   sub:              non-inert before (substituted, or erased to INERT).
+// A change is classed by its bytes: dir_only (every changed byte is a dir fill), dir_mixed
+// (some), else the first of opnd, val, sub, none present.
+//
+// Counterfactual, first order (no feedback on the run): with the own-site direction given its
+// own non-inert code, a byte in the dir role would no longer be INERT, so under ext_write=fill
+// no other site could change it, while the site itself still could. For each strict loss and
+// gain in place, the dir-role bytes written by another site are put back to INERT and the key
+// is tried (census verdict, kept apart from the caches the census reads): a loss is `kept`
+// when that key is strict (the loss needed a foreign dir fill); a gain is `undone` when it
+// is not.
+//
+// Length (strict entry-0 activations, as length=1): bytes changed in place in activations
+// that stay strict, by the change's writer (foreign when any byte was written by another site,
+// as inplace_f) and by role, with their share of the mean's change (+1/N per added byte,
+// -1/N per removed byte); exits by loss in place by the change's class, with their credit;
+// copy births by a strict entry-0 parent with a strict child: added bytes by source and by
+// their role in the parent's key; non-strict env children: foreign-written differing offsets
+// by their role in the parent's key.
+enum ByteRole { kBRDir = 0, kBROpnd, kBRVal, kBRNone, kBRSub, kByteRoles };
+constexpr const char* kByteRoleName[kByteRoles] = {"dir", "opnd", "val", "none", "sub"};
+enum RoleCls { kRCDirOnly = 0, kRCDirMixed, kRCOpnd, kRCVal, kRCSub, kRCNone, kRoleCls };
+constexpr const char* kRoleClsName[kRoleCls] = {"dir_only", "dir_mixed", "opnd",
+                                                "val",      "sub",       "none"};
+// In-place byte kinds for the length ledger: added (INERT before) by role, removed, substituted.
+enum LenByte { kLBAddDir = 0, kLBAddOpnd, kLBAddVal, kLBAddNone, kLBRem, kLBSub, kLenBytes };
+constexpr const char* kLenByteName[kLenBytes] = {"add_dir",  "add_opnd", "add_val",
+                                                 "add_none", "rem",      "sub"};
+struct RoleTally {
+  uint64_t loss[2][kLossRoutes][kRoleCls] = {};  // [off entry][route][class]
+  uint64_t loss_kept[2][kLossRoutes] = {};       // strict once foreign dir fills are undone
+  uint64_t loss_dir_off[2][64] = {};             // foreign dir fills in losses, by offset
+  uint64_t gain[2][kRoleCls] = {};               // gains in place by class
+  uint64_t gain_undone[2] = {};                  // not strict once foreign dir fills are undone
+  uint64_t lb[2][kLenBytes] = {};                // [foreign change][kind]: bytes
+  double lb_dm[2][kLenBytes] = {};               // ... and their credit to the mean
+  uint64_t lb_dir_off[2][64] = {};               // added dir bytes by offset
+  uint64_t lx[2][kRoleCls] = {};                 // exits by loss in place [foreign][class]
+  double lx_dm[2][kRoleCls] = {};
+  uint64_t lx_kept[2] = {};                      // ... kept by the counterfactual
+  double lx_kept_dm[2] = {};
+  uint64_t tr[3][4] = {};      // copy_sp added bytes [residue/foreign/parent][dir/opnd/val/none]
+  uint64_t env_n = 0;          // non-strict env children of strict entry-0 parents
+  uint64_t env_b[kByteRoles] = {};  // their foreign-written differing offsets by parent role
+  uint64_t env_dir_only = 0, env_dir_any = 0;  // children whose such offsets are all / some dir
+};
+
 struct FateTally {
   uint64_t born[kStatuses][kKinds] = {};
   uint64_t ends[kStatuses][kEnds] = {};
@@ -821,13 +876,13 @@ struct FateTally {
 class FateObserver {
 public:
   FateObserver(const World& w, const std::map<std::string, TrialResult>& census,
-               bool trace = false, bool route = false, bool length = false)
+               bool trace = false, bool route = false, bool length = false, bool role = false)
       : w_(w), census_(census), len_(w.config().site_len),
         sites_(w.config().width * w.config().height),
         src_ptr_(g_ref->name == "polite" ? 30 : 23),
         fate_(sites_), snap_(static_cast<size_t>(sites_) * len_), next_ip_(sites_, 0),
         trace_(trace), route_(route), prev_ip_(sites_, 0), last_(sites_), length_(length),
-        z_(sites_, 0), comp_(sites_, 0), exec_(sites_, 0), ctl_(sites_, 0) {
+        z_(sites_, 0), comp_(sites_, 0), exec_(sites_, 0), ctl_(sites_, 0), role_(role) {
     const auto& ref = *g_ref->program;
     for (int v : g_ref->volatile_offsets) {
       vol_mask_ |= uint64_t{1} << v;
@@ -1033,6 +1088,7 @@ public:
       << " life_sum=" << t_.fill_life << std::endl;
     if (length_) print_length(o);
     if (route_) print_route(o);  // reads the trace tallies, so before print_trace resets them
+    if (role_) print_role(o);
     if (trace_) print_trace(o);
     rep_prev_ = rep_now;
     t_ = FateTally{};
@@ -1071,6 +1127,12 @@ private:
   int64_t l_n_prev_ = 0;
   double l_mean_prev_ = 0.0;
   LengthTally l_;
+  // role=1 (see RoleTally).
+  const bool role_;
+  RoleTally rl_;
+  std::map<std::string, TrialResult> role_trials_;  // keys neither the census nor cache_ holds
+  int loss_cls_ = kRCNone;   // class of the strict loss being handled (for the length exit)
+  bool loss_kept_ = false;   // ... and its counterfactual
 
   uint64_t count(int status) const {
     uint64_t n = 0;
@@ -1158,7 +1220,11 @@ private:
       const int wc = writer_class(foreign < 0 ? s : foreign, s);
       t_.change[before][after] += 1;
       if (route_ && before != kRep && after == kRep) r_.gain[f.start_ip != 0] += 1;
-      if (route_ && before == kRep && after != kRep) route_loss(s, old, mask, foreign, wc);
+      if (route_ && before == kRep && after != kRep) {
+        const int r = route_loss(s, old, mask, foreign, wc);
+        if (role_) role_change(s, old, now, mask, r);
+      }
+      if (role_ && before != kRep && after == kRep) role_change(s, old, now, mask, -1);
       t_.change_writer[before][wc] += 1;
       if (before == kRep && after != kRep) {
         if (trace_ && wc != kWSelf) trace_foreign(s, old, now, mask, foreign, wc);
@@ -1322,7 +1388,7 @@ private:
   }
 
   // route=1: a strict activation lost strict status in place (see RouteTally).
-  void route_loss(int32_t s, const uint8_t* old, uint64_t mask, int32_t writer, int wc) {
+  int route_loss(int32_t s, const uint8_t* old, uint64_t mask, int32_t writer, int wc) {
     constexpr uint64_t kPtr = uint64_t{1} << 34 | uint64_t{1} << 36 | uint64_t{1} << 38 |
                               uint64_t{1} << 40;
     constexpr uint64_t kTail = ~((uint64_t{1} << 46) - 1);
@@ -1345,6 +1411,134 @@ private:
       r = kLFTail;
     }
     r_.loss[fate_[s].start_ip != 0][r][past] += 1;
+    return r;
+  }
+
+  // ---- role=1 (see RoleTally) ----
+  // Trial of a key: the census, this observer's cache, else a separate cache, so the census
+  // and cache_ (which prime() hands to the census) see no extra keys.
+  const TrialResult& role_trial(const std::string& key) {
+    const auto c = census_.find(key);
+    if (c != census_.end()) return c->second;
+    const auto it = cache_.find(key);
+    if (it != cache_.end()) return it->second;
+    auto r = role_trials_.find(key);
+    if (r == role_trials_.end()) r = role_trials_.emplace(key, run_trial(w_.config(), key)).first;
+    return r->second;
+  }
+
+  std::string key_of(const uint8_t* b) const {
+    std::string key(reinterpret_cast<const char*>(b), len_);
+    for (int v : g_ref->volatile_offsets) key[v] = 0;
+    return key;
+  }
+
+  census::KeyRoles roles_of(const std::string& key) {
+    return census::key_roles(key, role_trial(key).op_mask,
+                             w_.config().inert_operand == InertOperand::Fail);
+  }
+
+  static int byte_role(const census::KeyRoles& r, uint8_t old, int k) {
+    if (old != INERT) return kBRSub;
+    const uint64_t b = uint64_t{1} << k;
+    return (r.dir & b) ? kBRDir : (r.opnd & b) ? kBROpnd : (r.val & b) ? kBRVal : kBRNone;
+  }
+
+  // A strict activation lost strict status in place by route r, or (r < 0) a loose or prop
+  // activation became strict. mask: the non-volatile offsets that changed.
+  void role_change(int32_t s, const uint8_t* old, const uint8_t* now, uint64_t mask, int r) {
+    const census::KeyRoles kr = roles_of(key_of(old));
+    bool any[kByteRoles] = {};
+    uint64_t fdir = 0;  // dir-role bytes written by another site
+    for (int k = 0; k < len_; ++k) {
+      if (!(mask >> k & 1)) continue;
+      const int br = byte_role(kr, old[k], k);
+      any[br] = true;
+      const int32_t wr = w_.byte_writer(s, k);
+      if (br == kBRDir && wr >= 0 && wr != s) fdir |= uint64_t{1} << k;
+    }
+    int cls = kRCNone;
+    if (any[kBRDir]) {
+      cls = any[kBROpnd] || any[kBRVal] || any[kBRNone] || any[kBRSub] ? kRCDirMixed : kRCDirOnly;
+    } else if (any[kBROpnd]) {
+      cls = kRCOpnd;
+    } else if (any[kBRVal]) {
+      cls = kRCVal;
+    } else if (any[kBRSub]) {
+      cls = kRCSub;
+    }
+    bool strict_cf = r < 0;  // no foreign dir fill: a loss still happens, a gain still holds
+    if (fdir != 0) {
+      std::string nk = key_of(now);
+      for (int k = 0; k < len_; ++k) {
+        if (fdir >> k & 1) nk[k] = 0;
+      }
+      strict_cf = status_of(role_trial(nk)) == kRep;
+    }
+    const int e = fate_[s].start_ip != 0;
+    if (r >= 0) {
+      rl_.loss[e][r][cls] += 1;
+      rl_.loss_kept[e][r] += strict_cf;
+      for (int k = 0; k < len_; ++k) rl_.loss_dir_off[e][k] += fdir >> k & 1;
+      loss_cls_ = cls;
+      loss_kept_ = strict_cf;
+    } else {
+      rl_.gain[e][cls] += 1;
+      rl_.gain_undone[e] += !strict_cf;
+    }
+  }
+
+  void print_role(std::ostream& o) {
+    const uint64_t tick = w_.tick();
+    auto list = [&](const uint64_t* v, int n) {
+      for (int i = 0; i < n; ++i) o << (i ? "/" : "") << v[i];
+    };
+    auto listd = [&](const double* v, int n) {
+      for (int i = 0; i < n; ++i) o << (i ? "/" : "") << v[i];
+    };
+    o << "# role tick=" << tick << " loss(dir_only/dir_mixed/opnd/val/sub/none;kept)";
+    for (int e = 0; e < 2; ++e) {
+      o << (e ? " | entry_off:" : " | entry0:");
+      for (int r = 0; r < kLossRoutes; ++r) {
+        o << ' ' << kLossRouteName[r] << '=';
+        list(rl_.loss[e][r], kRoleCls);
+        o << ';' << rl_.loss_kept[e][r];
+      }
+      o << " gain=";
+      list(rl_.gain[e], kRoleCls);
+      o << ";undone=" << rl_.gain_undone[e];
+      top(o, "foreign_dir_off", rl_.loss_dir_off[e], 64, 10);
+    }
+    o << std::endl;
+    o << "# rolelen tick=" << tick
+      << " inplace_kept(add_dir/add_opnd/add_val/add_none/rem/sub bytes;dm)";
+    for (int fw = 1; fw >= 0; --fw) {
+      o << (fw ? " foreign:" : " self:");
+      list(rl_.lb[fw], kLenBytes);
+      o << ';';
+      listd(rl_.lb_dm[fw], kLenBytes);
+    }
+    o << " exit(dir_only/dir_mixed/opnd/val/sub/none n;dm;kept n/dm)";
+    for (int fw = 1; fw >= 0; --fw) {
+      o << (fw ? " loss_f:" : " loss_s:");
+      list(rl_.lx[fw], kRoleCls);
+      o << ';';
+      listd(rl_.lx_dm[fw], kRoleCls);
+      o << ';' << rl_.lx_kept[fw] << '/' << rl_.lx_kept_dm[fw];
+    }
+    o << " copy_sp_add(dir/opnd/val/none)";
+    static constexpr const char* kTrName[3] = {"residue", "foreign", "parent"};
+    for (int i = 0; i < 3; ++i) {
+      o << ' ' << kTrName[i] << '=';
+      list(rl_.tr[i], 4);
+    }
+    o << " env_nonstrict0 n=" << rl_.env_n << " foreign_offsets(dir/opnd/val/none/sub)=";
+    list(rl_.env_b, kByteRoles);
+    o << " dir_only=" << rl_.env_dir_only << " dir_any=" << rl_.env_dir_any;
+    top(o, "add_dir_off_foreign", rl_.lb_dir_off[1], 64, 8);
+    top(o, "add_dir_off_self", rl_.lb_dir_off[0], 64, 4);
+    o << std::endl;
+    rl_ = RoleTally{};
   }
 
   // route=1: a copy birth by a strict parent (fate_ of the child is already started).
@@ -1365,6 +1559,19 @@ private:
     r_.env_only30 += fm == uint64_t{1} << 30;
     r_.env_has30 += fm >> 30 & 1;
     r_.env_residue_only += fm == 0;
+    if (role_) {
+      const census::KeyRoles pr = roles_of(key_of(p));
+      uint64_t dm = 0;
+      rl_.env_n += 1;
+      for (int k = 0; k < len_; ++k) {
+        if (!(fm >> k & 1)) continue;
+        const int br = byte_role(pr, p[k], k);
+        rl_.env_b[br] += 1;
+        if (br == kBRDir) dm |= uint64_t{1} << k;
+      }
+      rl_.env_dir_only += fm != 0 && dm == fm;
+      rl_.env_dir_any += dm != 0;
+    }
     for (int k = 0; k < len_; ++k) r_.env_off[k] += fm >> k & 1;
     if (fm >> 30 & 1) r_.env30_writer[writer_class(w_.byte_writer(b.child, 30), b.child)] += 1;
   }
@@ -1521,12 +1728,15 @@ private:
       return;
     }
     int cnt[kTSrcs] = {};
+    census::KeyRoles prk;
+    if (role_) prk = roles_of(key_of(pb));
     for (int k = 0; k < len_; ++k) {
       if ((vol_mask_ >> k & 1) || cb[k] == pb[k]) continue;
       const uint64_t bit = uint64_t{1} << k;
       int src = -1;
       if (pb[k] == INERT) {
         src = (b.by_other & bit) ? kTAddFor : (b.by_parent & bit) ? kTAddPar : kTAddRes;
+        if (role_) rl_.tr[src][byte_role(prk, INERT, k)] += 1;
       } else if (cb[k] == INERT) {
         src = (b.by_other & bit) ? kTLostFor : (b.by_parent & bit) ? kTLostPar : kTLostGap;
       } else {
@@ -1551,6 +1761,25 @@ private:
   // A tracked site's non-volatile bytes changed in place (status already updated).
   void l_changed(int32_t s, const uint8_t* old, const uint8_t* now, bool was0, int32_t foreign) {
     const int znew = zof(now);
+    if (was0 && role_ && strict0(fate_[s])) {
+      const census::KeyRoles kr = roles_of(key_of(old));
+      const int fw = foreign >= 0;
+      for (int k = 0; k < len_; ++k) {
+        if ((vol_mask_ >> k & 1) || old[k] == now[k]) continue;
+        int kind = kLBSub;
+        double d = 0.0;
+        if (old[k] == INERT) {
+          kind = kLBAddDir + byte_role(kr, INERT, k);
+          d = 1.0 / l_n_;
+          if (kind == kLBAddDir) rl_.lb_dir_off[fw][k] += 1;
+        } else if (now[k] == INERT) {
+          kind = kLBRem;
+          d = -1.0 / l_n_;
+        }
+        rl_.lb[fw][kind] += 1;
+        rl_.lb_dm[fw][kind] += d;
+      }
+    }
     if (was0) {
       for (int k = 0; k < len_; ++k) {
         if ((vol_mask_ >> k & 1) || old[k] == now[k]) continue;
@@ -1582,8 +1811,21 @@ private:
         }
         l_.in_off[src][k] += 1;
       }
-      if (strict0(fate_[s])) l_change(foreign < 0 ? kLInS : kLInF, znew - z_[s]);
-      else l_exit_act(s, foreign < 0 ? kLLossS : kLLossF, old);
+      if (strict0(fate_[s])) {
+        l_change(foreign < 0 ? kLInS : kLInF, znew - z_[s]);
+      } else {
+        const int cat = foreign < 0 ? kLLossS : kLLossF;
+        const double d0 = l_.dm[cat];
+        l_exit_act(s, cat, old);
+        if (role_) {
+          const int fw = foreign >= 0;
+          const double d = l_.dm[cat] - d0;
+          rl_.lx[fw][loss_cls_] += 1;
+          rl_.lx_dm[fw][loss_cls_] += d;
+          rl_.lx_kept[fw] += loss_kept_;
+          rl_.lx_kept_dm[fw] += loss_kept_ ? d : 0.0;
+        }
+      }
     } else if (strict0(fate_[s])) {
       l_enter(kLGain, znew);
     }
@@ -1958,6 +2200,7 @@ int main(int argc, char** argv) {
   bool trace = false;             // trace=1: writers, igniters and matter (needs fate=1)
   bool route = false;             // route=1: strict ledger by entry and loss route (needs trace=1)
   bool length = false;            // length=1: length of strict keys (needs trace=1)
+  bool role = false;              // role=1: roles of INERT in changed bytes (needs route, length)
   for (int i = 1; i < argc; ++i) {
     const std::string a = argv[i];
     const auto eq = a.find('=');
@@ -2020,6 +2263,7 @@ int main(int argc, char** argv) {
     else if (k == "trace") trace = v == "1";
     else if (k == "route") route = v == "1";
     else if (k == "length") length = v == "1";
+    else if (k == "role") role = v == "1";
     else if (k == "census_topup") g_census_topup = v == "1";
     else if (k == "census_born") g_census_born = v == "1";
     else if (k == "anc") {
@@ -2058,6 +2302,10 @@ int main(int argc, char** argv) {
     std::cerr << "length needs trace=1 and anc=polite\n";
     return 1;
   }
+  if (role && (!route || !length)) {
+    std::cerr << "role needs route=1 and length=1\n";
+    return 1;
+  }
   if (fate && (!census || cfg.p_rot > 0.0)) {
     std::cerr << "fate needs census=1 and p_rot 0\n";
     return 1;
@@ -2077,7 +2325,7 @@ int main(int argc, char** argv) {
   std::map<std::string, TrialResult> census_cache;  // program text -> trial (census=1)
   FidWindow fid;
   std::unique_ptr<FateObserver> fates;
-  if (fate) fates = std::make_unique<FateObserver>(w, census_cache, trace, route, length);
+  if (fate) fates = std::make_unique<FateObserver>(w, census_cache, trace, route, length, role);
   std::cout << "tick\tactive\tbirths\texact%\tintact_parent%\ttop_count\ttop_dist\tdistinct"
                "\tcopies\treignites\tintact_copies\tblank\topen0\tdead\tpfx_active\tpfx_copies\text_erased\tstalls\tstarved\tenergy\n";
   const bool physics_line = physics || cfg.hydro_whole != Whole::Off || cfg.p_rot > 0.0;

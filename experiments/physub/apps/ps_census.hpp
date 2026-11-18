@@ -114,6 +114,55 @@ inline bool ref_inert_filled(const uint8_t* bytes, const Reference& ref) {
   return false;
 }
 
+// Roles of a key's offsets for its executed instructions (op_mask, from its census trial),
+// read statically from the key: an INERT byte can be read as the own-site direction, as
+// offset 0 (an operand), or as the value 0, and is otherwise an empty slot only. Each
+// executed opcode at i (non-inert, op_mask bit set) marks:
+//  dir:  the pointer directions it reads: [p] and [q] for MOV p q, [p] for IGNITE p, and the
+//        target [x] of WALL x and UNWALL x (a direction byte);
+//  opnd: its operand bytes i+1 (and i+2 for MOV);
+//  val:  the bytes it reads as values: the pointer offsets [p+1] (and [q+1]) of MOV and
+//        IGNITE, and the target [x] of INC, DEC, JZ and JMP.
+// p, q and x are the operand bytes mod the key length. RND's target is written, not read.
+// Under inert_operand=fail an instruction with an INERT operand reads nothing, so it marks
+// only its operand bytes. The counters and pointers a program rewrites while it runs are
+// read as they stand in the key (volatile offsets as the key holds them).
+struct KeyRoles {
+  uint64_t dir = 0, opnd = 0, val = 0;
+};
+
+inline KeyRoles key_roles(const std::string& key, uint64_t op_mask, bool inert_fail) {
+  KeyRoles r;
+  const int len = static_cast<int>(key.size());
+  auto at = [&](int k) { return static_cast<uint8_t>(key[((k % len) + len) % len]); };
+  auto bit = [&](int k) { return uint64_t{1} << (((k % len) + len) % len); };
+  for (int i = 0; i < len && i < 64; ++i) {
+    const uint8_t v = static_cast<uint8_t>(key[i]);
+    if (!(op_mask >> i & 1) || v == INERT) continue;
+    const uint8_t op = op_class(v);
+    const int n = op_length(v);
+    bool inert_operand = false;
+    for (int k = 1; k < n; ++k) {
+      r.opnd |= bit(i + k);
+      inert_operand |= at(i + k) == INERT;
+    }
+    if (inert_operand && inert_fail) continue;
+    auto pointer = [&](int operand) {
+      const int p = at(operand) % len;
+      r.dir |= bit(p);
+      r.val |= bit(p + 1);
+    };
+    switch (op) {
+      case MOV: pointer(i + 1); pointer(i + 2); break;
+      case IGNITE: pointer(i + 1); break;
+      case WALL: case UNWALL: r.dir |= bit(at(i + 1) % len); break;
+      case INC: case DEC: case JZ: case JMP: r.val |= bit(at(i + 1) % len); break;
+      default: break;  // RND
+    }
+  }
+  return r;
+}
+
 // Trial: the program, with the volatile offsets reset to the reference's values, is seeded
 // alone in a fresh 9x9 world with the run's physics but no mutation, hydrolysis, erosion,
 // p_dead or rotation. It is a replicator when at least two active sites carry its key after

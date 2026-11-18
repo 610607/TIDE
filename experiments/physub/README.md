@@ -406,6 +406,30 @@ can lengthen a polite-like key: those where polite is INERT and not volatile (30
 
 `length=1` needs `trace=1` and `anc=polite`.
 
+With `route=1` and `length=1`, `role=1` (from v28) adds two lines per interval (observation
+only; all other lines are unchanged). They split the changed bytes by the role INERT played
+there. The roles of a key's offsets are read statically from the key and the offsets where
+its census founder executed an instruction (`census::key_roles`): `dir`, a pointer
+direction read by `MOV`, `IGNITE`, `WALL` or `UNWALL`; `opnd`, an operand byte; `val`, a
+pointer offset or the target of `INC`, `DEC`, `JZ` or `JMP`. A changed byte is `dir`,
+`opnd`, `val` or `none` (INERT before, the first role that applies, else an empty slot
+only), or `sub` (non-inert before). A change is `dir_only` when every changed byte is `dir`,
+`dir_mixed` when some are, else the first of `opnd`, `val`, `sub` and `none` present.
+
+- `# role`: per entry, each loss route of `# route` split by change class, with `kept`: the
+  losses whose key is strict again (census verdict) when the `dir` bytes written by another
+  site are put back to INERT. This is a first-order counterfactual for an own-site direction
+  code that is not INERT, so that `fill` refuses foreign writes there; it does not follow
+  the run further. Then gains in place by class, with `undone` (not strict once the foreign
+  `dir` bytes are put back), and the offsets of those foreign `dir` bytes in losses.
+- `# rolelen`: for strict entry-0 activations (as `# length`), bytes changed in place with
+  strict status kept, foreign and by the site, by kind (added as `dir`, `opnd`, `val` or
+  `none`, removed, substituted) with their credit; exits by loss in place by class, with
+  their credit and the `kept` part; bytes added in copies (as `# lengthsrc`) by source and by
+  their role in the parent's key; for non-strict `env` children of strict entry-0 parents,
+  the foreign-written differing offsets by role in the parent's key; and the offsets of
+  in-place `dir` additions.
+
 With `hydro_whole` on, `p_rot > 0` or `physics=1`, `ps_probe` adds a `# physics` line per
 interval and at the end with cumulative counters: whole-program decays (and how many hit an
 active site), wick deaths, rotations, rotations stopped by walls, copies started, cut, ended

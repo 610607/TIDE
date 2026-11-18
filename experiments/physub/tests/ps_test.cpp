@@ -653,6 +653,29 @@ void test_census_trial() {
   std::vector<uint8_t> filled = polite();
   filled[36] = 192;
   assert(census::ref_inert_filled(filled.data(), ref));
+  // Static roles of polite's executed offsets: six pointer directions (30 and 34-40 are
+  // INERT, the own site; 32 is RND's target), the pointer offsets and the INC/JZ/JMP targets
+  // as values (30 is both a direction and JMP 30's value), and every operand byte.
+  {
+    auto mask = [](std::initializer_list<int> ks) {
+      uint64_t m = 0;
+      for (int k : ks) m |= uint64_t{1} << k;
+      return m;
+    };
+    const uint64_t ops = mask({0, 3, 6, 8, 11, 13, 15, 18, 20, 22, 24, 26, 28});
+    assert(a.op_mask == ops);
+    const census::KeyRoles kr = census::key_roles(key, a.op_mask, false);
+    assert(kr.dir == mask({30, 32, 34, 36, 38, 40}));
+    assert(kr.val == mask({30, 31, 33, 35, 37, 39, 41, 43, 44, 45}));
+    assert(kr.opnd == mask({1, 2, 4, 5, 7, 9, 10, 12, 14, 16, 17, 19, 21, 23, 25, 27, 29}));
+    // A key with an INERT operand: under fail its instruction reads nothing.
+    std::string z = key;
+    z[1] = 0;  // MOV 34 36 -> MOV 0 36
+    const census::KeyRoles zz = census::key_roles(z, a.op_mask, false);
+    const census::KeyRoles zf = census::key_roles(z, a.op_mask, true);
+    assert((zz.dir & 1) && (zz.val & 2) && !(zf.dir & 1) && !(zf.val & 2));
+    assert(zf.opnd == kr.opnd && zz.opnd == kr.opnd);
+  }
 
   // First copy of a lone founder: exact in an empty world; residue when every neighbor holds
   // a non-inert byte at an offset where polite is inert (fill refuses the inert write).
@@ -695,7 +718,7 @@ void test_census_trial() {
   }
   std::cout << "[ps test 17] census trial: polite strict, depth " << a.depth << ", founder copies "
             << a.founder_exact << '/' << a.founder_copies
-            << "; knockout and redirected source fail, other fills stay strict (filled 36 only from reset counters); first copy exact, residue is env;"
+            << "; knockout and redirected source fail, other fills stay strict (filled 36 only from reset counters); key roles; first copy exact, residue is env;"
             << " writers recorded\n";
 }
 

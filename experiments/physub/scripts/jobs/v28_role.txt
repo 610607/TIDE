@@ -1,0 +1,12 @@
+# v28: roles of INERT in strict losses, gains and length changes (role=1). Measurement only:
+# run dynamics are those of v27 (same seeds and configuration); the new lines classify each
+# changed INERT byte as an own-site direction, an operand, a value or an empty slot, and
+# test a first-order counterfactual in which foreign fills of own-site direction bytes are
+# refused (as they would be if the own site had its own non-inert direction code).
+# role=1 needs route=1 and length=1, so the nomut controls gain route lines too.
+zero_m195_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000 fate=1 trace=1 route=1 length=1 role=1
+zero_m195_s2 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=2 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000 fate=1 trace=1 route=1 length=1 role=1
+fail_m195_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000 fate=1 inert_operand=fail trace=1 route=1 length=1 role=1
+fail_m195_s2 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=2 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000 fate=1 inert_operand=fail trace=1 route=1 length=1 role=1
+zero_nomut_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill census=1 fidelity=5000 fate=1 trace=1 route=1 length=1 role=1
+fail_nomut_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill census=1 fidelity=5000 fate=1 inert_operand=fail trace=1 route=1 length=1 role=1
