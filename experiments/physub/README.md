@@ -1864,8 +1864,173 @@ do not alter the dynamics: the v9 baseline is byte-identical to v8.
     - Two seeds per rule; one erasure price (`e_erase` 1).
     - Rates are per strict entry-0 site, and the strict sets differ in size and length
       between rules.
-- **v27** (v18-v25 recomputed with the copy-born census trial): runs in progress; the entry
-  follows.
+- **v27** (v18-v25 recomputed with the copy-born census trial; measurement only; revision
+  34839f4, job list `v27_census_born.txt`; 12 jobs in one queue with v26's 4 on 4 cores,
+  05:19 to 09:42). The research channel asked to fix Known issue 7, recompute the strict
+  counts it affects, and say which conclusions of v13-v25 change. Since 34839f4 a key that
+  is strict from reset volatile offsets is tried again from the values an exact copy
+  carries at birth, and is strict only if both trials are (see `census_born` above).
+  Otherwise it is `loose`. The two-carrier replicator verdict is unchanged; v13-v17 use only
+  that verdict (census replicators and classes), so they need no recompute. One run per
+  distinct dynamics of v18-v25 carries every observer line those versions used; the job
+  list maps runs to versions.
+  - **Checks.**
+    - In all 12 runs, the data rows, the final line and the `# physics`, `# classes` and
+      `# subst` lines equal those of the v23 runs of the same names, and so do the
+      `# census` fields before `strict=`. Every line that uses the strict verdict can
+      change, `# lineage` included. Every removed site moves to `loose`.
+    - With `census_born=0`, `ps_probe` at 34839f4 gives the same output as a23e624 byte
+      for byte (v25 `zero_s1` settings, to 60k). With `census_born=1` every line that does
+      not use the strict verdict is unchanged; the run takes about a quarter longer.
+    - At all 80 fate checkpoints (eight runs with `fate=1`) the strict balance equals the
+      strict count, and the census mismatch, untracked, stale and replaced counts are 0.
+      The v24 decomposition identity holds (residual at most 1.8e-16) and the v25 ledger
+      of the mean closes (at most 4.5e-8) in the six runs with `length=1`.
+  - **Strict sites** (census, reset-only → copy-born, with the share the second trial
+    removes):
+
+    | run | 50k | 150k | 250k | 350k | 500k |
+    | --- | --- | --- | --- | --- | --- |
+    | `zero` s1 | 6,522 → 6,269 (3.9%) | 5,433 → 5,178 (4.7%) | 3,953 → 3,693 (6.6%) | 3,329 → 3,052 (8.3%) | 2,984 → 2,767 (7.3%) |
+    | `zero` s2 | 6,385 → 6,180 (3.2%) | 5,515 → 5,202 (5.7%) | 3,903 → 3,620 (7.3%) | 3,653 → 3,389 (7.2%) | 3,280 → 3,048 (7.1%) |
+    | `fail` s1 | 6,656 → 6,453 (3.0%) | 5,415 → 5,222 (3.6%) | 3,768 → 3,537 (6.1%) | 3,310 → 3,069 (7.3%) | 3,075 → 2,885 (6.2%) |
+    | `fail` s2 | 6,567 → 6,354 (3.2%) | 5,355 → 5,140 (4.0%) | 3,694 → 3,464 (6.2%) | 3,398 → 3,196 (5.9%) | 3,092 → 2,925 (5.4%) |
+    | `t2_s1` | 6,579 → 6,378 (3.1%) | 5,477 → 5,187 (5.3%) | 3,779 → 3,514 (7.0%) | 3,375 → 3,118 (7.6%) | 3,266 → 3,031 (7.2%) |
+    | `t3_s1` | 6,605 → 6,405 (3.0%) | 5,006 → 4,745 (5.2%) | 3,563 → 3,303 (7.3%) | 3,405 → 3,192 (6.3%) | 3,161 → 2,951 (6.6%) |
+    | `zero` nomut s1 | 8,677 → 8,671 (0.1%) | 8,619 → 8,613 (0.1%) | 8,497 → 8,479 (0.2%) | 8,421 → 8,386 (0.4%) | 8,089 → 8,031 (0.7%) |
+    | `zero` nomut s2 | 8,673 → 8,656 (0.2%) | 8,606 → 8,592 (0.2%) | 8,542 → 8,526 (0.2%) | 8,359 → 8,299 (0.7%) | 7,717 → 7,596 (1.6%) |
+    | `fail` nomut s1 | 8,722 → 8,716 (0.1%) | 8,657 → 8,654 (0.0%) | 8,615 → 8,615 (0.0%) | 8,613 → 8,612 (0.0%) | 8,589 → 8,574 (0.2%) |
+    | `fail` nomut s2 | 8,703 → 8,698 (0.1%) | 8,662 → 8,660 (0.0%) | 8,622 → 8,619 (0.0%) | 8,658 → 8,657 (0.0%) | 8,604 → 8,603 (0.0%) |
+
+    - With copy error (six runs) the second trial removes 3.0-3.9% of strict sites at 50k,
+      5.4-7.3% at 500k and at most 6.4-9.0% at any census. They belong to 18.9-22.6% of
+      strict genotypes at 50k and 11.6-15.9% at 500k: many rare genotypes. Without copy
+      error it removes at most 0.7%, except 1.6% in `zero` nomut s2 at 500k.
+    - Every removed site becomes `loose`; `prop` and `other` counts do not change. The
+      removed sites hold a filled own-site pointer offset (`ref_inert_filled`) in 88-92% at
+      50k and 98-100% from 250k (copy-error runs), and all but 3 of the nomut sites removed
+      at 50k, 250k and 500k.
+    - Ancestor control (`anc_s2`): 8 of 14 strict sites at 5k, 6 of 12 at 10k and all 5 at
+      15k are removed, each with a filled pointer offset. From 15k no strict site remains,
+      against 1-5 before to the last census at 80k (extinct at 83,389). `anc_s1` has none
+      either way.
+  - **What changes, by version** (reset-only as recorded above → copy-born; ranges and
+    lists as in each entry). The counts that do not use the strict verdict (births,
+    re-ignitions, exact births, decays, active sites, matter) are unchanged.
+    - *v18.* The same 120 genotype-points are scanned and all stay strict.
+      - Copies by strict parents fall 2.3-7.0% per window, and the strict share of their
+        children rises 0.4-2.3 points (85.0 / 82.9 / 84.2 / 84.9 at 50k and 67.2 / 64.2 /
+        67.5 / 68.5 at 500k, were 83.5 / 82.4 / 83.3 / 84.5 and 65.0 / 62.9 / 66.2 / 67.6).
+        Non-strict children of strict parents, in points of their copies: `multi` 2.2 to
+        9.2 (3.2 to 11.9), point 4.4-6.6 (4.0-6.2), gap and env within 0.6 of before; the
+        total is 15.7-38.1 (16.6-39.5).
+      - Population: strict sites as in the table above, 9-10% filled at 50k (11-13%) and
+        86-92% at 500k (87-92%); `loose` up to 350 sites (52); re-ignited strict 13.0-21.7%
+        at 50k and 2.0-5.7% at 500k (14.3-23.3% and 3.0-8.7%); the genotype median strict
+        share 62-89% (64-89%).
+      - Strict parents make 92-93% of copy births at 50k, 74-85% at 200k and 60-80% at 500k
+        (94-95%, 77-90%, 63-85%); per strict site 0.33-0.41 copies per window rising to
+        0.68-0.79 (0.32-0.40 to 0.66-0.78); their mean length rises from 38.6-39.2 to
+        50.6-51.6 (38.7-39.4 to 50.8-51.9). Where the length went is unchanged.
+      - Top genotypes: the in-run strict share falls by at most 1.8 points (74.9% at 500k,
+        76.7%). Alone, the strict share of first copies changes in 4 of 120 points, by at
+        most 0.5; more substitutions leave a non-strict key, so the sensitive length is
+        23.5-28.0 (20.8-28.0) and pred 91.7-92.9% (91.9-93.6%); knockouts kill 26-32 bytes
+        (25-32).
+      - Balance: the shortfall per strict site per 5k ticks is −0.01 to 0.23 up to 150k
+        and 0.04 to 0.56 after (−0.02 to 0.22 and 0.06 to 0.54).
+      - Without copy error: strict sites 8,031 / 7,596 at 500k (8,089 / 7,717), strict
+        children of strict parents 97.2 / 95.5% (96.8 / 94.6%), total loss 2.9-4.5%
+        (3.2-5.4%), mean length to 40.7-42.8 (40.8-42.9).
+      - Ancestor alone: 9 of the 12 genotype-points stay strict and give 91.5-92.0% strict
+        first copies; the 34- and 62-byte sites at 5k and a 36-byte site at 20k are now
+        `loose`. `ancestor()` gives 92.0% (m 28, sensitive length 23.25, pred 93.2%;
+        knockouts kill 23 of 28), against polite's 92.0% (m 37, 26.75, 92.2%).
+      - Ancestor in the run (`anc_s2`): strict parents' children are strict in 81% of 26
+        copies at 5k, 50% of 28 at 10k and 15% of 13 at 15k (70% of 33, 44% of 32, 18% of
+        17); residue per copy rises from 0.19 to 1.18 to 5.85 (0.33, 1.03, 4.65) and
+        foreign offsets from 0.08 to 0.86 to 2.38 (0.36, 0.84, 2.18). Strict sites are 6, 6
+        and 0 against 12, 30 and 23 `other` sites (14, 12 and 5 strict); the decline is
+        unchanged.
+    - *v19.* After 150k, in-place losses total 26,568 / 24,977 (were 27,504 / 26,814), but
+      their routes shift.
+      - A neighbor's write at 36 now ends strict status: at least 10,289 / 10,659 of the
+        losses (39-43%) change 36, against at least 646 / 777. With 36, 38 and 40
+        together, at least 43-47% (at least 9%). Code inspection and v25's scratch checks:
+        a filled 36 leaves polite's so reset ineffective, so the key copies off register
+        from copy-born counters and is now `loose`. Before, such a site stayed strict
+        and its later fill of 30 counted as the loss.
+      - The fill of 30 alone: 6,689 / 6,925 (was 11,513 / 12,111): 25-28% of in-place
+        losses (42-45%), 3.9-4.0% of all strict losses (6.2-6.4%) and 32% of the net
+        in-place loss (58-60%).
+      - The site itself writes 24-31% of in-place losses (44-47%); other sites 69-76%
+        (53-56%). Without copy error: fill of 30 18-19% (32-34%), the site 36% (62-64%), a
+        write at 36 44%.
+      - Unchanged: converted activations rarely finish a copy (0.23 copies per conversion
+        after 150k); in-place change carries the decline.
+    - *v20.* Strict sites at 500k: 2,885 / 2,925 under `fail` against 2,767 / 3,048 under
+      `zero` (were 3,075 / 3,092 against 2,984 / 3,280); two seeds still do not separate
+      the rules. Without copy error 8,574 / 8,603 (8,589 / 8,604): the decline stays
+      removed. Per strict site the net in-place loss is −0.086 / −0.085 (`zero`) against
+      −0.086 / −0.094 (`fail`), and the net decline −0.009 to −0.010 under both.
+      Offset-0 self-losses fall 92-100% (94-100%). Changed: foreign fills of 36, 38 and 40
+      with copy error change by −8% to +1% (were +21% to +30%); without copy error they
+      fall 93-96% (83-87%).
+    - *v21.* Foreign-written in-place losses: the victim's pointer direction is filled in
+      98-99% (94-97%); it is offset 30 in 36-44% (72-79%) and 34-40 in 54-62% (17-22%).
+      Writers: strict 32-38% (40-47%), `loose` or `prop` 13-16% (4-6%), `other` 49-52%
+      (48-54%); the `MOV` at 15 in 79-85% (85-89%). Off-entry ignitions are unchanged in
+      substance: `other` sites ignite 86-99% (87-100%), mostly at 33 and 31.
+    - *v22.* With copy error, strict sites fall from 6.2-6.5k at 50k to 2.8-3.0k at 500k
+      (6.4-6.7k to 3.0-3.3k), still about 2-fold. Past 48 bytes at 500k: 69-79% (70-80%).
+    - *v24.* D is 0.324-0.393 (0.313-0.379). Shares of D:
+      - in place, fill of 30 by the `MOV` at 15: 3.6-4.2% (7.3-8.6%); all fills of 30
+        4.6-5.1% (8.5-9.7%); with children whose 30 another site wrote, at most 10-12%
+        (14-16%);
+      - in place, foreign at pointers 34-40 only: 8.4-9.4% (1.5-2.1%);
+      - `multi` children 14-15% (17-18%); whole decay 23.5-25.0% (24-25%); `env` 23-26%
+        (23-26%); re-ignitions at 0 10-14% (11-14%).
+
+      Late, the `MOV` fills of 30 are 27-33% of entry-0 in-place losses (59-67%), and
+      pointer-only fills 56-62%. The largest terms are still whole decay of longer keys
+      and foreign differences in children.
+    - *v25.* Mean z changes by 0.2-0.3 bytes (53.1 / 52.0 / 53.8 / 53.5 at 500k, were 53.4
+      / 52.3 / 54.0 / 53.7); the strict entry-0 count by 3-7%.
+      - Ledger, 0 to 500k: foreign additions in place to keys that stay strict +18.6 to
+        +19.1 (+34.7 to +38.2); the parent's z against the mean +9.1 to +12.5 (−0.4 to
+        +3.4); re-ignitions +14.9 to +16.0 (+13.2 to +14.0); foreign losses in place −11.35
+        to −12.27 (−17.6 to −19.2); whole decay −26.4 to −28.7 (−28.3 to −30.1).
+      - In-place additions are 75-77% of bytes added to strict keys (80-82%), 0.24-0.25
+        bytes per strict site per 5k ticks over the run (0.40-0.42). Many additions had
+        gone to keys with 36 filled, which are now `loose`.
+      - Pointer states: strict parents with 36 filled make no copies (0.6-0.9% in
+        register and 2.0-2.5% off register before). Off-register parents make 7.0-7.5%
+        of copies (10.1-10.5%), 82-84% of `multi` children (87-88%) and 55-61% of the
+        additions by the `MOV` at 15 in place (70-74%).
+      - By z bin, late, strict children minus exits still falls with length (−0.022 to
+        +0.038 up to 44 bytes, −0.175 to −0.157 at 57-60); foreign losses in place per
+        site are higher in every bin.
+  - **Which conclusions change.**
+    - The ranking of in-place loss routes (v19, v21, v24): the fill of a pointer
+      direction, mostly 36, is now the largest foreign route, and the fill of 30 is
+      second. Both use the own-site direction role of INERT, so the reading that both
+      depend on it is unchanged and holds for a larger share.
+    - v20: with copy error the operand split no longer raises foreign fills of 36, 38 and
+      40.
+    - v25: the in-place credit is about half as large, and filled-36 parents drop out of
+      the strict set; the source of length (foreign writes, mostly in place) and the
+      answer (a by-product of the write rule, no gain for long keys) stand, and v26
+      confirms the write-rule cause.
+    - Unchanged: v13-v17 (two-carrier verdict); v18's reading (in the run the strict share
+      of children falls far below the 92% of the same genotypes alone, through env, multi
+      and gap copies, not length sensitivity) with `multi` smaller; v20's finding that two
+      seeds do not separate the operand rules and that without copy error `fail` removes
+      the decline; v21's off-entry ignitions; v22's 2-fold decline.
+  - **Limits.**
+    - The born values are those of the reference's exact child. A variant whose own
+      children carry other counter values is still tried with polite's.
+    - A key that fails only the born trial may still copy faithfully from other starting
+      values; `loose` means it does not from these.
 
 Working interpretation (v13 and code inspection): saturation starts the decline in every
 run, and the space then fills with activations that no longer replicate. An activation ends
