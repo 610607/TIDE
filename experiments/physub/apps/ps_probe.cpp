@@ -713,6 +713,14 @@ struct RouteTally {
 // operand target [x] of INC, DEC, JZ, JMP, WALL, UNWALL (not the byte a MOV copies, nor RND's
 // target). Under inert_operand=fail an instruction with an INERT operand reads nothing. At each
 // exit, the extra offsets that are non-inert in the key are counted with these marks.
+//
+// Pointer state (# lengthptr, added after v25): polite resets its counters so [31] and do [33]
+// to K each cycle through the pointers at 36 and 38. With [36] or [38] filled that MOV writes
+// into a neighbor instead, and the own counter keeps its value. The census trial resets the
+// volatile offsets, so the counters start in register there; a copy-born child starts with
+// the values its parent's loop copied (so = 31, do = 33 mod 64). The line splits live strict
+// entry-0 activations, their copy births and the foreign MOV@15 additions they receive by the
+// so/do pointer state of the parent or writer and whether its counters are in register mod 64.
 enum LenCat { kLCopyS = 0, kLCopyO, kLReig, kLSelf, kLGain, kLFound, kLDecay, kLWick, kLLossF,
               kLLossS, kLInF, kLInS, kLCats };
 constexpr const char* kLenCatName[kLCats] = {
@@ -730,6 +738,13 @@ enum BinField { kBExpo = 0, kBCopies, kBStrict, kBExact, kBDecay, kBWick, kBLoss
                 kBFields };
 constexpr int kZBins = 7;
 constexpr int kComps = 12;
+// # lengthptr (polite): pointer state 0 none, 1 [36] filled only, 2 [38] only, 3 both (the
+// directions of the so and do pointers, which MOV 34 36 and MOV 34 38 reset each cycle);
+// register: (so - do) mod 64 from [31] and [33], 0 = in register. Copy-birth fields: copies,
+// strict child, child carries the parent's key, multi, env (census::diff_sources).
+enum PBField { kPBCopies = 0, kPBStrict, kPBExact, kPBMulti, kPBEnv, kPBFields };
+inline int ptr_state(const uint8_t* b) { return (b[36] != INERT) + 2 * (b[38] != INERT); }
+inline int reg_of(const uint8_t* b) { return (b[31] - b[33]) % 64 != 0; }
 inline int z_bin(int z) { return z <= 40 ? 0 : std::min(kZBins - 1, (z - 41) / 4 + 1); }
 struct LengthTally {
   uint64_t n[kLCats] = {};
@@ -749,6 +764,10 @@ struct LengthTally {
   uint64_t ex_n = 0;
   uint64_t ex_off[64] = {}, ex_exec[64] = {}, ex_ctl[64] = {};
   uint64_t empty = 0;  // events that left or found the set empty (the mean is undefined)
+  // # lengthptr: so/do pointer directions 36/38 (kPtrStates) x counter register (kRegs).
+  uint64_t pb[4][2][kPBFields] = {};  // copy births by strict entry-0 parents, by the parent
+  uint64_t pw[4][2][2] = {};          // foreign MOV@15 additions: bytes, by rep writers
+  uint64_t pd[64] = {};               // shift additions by (source - written offset) mod 64
 };
 
 struct FateTally {
@@ -1475,6 +1494,13 @@ private:
       l_.comp[pc][kBCopies] += 1;
       l_.comp[pc][kBStrict] += strict;
       l_.comp[pc][kBExact] += exact;
+      const census::Diff d = census::diff_sources(w_, b, *g_ref);
+      uint64_t* f = l_.pb[ptr_state(pb)][reg_of(pb)];
+      f[kPBCopies] += 1;
+      f[kPBStrict] += strict;
+      f[kPBExact] += exact;
+      f[kPBMulti] += d.cls == census::kClsMulti;
+      f[kPBEnv] += d.cls == census::kClsEnv;
     }
     if (!strict0(c)) return;
     if (kind != kCopy || !parent0) {
@@ -1528,6 +1554,10 @@ private:
               const int p = wb[16] % len_;
               const int src_off = wb[(p + 1) % len_] % len_;
               src = wb[p] != INERT ? kIAddMovNbr : src_off == k ? kIAddMovAl : kIAddMovShift;
+              uint64_t* f = l_.pw[ptr_state(wb)][reg_of(wb)];
+              f[0] += 1;
+              f[1] += fate_[wr].status == kRep;
+              if (src == kIAddMovShift) l_.pd[(src_off - k + len_) % len_] += 1;
             } else {
               src = kIAddFOther;
             }
@@ -1640,6 +1670,27 @@ private:
       o << " p" << i / 4 << 't' << i % 4 << ':';
       for (int f = 0; f < kBFields; ++f) o << (f ? "/" : "") << l_.comp[i][f];
     }
+    o << std::endl;
+    // Live strict entry-0 activations by pointer state and register (bytes at the checkpoint).
+    uint64_t live[4][2] = {};
+    for (int32_t s = 0; s < sites_; ++s) {
+      if (!strict0(fate_[s])) continue;
+      const uint8_t* b = &snap_[static_cast<size_t>(s) * len_];
+      live[ptr_state(b)][reg_of(b)] += 1;
+    }
+    static constexpr const char* kPtrName[4] = {"none", "f36", "f38", "both"};
+    o << "# lengthptr tick=" << tick
+      << " (so/do directions none/f36/f38/both x in/off register) live; copies/strict/exact/"
+         "multi/env; mov15_add/by_rep";
+    for (int ps = 0; ps < 4; ++ps) {
+      for (int rg = 0; rg < 2; ++rg) {
+        o << ' ' << kPtrName[ps] << (rg ? "_off:" : "_in:") << live[ps][rg] << ';';
+        for (int f = 0; f < kPBFields; ++f) o << (f ? "/" : "") << l_.pb[ps][rg][f];
+        o << ';' << l_.pw[ps][rg][0] << '/' << l_.pw[ps][rg][1];
+      }
+    }
+    o << " shift_by(src-dst):";
+    for (int k = 0; k < len_; ++k) if (l_.pd[k]) o << ' ' << k << ':' << l_.pd[k];
     o << std::endl;
     l_ = LengthTally{};
     l_n_prev_ = l_n_;
