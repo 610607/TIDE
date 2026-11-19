@@ -2268,6 +2268,114 @@ do not alter the dynamics: the v9 baseline is byte-identical to v8.
   - **Limits.** Two seeds per rule; 500k ticks. The refused writer pays and gets nothing
     back. Activity is read when writes are applied, before the tick's ignitions, so a
     site that ignites in a tick can still be written in that tick.
+- **v30** (copy errors only on cross-site `MOV`s; changes the dynamics; revision 80a16c9,
+  job list `v30_mut_scope.txt`; 4 jobs on 4 cores, 1 hour 42 minutes to 1 hour 58 minutes
+  per run). The research channel asked for the second length-growth control of v25 (Open
+  proposals): copy error applies only to a `MOV` whose destination names a neighbor
+  (`mut_scope=cross`, Model above). Counter set-up and resets then copy exactly, while
+  children still receive errors. The runs repeat v27 `zero_m195_s1/s2` and
+  `fail_m195_s1/s2` with `mut_scope=cross` and nothing else changed (`ext_active` stays
+  `allow`, `ext_write` stays `fill`). The test is criterion 1 alone, as in v29. Lists are
+  `zero` s1 / s2; `fail` s1 / s2.
+  - **Criterion 1: all four runs fail.** Strict sites:
+
+    | run | 350k → 500k | 500k / 50k | v27, same seed |
+    | --- | --- | --- | --- |
+    | `zero` s1 | 3,208 → 2,951 (−257) | 0.449 | 3,052 → 2,767 (−285); 0.441 |
+    | `zero` s2 | 3,369 → 3,083 (−286) | 0.469 | 3,389 → 3,048 (−341); 0.493 |
+    | `fail` s1 | 3,166 → 2,963 (−203) | 0.444 | 3,069 → 2,885 (−184); 0.447 |
+    | `fail` s2 | 3,527 → 3,081 (−446) | 0.460 | 3,196 → 2,925 (−271); 0.460 |
+
+    | tick | `zero` s1, v30 / v27 | `zero` s2 | `fail` s1 | `fail` s2 |
+    | --- | --- | --- | --- | --- |
+    | 50k | 6,572 / 6,269 | 6,579 / 6,180 | 6,671 / 6,453 | 6,696 / 6,354 |
+    | 150k | 5,247 / 5,178 | 5,236 / 5,202 | 5,053 / 5,222 | 5,389 / 5,140 |
+    | 200k | 4,698 / 4,544 | 4,774 / 4,293 | 4,698 / 3,989 | 5,012 / 4,073 |
+    | 250k | 3,884 / 3,693 | 4,028 / 3,620 | 3,787 / 3,537 | 4,503 / 3,464 |
+    | 300k | 3,591 / 3,149 | 3,781 / 3,400 | 3,253 / 3,303 | 3,974 / 3,114 |
+    | 350k | 3,208 / 3,052 | 3,369 / 3,389 | 3,166 / 3,069 | 3,527 / 3,196 |
+    | 400k | 3,105 / 3,023 | 3,304 / 3,241 | 2,939 / 2,931 | 3,323 / 3,003 |
+    | 450k | 2,949 / 3,106 | 3,125 / 3,000 | 2,995 / 3,001 | 3,328 / 3,104 |
+    | 500k | 2,951 / 2,767 | 3,083 / 3,048 | 2,963 / 2,885 | 3,081 / 2,925 |
+
+    The least-squares slope over 350k-500k is −93 / −104; −55 / −133 strict sites per 50k
+    ticks (v27: −77 / −126; −48 / −71).
+  - **Checks.**
+    - With `mut_scope` unset or `all`, `ps_probe` at 80a16c9 gives the same output as
+      bfab877 byte for byte (v27 `zero_m195_s1` settings, to 30k). Unit test 8c: with every
+      `MOV` in error, `cross` leaves the own-site copy exact and gives the neighbor copy the
+      same erroneous byte as `all`.
+    - In every window of the four runs the fate balance equals the strict count with no
+      census mismatch, the v24 identity holds (residual at most 8.1e-17), and the length
+      ledger closes.
+  - **What changed** (executed runs; causes marked as inference or code inspection).
+    - **`multi` children.** Their share of copies by strict entry-0 parents falls from
+      1.5 / 2.0; 1.4 / 1.9% to 0.7 / 1.3; 0.7 / 1.0% at 50k, but reaches 8.5 / 7.9;
+      8.5 / 8.0% at 500k (v27: 9.2 / 8.7; 9.1 / 8.9%). Over the run there are 10,886 /
+      11,338; 11,827 / 11,292 (v27: 12,454 / 12,982; 12,764 / 13,199), 7-14% fewer.
+      Parents off register with neither 36 nor 38 filled (`# lengthptr`) still make
+      78-80% of them (v27: 78-79%).
+    - **Off-register copies.** Copies by off-register strict entry-0 parents fall from
+      1.6-2.5% to 0.8-1.6% of those parents' copies at 50k, and from 7.4-7.5% to 6.7-7.1%
+      over the run. At 500k they are 10.0-10.8% (v27: 10.7-11.6%).
+      Code inspection: a completed in-register loop leaves both counters at 0, which is
+      K mod 64. A reset that does not happen then leaves the next copy in register; it
+      shifts a copy only when the counters do not start from a completed loop, as in a
+      copy-born child's first cycle. A reset that writes a wrong value, the route v30
+      removes, shifts a copy in any cycle. Two reset `MOV`s per cycle at `p_mut` = 0.003
+      predict about 0.6% of copies shifted that way, close to the observed drop of
+      0.3-0.8 points (inference). The late rise of off-register copies therefore comes
+      from other routes. v26's scratch checks found one, a walled read of K through a
+      filled 34, which acts in a first cycle. Filled 34 spreads as in v27: 71-93% of
+      strict sites at 500k (v27: 71-91%). The split between routes was not measured.
+    - **Shifted in-place additions.** Bytes added in place by shifted `MOV`s at 15
+      (`# lengthptr`, writers of any status) fall by 19-24% over the run. Those at shifts
+      31 and 62, which unreset counters give (v26), and 63 and 1 stay as in v27 (13.9-15.6
+      against 13.9-15.8 thousand). Those at other shifts fall from 27.9-30.5 to 19.6-20.3
+      thousand, as expected if a wrong reset value spreads its shift over all values
+      (inference).
+    - **Mass shortage starts 50k-100k ticks later.** Writes refused for want of a free
+      monomer (`no_mass`) per 50k window:
+
+      | window ending | `zero` s1, v30 / v27 | `zero` s2 | `fail` s1 | `fail` s2 |
+      | --- | --- | --- | --- | --- |
+      | 150k | 0 / 10 | 0 / 26 | 0 / 68 | 0 / 294 |
+      | 200k | 292 / 2,902 | 41 / 8,287 | 872 / 32,157 | 11 / 18,445 |
+      | 250k | 10,121 / 35,419 | 6,116 / 26,304 | 37,875 / 65,448 | 1,928 / 54,694 |
+      | 300k | 14,028 / 39,314 | 17,971 / 30,158 | 69,211 / 54,665 | 28,399 / 74,913 |
+      | 350k | 37,848 / 45,431 | 31,207 / 25,846 | 70,774 / 77,364 | 53,688 / 75,283 |
+
+      Free monomers at 150k are 45.0 / 53.7; 46.8 / 55.7 thousand (v27: 37.7 / 35.4;
+      34.0 / 30.9). Strict sites stay above v27 at 200k and 250k in all four runs and at
+      300k and 350k in three. At 500k they are 1-7% above v27, as at 50k (3-7%), so the
+      ratio does not change.
+    - **Length grows more slowly at first, then catches up.** Mean z of strict entry-0
+      activations is 40.2 / 40.3; 40.3 / 40.2 at 50k and 46.5 / 46.5; 47.8 / 46.4 at 250k
+      (v27: 40.6 / 41.0; 40.6 / 41.0 and 48.1 / 47.5; 49.1 / 49.4), but 52.7 / 52.5;
+      53.2 / 52.0 at 500k (v27: 53.1 / 52.0; 53.8 / 53.5). In the v25 ledger over the run,
+      the foreign in-place credit falls to +15.7 / +15.4; +16.3 / +14.8 (v27: +18.6 to
+      +19.1), strict children to +12.8 / +9.9; +15.2 / +14.8 (v27: +15.9 to +18.8) and
+      decay to −20.7 / −19.8; −22.5 / −23.4 (v27: −26.4 to −28.7); the net is +12.7 /
+      +12.5; +13.2 / +12.1 (v27: +12.1 to +13.8). That fewer off-register copy loops
+      early mean fewer foreign additions and so a later shortage is inference.
+    - Copies born per run are 0.90 / 0.93; 0.95 / 0.87 million (v27: 0.94 / 0.94; 1.04 /
+      1.04).
+  - **v24 decomposition** (per strict entry-0 site per 5k ticks, 100k-150k against
+    350k-500k). D is 0.362 / 0.320; 0.388 / 0.321 (v27: 0.365 / 0.324; 0.393 / 0.356).
+    `multi` is 12.8-14.5% of D (v27: 13.8-15.3%), late `multi` per site 0.050-0.062
+    (v27: 0.057-0.065). Whole decay is 22.2-27.4% (v27: 23.5-25.0%) and `env` 23.5-25.4%
+    (v27: 23.4-26.2%). Own in-place losses and gains at 100k-150k both fall (losses
+    0.009-0.015 to 0.001-0.008 per site, gains 0.009-0.017 to 0.001-0.008), and their
+    shares of D shift by up to 6.5 points in opposite directions. The remaining terms move
+    by at most 3 points.
+  - **Answer.** Removing copy error from `MOV`s into the own site removes the
+    counter-reset route, halves `multi` children early and delays mass shortage by
+    50k-100k ticks. Strict counts end only 1-7% above v27, and criterion 1 fails in all
+    four runs. Most off-register copying late, and most `multi` children, come from
+    routes other than a copy error in a counter reset.
+  - **Limits.** Two seeds per rule; 500k ticks. `cross` also makes probes and other
+    own-site `MOV`s exact, not only resets. The routes behind the late off-register
+    copies are not separated.
 
 Working interpretation (v13 and code inspection): saturation starts the decline in every
 run, and the space then fills with activations that no longer replicate. An activation ends
@@ -2657,12 +2765,11 @@ census changes):
 
 - **Length-growth controls** (from v25; each changes one mechanism and needs agreement
   first). Done at the research channel's request: `ext_write=erase` against `fill` (v26),
-  the copy-born census trial (34839f4, v27) and refusing foreign writes into active sites
+  the copy-born census trial (34839f4, v27), refusing foreign writes into active sites
   (`ext_active=refuse`, v29: in-place additions gone, decline delayed, criterion 1 failed
-  in all four runs). Not run:
-  - Copy errors on cross-site writes only (new option): removes the counter-reset route to
-    off-register copying while keeping errors in children. The research channel put it
-    second, after v29.
+  in all four runs) and copy errors on cross-site writes only (`mut_scope=cross`, v30:
+  early `multi` children halved, mass shortage 50k-100k ticks later, criterion 1 failed
+  in all four runs).
 - **Per-op decay rates and size-dependent mobility** (requested 2026-11-17): sources, code
   observations and candidate designs are in
   [the decay and mobility note](../../docs/research/decay-and-mobility.md). The uniform
