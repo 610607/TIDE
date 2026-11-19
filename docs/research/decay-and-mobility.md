@@ -552,6 +552,7 @@ A third pass on 2026-11-17, for section 6, cached An et al. 2014, Takeuchi, Hoge
 Kaukinen et al. 2002 and Robinson and Robinson 2001 were not cached: their PDF hosts returned
 bot challenges, and the open-access full-text services failed. Their abstracts were checked
 through NCBI. Not accessible and not read: Lindahl and Nyberg 1972 (one subagent saw it only
-in a scan inside a court filing; not used) and Radzicka and Wolfenden 1996. Ofria and Wilke
+in a scan inside a court filing; not used; that scan was registered in the manifest on
+2026-11-19) and Radzicka and Wolfenden 1996. Ofria and Wilke
 2004 was listed here as not accessible; that was wrong: it is cached in the manifest from
 2026-11-15, and only a later download in another container failed TLS verification.

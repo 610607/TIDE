@@ -1,8 +1,8 @@
 # Cached Research References
 
-Retrieved and verified: 2026-11-15; decay and mobility additions 2026-11-17; genome-length additions 2026-11-18.
+Retrieved and verified: 2026-11-15; decay and mobility additions 2026-11-17; genome-length additions 2026-11-18; earlier downloads registered 2026-11-19.
 
-The cache contains **68 distinct PDFs**. Read local copies before downloading again. The [manifest](manifest.json) records source URLs, versions, byte counts, page counts, and SHA-256 hashes. Original downloaded bytes are preserved.
+The cache contains **72 distinct PDFs**. Read local copies before downloading again. The [manifest](manifest.json) records source URLs, versions, byte counts, page counts, and SHA-256 hashes. Original downloaded bytes are preserved.
 
 Reference PDFs are local-only and ignored by Git. Public availability is not treated as a redistribution license. The generated review PDF is a separate authored artifact.
 
@@ -140,6 +140,20 @@ Nordin and Banzhaf copy has no printed page numbers; cite its PDF pages.
 Not cached; see [unavailable references](unavailable.md): Knibbe et al. 2007 (Aevol,
 noncoding DNA), Soule and Foster 1998 (removal bias), and Langdon and Poli 1997 (fitness
 causes bloat).
+
+## Registered earlier downloads (2026-11-19)
+
+Four PDFs downloaded on 2026-11-17 during the mobility and decay searches and kept outside
+the cache until now. None is cited in the research notes. The Lindahl and Nyberg copy is a
+third-party scan filed in a USPTO PTAB proceeding, not an author, publisher or repository
+copy; cite the publisher version.
+
+| Reference | Cached version | Pages | Online source |
+| --- | --- | --- | --- |
+| [Analytical description of the diffusion in a cellular automaton with the Margolus neighbourhood in terms of the two-dimensional Markov chain](pdf/kulagin-shapovalov-2022-margolus-diffusion-arxiv-v3.pdf) | Preprint, arXiv:2208.03014v3, 16 Apr 2023; the published version is cached above | 29 | [Source](https://arxiv.org/pdf/2208.03014v3) |
+| [Cellular Automata Machines](pdf/margolus-toffoli-1987-cellular-automata-machines.pdf) | Published article, Complex Systems 1 (1987) 967-993; publisher-hosted scan; not the 1987 book | 27 | [Source](https://wpmedia.wolfram.com/uploads/sites/13/2018/02/01-5-5.pdf) |
+| [Invertible cellular automata: a review](pdf/toffoli-margolus-1990-invertible-cellular-automata.pdf) | Published article, Physica D 45 (1990) 229-253; author-hosted scan | 25 | [Source](https://people.csail.mit.edu/nhm/ica.pdf) |
+| [Rate of depurination of native deoxyribonucleic acid](pdf/lindahl-nyberg-1972-rate-of-depurination.pdf) | Published article, Biochemistry 11(19):3610-3618; scan filed as Exhibit 2087 in USPTO PTAB proceedings | 9 | [Source](https://s3-us-west-1.amazonaws.com/ptab-filings%2FIPR2018-00322%2F2087) |
 
 ## Reading notes
 
