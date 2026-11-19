@@ -2177,6 +2177,91 @@ do not alter the dynamics: the v9 baseline is byte-identical to v8.
     - Roles come from the key and its census trial (`op_mask`), not from the run; a byte
       read both as a direction and as a value (polite's 30) counts as `dir`.
     - Two seeds per rule with copy error, one without.
+- **v29** (refuse foreign writes into active sites; changes the dynamics; revision 797cac6,
+  job list `v29_ext_active.txt`; 4 jobs on 4 cores, 01:11 to 02:22). The research channel
+  asked for the fourth control of v25 (Open proposals): a write from another site into a
+  site that holds an activation is refused whatever the bytes (`ext_active=refuse`, above),
+  so nothing outside a running key adds to it or removes from it. The runs repeat v27
+  `zero_m195_s1/s2` and `fail_m195_s1/s2` with `ext_active=refuse` and nothing else
+  changed. The test is criterion 1 alone: with copy error, strict sites (copy-born census
+  trial) do not fall from 350k to 500k, and strict at 500k / strict at 50k ≥ 0.8. Lists
+  are `zero` s1 / s2; `fail` s1 / s2.
+  - **Criterion 1: all four runs fail.** Strict sites:
+
+    | run | 350k → 500k | 500k / 50k | v27, same seed |
+    | --- | --- | --- | --- |
+    | `zero` s1 | 4,512 → 3,777 (−735) | 0.557 | 3,052 → 2,767 (−285); 0.441 |
+    | `zero` s2 | 4,331 → 3,696 (−635) | 0.560 | 3,389 → 3,048 (−341); 0.493 |
+    | `fail` s1 | 4,200 → 3,792 (−408) | 0.555 | 3,069 → 2,885 (−184); 0.447 |
+    | `fail` s2 | 4,357 → 3,849 (−508) | 0.571 | 3,196 → 2,925 (−271); 0.460 |
+
+    | tick | `zero` s1, v29 / v27 | `zero` s2 | `fail` s1 | `fail` s2 |
+    | --- | --- | --- | --- | --- |
+    | 50k | 6,786 / 6,269 | 6,599 / 6,180 | 6,835 / 6,453 | 6,740 / 6,354 |
+    | 150k | 5,939 / 5,178 | 5,923 / 5,202 | 5,743 / 5,222 | 5,606 / 5,140 |
+    | 250k | 5,479 / 3,693 | 5,064 / 3,620 | 5,388 / 3,537 | 5,246 / 3,464 |
+    | 300k | 5,287 / 3,149 | 4,856 / 3,400 | 4,823 / 3,303 | 5,076 / 3,114 |
+    | 350k | 4,512 / 3,052 | 4,331 / 3,389 | 4,200 / 3,069 | 4,357 / 3,196 |
+    | 400k | 4,174 / 3,023 | 4,177 / 3,241 | 3,967 / 2,931 | 3,908 / 3,003 |
+    | 450k | 3,827 / 3,106 | 3,900 / 3,000 | 3,967 / 3,001 | 4,038 / 3,104 |
+    | 500k | 3,777 / 2,767 | 3,696 / 3,048 | 3,792 / 2,885 | 3,849 / 2,925 |
+
+    The least-squares slope over 350k-500k is −255 / −218; −122 / −139 strict sites per
+    50k ticks (v27: −77 / −126; −48 / −71).
+  - **Checks.**
+    - Without `ext_active`, `ps_probe` at 797cac6 gives the same output as 8e16ff2 byte for
+      byte (v27 `zero_m195_s1` settings, to 60k). Unit test 8b: with `refuse`, a copier
+      leaves active neighbors' bytes intact and still writes inactive ones.
+    - In every window of the four runs the five foreign in-place loss routes of `# route`
+      and the foreign in-place terms of `# length` are 0. The fate balance equals the
+      strict count with no mismatch, the v24 identity holds (residual at most 6.7e-17), and
+      the length ledger closes.
+    - Refused writes (`ext_active_blocked`): 72.4 / 70.2; 74.1 / 69.3 million per run,
+      6.8-8.5 million per 50k window after 150k.
+  - **What changed** (executed runs; causes marked as inference).
+    - More strict sites at every checkpoint, and a ratio of 0.56-0.57 instead of
+      0.44-0.49. The fall is later, not stopped: v27 falls fastest at 150k-250k, v29 at
+      300k-350k (−525 to −775 in that window), and v29 is still falling at 500k. So
+      350k-500k, where v27 fell slowly, is v29's steep part.
+    - In both rules the steep part starts with mass shortage. Writes refused for want of a
+      free monomer (`no_mass`) jump from near 0 to tens of thousands per window: in v27 at
+      150k-250k, in v29 at 300k-350k (2,844 → 32,103 / 228 → 17,154; 18,169 → 76,608 /
+      7,809 → 54,753), with 18-26k free monomers left at the end of that window. The two
+      coincide in all eight runs; that the shortage drives the fall is inference.
+    - Length grows more slowly, so mass runs short later. Mean z of strict entry-0
+      activations goes from 40.1 / 40.3; 40.1 / 40.2 at 50k to 49.2 / 48.8; 50.0 / 50.1 at
+      500k (v27: 53.1 / 52.0; 53.8 / 53.5). In the v25 ledger over the run, the foreign
+      in-place credit (+18.6 to +19.1 in v27) and the exits by foreign loss (−11.4 to
+      −12.3) are gone. Strict children credit +11.9 / +11.5; +13.8 / +13.8 (v27: +15.9 to
+      +18.8), re-ignitions +15.9 / +14.0; +14.5 / +16.4 (as before), and decay −17.9 /
+      −16.8; −18.8 / −20.0; with the smaller terms the net is +9.2 / +8.8; +10.0 / +10.1
+      (v27: +12.1 to +13.8).
+    - Foreign writes still reach children under construction, which are not active: they
+      add 26,932 / 30,958; 30,342 / 31,011 bytes to strict children (v27: 26,540-30,253)
+      and +5.6 / +6.5; +6.4 / +6.6 to the mean z.
+    - Copy writes into active neighbors are refused too (code inspection). Copies by
+      strict entry-0 parents rise from 0.31-0.33 to 0.56-0.59 per site per 5k ticks
+      (v27: 0.36-0.39 to 0.72-0.76), and copies born fall from 0.94-1.04 to 0.82-0.93
+      million per run.
+  - **v24 decomposition** (per strict entry-0 site per 5k ticks, 100k-150k against
+    350k-500k). D falls from 0.32-0.39 to 0.244 / 0.237; 0.268 / 0.263. The foreign
+    in-place routes, 13.6-14.5% of D in v27, are 0. What D is made of now:
+    - whole decay rising: 27.2 / 31.4; 26.4 / 25.3%. Decay per site rises 16.5-18.4%, and
+      mean z over the same windows 16.5-19.5%; v25 found that the hazard follows key
+      length;
+    - `env` children (a difference another site wrote): 29.3 / 29.1; 27.2 / 27.4%, rising
+      from 0.031-0.034 to 0.103-0.107 (v27: 0.038-0.041 to 0.123-0.133);
+    - `multi` 12.9-14.8%, `gap` 8.2-14.7%, `point` 2.5-3.5%;
+    - fewer re-ignitions at offset 0: 10.1 / 16.0; 13.5 / 17.1%.
+  - **Answer.** Refusing foreign writes into active sites removes the in-place routes
+    entirely and keeps more strict sites, but within 500k ticks it delays the decline
+    rather than stopping it. What is left acts before a child ignites (foreign writes into
+    children under construction, seen as `env`, `multi` and `gap` children and as length)
+    or follows length (whole decay, mass shortage). Whether v29 levels off later at a
+    higher count is not known from these runs.
+  - **Limits.** Two seeds per rule; 500k ticks. The refused writer pays and gets nothing
+    back. Activity is read when writes are applied, before the tick's ignitions, so a
+    site that ignites in a tick can still be written in that tick.
 
 Working interpretation (v13 and code inspection): saturation starts the decline in every
 run, and the space then fills with activations that no longer replicate. An activation ends
@@ -2565,12 +2650,13 @@ census changes):
 ## Open proposals (none agreed)
 
 - **Length-growth controls** (from v25; each changes one mechanism and needs agreement
-  first). Done at the research channel's request: `ext_write=erase` against `fill` (v26)
-  and the copy-born census trial (34839f4, v27). Not run:
+  first). Done at the research channel's request: `ext_write=erase` against `fill` (v26),
+  the copy-born census trial (34839f4, v27) and refusing foreign writes into active sites
+  (`ext_active=refuse`, v29: in-place additions gone, decline delayed, criterion 1 failed
+  in all four runs). Not run:
   - Copy errors on cross-site writes only (new option): removes the counter-reset route to
-    off-register copying while keeping errors in children.
-  - Refuse foreign writes into active sites (new mode, closer to the kernel default that a
-    program writes only to its own allocation): removes in-place additions altogether.
+    off-register copying while keeping errors in children. The research channel put it
+    second, after v29.
 - **Per-op decay rates and size-dependent mobility** (requested 2026-11-17): sources, code
   observations and candidate designs are in
   [the decay and mobility note](../../docs/research/decay-and-mobility.md). The uniform
