@@ -88,6 +88,22 @@ inline bool parse_ext_write(const std::string& s, ExtWrite& out) {
   return true;
 }
 
+// Whether a write that crosses into a neighbor may land in a site holding an activation.
+//  Allow  : yes; ext_write alone decides
+//  Refuse : no; the write is refused whatever the bytes, and the writer still pays. Activity
+//           is read when writes are applied: after energy payment, before this tick's
+//           ignitions. Checked after the wall crossing and before ext_write.
+// Writes within a site and reads are unaffected.
+enum class ExtActive : uint8_t { Allow, Refuse };
+
+// Parses "allow" | "refuse"; returns false on anything else.
+inline bool parse_ext_active(const std::string& s, ExtActive& out) {
+  if (s == "allow") out = ExtActive::Allow;
+  else if (s == "refuse") out = ExtActive::Refuse;
+  else return false;
+  return true;
+}
+
 // What an INERT operand byte (one of the bytes after the opcode) means.
 //  Zero : offset 0 of the executing site, like any byte value read mod site_len
 //  Fail : no offset; the instruction fails. It pays e_op, advances ip by its length and has
@@ -121,6 +137,7 @@ struct Config {
   int32_t e_bond = 1;          // bond_store off: extra price to change a non-inert byte;
                                // bond_store on: energy held by each non-inert byte
   ExtWrite ext_write = ExtWrite::Allow;
+  ExtActive ext_active = ExtActive::Allow;
   InertOperand inert_operand = InertOperand::Zero;
   int32_t e_erase = 1;         // FillErase: price of erasing a neighbor's byte (replaces
                                // e_bond, or e_act under bond_store)
@@ -189,6 +206,7 @@ struct Stats {
   uint64_t write_no_mass = 0;
   uint64_t write_walled = 0;     // stopped while crossing a wall
   uint64_t ext_blocked = 0;      // neighbor write refused by ext_write
+  uint64_t ext_active_blocked = 0;  // neighbor write refused by ext_active (active target)
   uint64_t ext_erasures = 0;     // neighbor byte erased from outside
   uint64_t reads_walled = 0;
   uint64_t operand_inert = 0;    // inert_operand=fail: paid instructions failed on an INERT operand

@@ -138,6 +138,10 @@ void World::apply_writes(std::vector<Intent>& intents) {
       stats_.write_walled += 1;
       continue;
     }
+    if (it.dir != kSelf && cfg_.ext_active == ExtActive::Refuse && active_at(it.site) > 0) {
+      stats_.ext_active_blocked += 1;
+      continue;
+    }
     uint8_t& slot = site_ptr(it.site)[it.offset];
     const uint8_t old = slot;
     if (it.dir != kSelf && !ext_allowed(old, it.byte)) {

@@ -5,7 +5,8 @@
 //        [hydro_whole=0|1|live|dead] [p_rot=P] [physics=0|1]
 //        [decay_table=T decay_ratio=R] [classes=T1,T2,...] [anc=polite|copier]
 //        [fidelity=W] [fate=1] [trace=1] [route=1] [length=1] [role=1] [inert_operand=zero|fail]
-//        [census_topup=1|0] [census_born=1|0]
+//        [census_topup=1|0] [census_born=1|0] [ext_write=allow|fill|erase]
+//        [ext_active=allow|refuse]
 
 #include "ps_census.hpp"
 #include "ps_core.hpp"
@@ -2166,6 +2167,9 @@ void print_physics(const World& w) {
   if (w.config().inert_operand == InertOperand::Fail) {
     std::cout << " operand_inert=" << s.operand_inert;
   }
+  if (w.config().ext_active == ExtActive::Refuse) {
+    std::cout << " ext_active_blocked=" << s.ext_active_blocked;
+  }
   std::cout << std::endl;
 }
 
@@ -2252,6 +2256,12 @@ int main(int argc, char** argv) {
     else if (k == "ext_write") {
       if (!parse_ext_write(v, cfg.ext_write)) {
         std::cerr << "bad ext_write: " << v << '\n';
+        return 1;
+      }
+    }
+    else if (k == "ext_active") {
+      if (!parse_ext_active(v, cfg.ext_active)) {
+        std::cerr << "bad ext_active: " << v << '\n';
         return 1;
       }
     }

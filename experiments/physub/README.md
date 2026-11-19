@@ -61,6 +61,12 @@ python3 -m http.server 8765 -d viewer   # then open http://localhost:8765/?file=
   An unaffordable instruction waits (or fails with `stall_fail=1`). Blocked writes still pay.
 - **External writes** (`ext_write`): `allow` (default), `fill` (a neighbor may only fill
   INERT bytes), `erase` (fill, or erase to INERT for `e_erase`; no substitution).
+- **Writes into active sites** (`ext_active`, from v29): `allow` (default) or `refuse`. With
+  `refuse`, a write that crosses into a neighbor holding an activation is refused whatever
+  the bytes, and the writer still pays. Activity is read when writes are applied: after
+  energy payment, before the tick's ignitions. The check comes after the wall crossing and
+  before `ext_write`. Writes within a site and reads are unaffected, and the census trial
+  runs under the same rule. `ps_probe` then adds `ext_active_blocked` to `# physics`.
 - **Inert operands** (`inert_operand`): `zero` (default) reads an INERT operand byte as
   offset 0, like any other value mod `site_len`. With `fail`, an instruction with an INERT
   byte among its operands pays `e_op`, advances `ip` by its length and does nothing else.
@@ -123,9 +129,9 @@ python3 -m http.server 8765 -d viewer   # then open http://localhost:8765/?file=
 | `apps/ps_scan.cpp` | Isolated first-copy fidelity, knockout and substitution scans of genotypes listed by the probe |
 | `apps/ps_knockout.cpp` | Single-byte knockout of an ancestor without mutation or decay |
 | `apps/ps_copycut.cpp` | First-copy cut probability of polite alone under block rotation |
-| `tests/ps_test.cpp` | Ledgers, replay, walls, ancestor, starvation, bond barrier, act_cap, ext_write, p_dead, energy diffusion, bond storage, dead_quiet, whole decay, block rotation, whole decay per class, per-op decay tables, census trial and its seeding limit, copy-difference classes, writer records and inert operands |
+| `tests/ps_test.cpp` | Ledgers, replay, walls, ancestor, starvation, bond barrier, act_cap, ext_write, ext_active, p_dead, energy diffusion, bond storage, dead_quiet, whole decay, block rotation, whole decay per class, per-op decay tables, census trial and its seeding limit, copy-difference classes, writer records and inert operands |
 | `viewer/index.html` | Replay viewer (layers, inspector, timeline) |
-| `scripts/run_jobs.sh`, `scripts/jobs/` | Parallel runner and the v8-v28 job lists |
+| `scripts/run_jobs.sh`, `scripts/jobs/` | Parallel runner and the v8-v29 job lists |
 
 `ps_probe` columns per interval: births, `exact%`, `intact_parent%`, top genotype, `copies`
 (child mostly written by the parent) and `reignites` (child code already present),

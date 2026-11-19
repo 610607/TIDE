@@ -209,6 +209,58 @@ void test_ext_write_modes() {
             << erase.ext_erasures << "\n";
 }
 
+// ext_active=refuse: a write that crosses into a site holding an activation is refused
+// whatever the bytes, even under ext_write=allow, and the target keeps its bytes. The copier
+// keeps running and still writes into inactive neighbors. Allow, the default, refuses
+// nothing.
+struct ExtActiveRun {
+  Stats stats;
+  bool neighbors_intact = true;
+};
+
+ExtActiveRun ext_active_run(ExtActive mode, bool active_neighbors) {
+  Config cfg = small_config();
+  cfg.p_hydro = 0.0;
+  cfg.ext_active = mode;
+  World w(cfg);
+  const std::vector<uint8_t> loop = {static_cast<uint8_t>(JMP + 1), 2};  // [2] INERT: ip = 0
+  const int xy[4][2] = {{8, 7}, {9, 8}, {8, 9}, {7, 8}};
+  for (const auto& c : xy) {
+    const int32_t site = w.site_index(c[0], c[1]);
+    w.set_free_mass(site, cfg.site_len);
+    if (active_neighbors) assert(w.seed_program(c[0], c[1], loop));
+    else assert(w.place_bytes(site, loop));
+  }
+  assert(w.seed_program(8, 8, ancestor()));
+  w.run(500);
+  assert(w.ledger_ok());
+  ExtActiveRun r;
+  r.stats = w.stats();
+  for (const auto& c : xy) {
+    const uint8_t* b = w.bytes_at(w.site_index(c[0], c[1]));
+    for (int k = 0; k < cfg.site_len; ++k) {
+      const uint8_t want = k < static_cast<int>(loop.size()) ? loop[k] : INERT;
+      if (b[k] != want) r.neighbors_intact = false;
+    }
+  }
+  return r;
+}
+
+void test_ext_active() {
+  const ExtActiveRun allow = ext_active_run(ExtActive::Allow, true);
+  const ExtActiveRun refuse = ext_active_run(ExtActive::Refuse, true);
+  const ExtActiveRun idle = ext_active_run(ExtActive::Refuse, false);
+  assert(allow.stats.ext_active_blocked == 0 && !allow.neighbors_intact);
+  assert(refuse.stats.ext_active_blocked > 0 && refuse.neighbors_intact);
+  assert(refuse.stats.ext_blocked == 0 && refuse.stats.instructions > 0);
+  // Inactive neighbors take the copy; once the copier ignites one, later writes into it are
+  // refused too.
+  assert(!idle.neighbors_intact && idle.stats.births > 0);
+  std::cout << "[ps test 8b] ext_active refused allow/refuse/idle: "
+            << allow.stats.ext_active_blocked << '/' << refuse.stats.ext_active_blocked << '/'
+            << idle.stats.ext_active_blocked << "\n";
+}
+
 // Diagnostic p_dead: bytes of sites with no activation hydrolyze at their own rate, the
 // active site keeps its code, and the matter ledger stays exact.
 void test_dead_hydrolysis() {
@@ -788,6 +840,7 @@ int main() {
   test_bond_energy();
   test_multislot_ledgers_and_replay();
   test_ext_write_modes();
+  test_ext_active();
   test_dead_hydrolysis();
   test_energy_diffusion();
   test_bond_store();

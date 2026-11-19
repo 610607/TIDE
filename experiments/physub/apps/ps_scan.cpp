@@ -18,7 +18,8 @@
 //     of substitutions at k that leave a strict replicator. Copy errors in the program's own
 //     bookkeeping moves (counter set-up, probe) are not in pred but are in the first copies.
 // Usage: ps_scan [anc=polite|copier] [first=200] [subs=4] [label=NAME] [p_mut=0.003]
-//                [mass0=48] [ext_write=fill] [census_topup=1|0] [census_born=1|0] < probe.tsv
+//                [mass0=48] [ext_write=fill] [ext_active=allow|refuse] [census_topup=1|0]
+//                [census_born=1|0] < probe.tsv
 
 #include "ps_census.hpp"
 #include "ps_core.hpp"
@@ -114,6 +115,7 @@ int main(int argc, char** argv) {
     else if (k == "p_mut") cfg.p_mut = std::atof(v.c_str());
     else if (k == "mass0") cfg.mass0 = std::atoi(v.c_str());
     else if (k == "ext_write" && parse_ext_write(v, cfg.ext_write)) {}
+    else if (k == "ext_active" && parse_ext_active(v, cfg.ext_active)) {}
     else if (k == "census_topup") top_up = v == "1";
     else if (k == "census_born") born = v == "1";
     else {
