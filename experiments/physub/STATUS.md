@@ -174,8 +174,9 @@ Each changes one thing and needs agreement before it is run.
 ## Reproducing
 
 - Each version's job list in `scripts/jobs/` holds the seeds and settings, and its README
-  entry the revision; `scripts/run_jobs.sh` runs a list. `runs/` is git-ignored.
+  entry the revision; `scripts/run_jobs.sh` runs a list. The outputs are in `runs/`.
 - Criterion 1 follows from the `# census` lines alone, as above.
-- The README's derived tables (ledgers, decompositions, shares) were computed with
-  untracked scripts. Their definitions are in the README entries and in the observer
-  comments in `apps/ps_probe.cpp`.
+- The README's derived tables (ledgers, decompositions, shares) were computed with the
+  scripts in `scripts/analysis/`; its README maps each script to versions, and `regen.sh`
+  redoes the v23 and v27 recomputes. Definitions are in the README entries and in the
+  observer comments in `apps/ps_probe.cpp`. The small-grid checks are in `checks/`.

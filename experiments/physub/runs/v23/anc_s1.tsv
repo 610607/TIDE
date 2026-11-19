@@ -1,0 +1,25 @@
+tick	active	births	exact%	intact_parent%	top_count	top_dist	distinct	copies	reignites	intact_copies	blank	open0	dead	pfx_active	pfx_copies	ext_erased	stalls	starved	energy
+5000	1	1	0	100	1	7	1	1	0	1	9212	9214	3	0	1	0	0	0	589824
+# census tick=5000 active=1 replicators=0 pfx_replicators=0 genotypes=1 replicator_genotypes=0 nonrep_self/copy/reignite=0/1/0 mean_age_rep/nonrep=0/4677 ip_span_rep/nonrep=0/0 trials=1
+# lineage tick=5000 rep_sites=0 rep_genotypes=0 rep_depth=0 rep_filled=0 loose_sites=0 loose_genotypes=0 loose_depth=0 loose_filled=0 prop_sites=0 prop_genotypes=0 prop_depth=0 prop_filled=0 other_sites=1 other_genotypes=1 other_depth=1 other_filled=1
+# fidelity tick=5000 window=5000 births=1 self/copy/reignite=0/1/0 reignite_tested=0 no_mass=0 ext_blocked=47 conflicts=1 walled=0
+# fidcopy tick=5000 parent=rep births=1 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=29 exact=0(0) point=1(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=1 foreign=0 residue=0 gap=0
+# fidcopy tick=5000 parent=loose births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=5000 parent=prop births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=5000 parent=other births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidgeno tick=5000 rep_parent_genotypes=1 with_min10=0 their_births=0 child_strict%_q25/q50/q75=0/0/0
+# fidtop tick=5000 rank=1 status=rep births=1 child_strict%=0 len=29 exact=0(0) point=1(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) founder_exact/copies=3/3 hex=011b1d011b1f06190117190218021a041a0521071905170000000000220018001a08c00000000000000000000000000000000000000000000000000000000000
+# fidreig tick=5000 tested=0 child_rep%=0 child_strict%=0 child_prop%=0 igniter_rep%=0 same_as_igniter%=0
+# physics tick=5000 whole_decays=2 whole_decays_active=1 wick=1 rotations=0 rot_walled=0 copies_started=8 copies_cut=0 copies_born=1 copies_born_cut=0 births=1
+parent intact  copy births=1 intact_child=0% mean_copy_diff=1 mean_life=7916 fertile=100%
+parent altered copy births=2 intact_child=0% mean_copy_diff=55.5 mean_life=9 fertile=0%
+copy differences by offset (top): 5:3 0:2 1:2 2:2 3:2 4:2 6:2 7:2 8:2 9:2 10:2 11:2
+altered parents with most births (offset:ancestor>now):
+  2  0:1>192 1:27>34 5:31>111 27:0>255 28:34>33 29:0>255 30:24>23 
+intact-parent copy diffs per birth (n=1): foreign=0 decay=0 mut=1 residue=0 (residue where parent inert: 0)
+  foreign top offsets:
+  decay top offsets:
+  mut top offsets: 5:1
+  residue top offsets:
+final tick=8250 active=0 free=442193 code=175 ext_blocked=68 ext_erased=0
+# physics tick=8250 whole_decays=3 whole_decays_active=1 wick=4 rotations=0 rot_walled=0 copies_started=12 copies_cut=0 copies_born=2 copies_born_cut=0 births=3

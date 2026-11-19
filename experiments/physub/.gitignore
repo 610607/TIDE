@@ -1,4 +1,4 @@
-# Run outputs and replays are reproducible from scripts/jobs and stay local.
-runs/
+# Replays and build trees are reproducible and stay local. Run outputs (runs/) are tracked.
 viewer/data/
 build*/
+__pycache__/

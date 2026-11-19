@@ -1,0 +1,207 @@
+tick	active	births	exact%	intact_parent%	top_count	top_dist	distinct	copies	reignites	intact_copies	blank	open0	dead	pfx_active	pfx_copies	ext_erased	stalls	starved	energy
+5000	26	43	48.8372	72.093	6	0	15	35	8	26	9167	9178	23	6	26	0	197	0	589713
+# census tick=5000 active=26 replicators=14 pfx_replicators=6 genotypes=15 replicator_genotypes=4 nonrep_self/copy/reignite=0/11/1 mean_age_rep/nonrep=1661/2439 ip_span_rep/nonrep=10/11.2222 trials=15 strict=6 born_fail=8 born_fail_genotypes=3
+# lineage tick=5000 rep_sites=6 rep_genotypes=1 rep_depth=4 rep_filled=0 loose_sites=8 loose_genotypes=3 loose_depth=1.625 loose_filled=8 prop_sites=0 prop_genotypes=0 prop_depth=0 prop_filled=0 other_sites=12 other_genotypes=11 other_depth=0 other_filled=11
+# fidelity tick=5000 window=5000 births=43 self/copy/reignite=0/35/8 reignite_tested=8 no_mass=0 ext_blocked=2686 conflicts=123 walled=288
+# fidcopy tick=5000 parent=rep births=26 child_rep%=80.77 child_strict%=80.77 child_prop%=0 parent_len=29.0385 exact=20(20) point=3(0) gap=0(0) multi=1(0) env=2(1) parent_filled=0(0) diffs/birth: written=0.5 foreign=0.0769231 residue=0.192308 gap=0
+# fidcopy tick=5000 parent=loose births=7 child_rep%=28.57 child_strict%=14.29 child_prop%=0 parent_len=49.8571 exact=1(0) point=0(0) gap=0(0) multi=5(1) env=1(0) parent_filled=7(1) diffs/birth: written=8.85714 foreign=1.42857 residue=0.857143 gap=0
+# fidcopy tick=5000 parent=prop births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=5000 parent=other births=2 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=63.5 exact=0(0) point=0(0) gap=1(0) multi=1(0) env=0(0) parent_filled=2(0) diffs/birth: written=15.5 foreign=0 residue=0 gap=29.5
+# fidgeno tick=5000 rep_parent_genotypes=1 with_min10=1 their_births=26 child_strict%_q25/q50/q75=80.7692/80.7692/80.7692
+# fidtop tick=5000 rank=1 status=rep births=26 child_strict%=80.77 len=29 exact=20(20) point=3(0) gap=0(0) multi=1(0) env=2(1) parent_filled=0(0) founder_exact/copies=3/3 hex=011b1d011b1f06190117190218021a041a0521071905170000000000220018001a08c00000000000000000000000000000000000000000000000000000000000
+# fidtop tick=5000 rank=2 status=loose births=2 child_strict%=0 len=34 exact=0(0) point=0(0) gap=0(0) multi=2(0) env=0(0) parent_filled=2(0) founder_exact/copies=2/2 hex=011b1d011b1f06190117190218021a041a05210719051700000000db222218181a08c0c000000000000000000000000000000000000000000000000000000000
+# fidtop tick=5000 rank=3 status=loose births=2 child_strict%=0 len=62 exact=0(0) point=0(0) gap=0(0) multi=1(0) env=1(0) parent_filled=2(0) founder_exact/copies=2/2 hex=011b1d011b1f06190117190218021a041a05210719051700000000db222218181a08c0c0c0c0c0c0c0c00fc0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0
+# fidreig tick=5000 tested=8 child_rep%=12.5 child_strict%=0 child_prop%=0 igniter_rep%=62.5 same_as_igniter%=0
+# physics tick=5000 whole_decays=8 whole_decays_active=4 wick=18 rotations=0 rot_walled=0 copies_started=174 copies_cut=0 copies_born=42 copies_born_cut=0 births=43
+10000	42	72	18.0556	40.2778	2	0	40	43	29	23	9137	9157	37	6	28	0	7698	0	589660
+# census tick=10000 active=42 replicators=12 pfx_replicators=6 genotypes=40 replicator_genotypes=10 nonrep_self/copy/reignite=1/21/8 mean_age_rep/nonrep=3363/4501 ip_span_rep/nonrep=10/11.4783 trials=70 strict=6 born_fail=6 born_fail_genotypes=6
+# lineage tick=10000 rep_sites=6 rep_genotypes=4 rep_depth=4 rep_filled=0 loose_sites=6 loose_genotypes=6 loose_depth=1 loose_filled=6 prop_sites=0 prop_genotypes=0 prop_depth=0 prop_filled=0 other_sites=30 other_genotypes=30 other_depth=0 other_filled=28
+# fidelity tick=10000 window=5000 births=72 self/copy/reignite=0/43/29 reignite_tested=29 no_mass=0 ext_blocked=9966 conflicts=436 walled=1876
+# fidcopy tick=10000 parent=rep births=28 child_rep%=50 child_strict%=50 child_prop%=0 parent_len=30.4643 exact=13(13) point=2(1) gap=1(0) multi=4(0) env=8(0) parent_filled=0(0) diffs/birth: written=2.53571 foreign=0.857143 residue=1.17857 gap=0.214286
+# fidcopy tick=10000 parent=loose births=4 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=46.5 exact=0(0) point=0(0) gap=0(0) multi=2(0) env=2(0) parent_filled=4(0) diffs/birth: written=18.25 foreign=0.75 residue=0 gap=0
+# fidcopy tick=10000 parent=prop births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=10000 parent=other births=11 child_rep%=18.18 child_strict%=0 child_prop%=0 parent_len=60 exact=0(0) point=0(0) gap=1(0) multi=6(0) env=4(0) parent_filled=11(0) diffs/birth: written=27.8182 foreign=2.54545 residue=0.272727 gap=10.2727
+# fidgeno tick=10000 rep_parent_genotypes=4 with_min10=1 their_births=23 child_strict%_q25/q50/q75=47.8261/47.8261/47.8261
+# fidtop tick=10000 rank=1 status=rep births=23 child_strict%=47.83 len=29 exact=10(10) point=2(1) gap=1(0) multi=3(0) env=7(0) parent_filled=0(0) founder_exact/copies=3/3 hex=011b1d011b1f06190117190218021a041a0521071905170000000000220018001a08c00000000000000000000000000000000000000000000000000000000000
+# fidtop tick=10000 rank=2 status=rep births=3 child_strict%=100 len=30 exact=3(3) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) founder_exact/copies=3/3 hex=011b1d011b1f06190117190218021a041a0521071905170000000000220018001a08c00000000000000000d80000000000000000000000000000000000000000
+# fidtop tick=10000 rank=3 status=rep births=1 child_strict%=0 len=45 exact=0(0) point=0(0) gap=0(0) multi=1(0) env=0(0) parent_filled=0(0) founder_exact/copies=3/3 hex=011b1d011b1f06190117190218021a041a0521071905170000000000220018001a08c000000000001b1d000000000001000002021a0404050507070517170001
+# fidreig tick=10000 tested=29 child_rep%=0 child_strict%=0 child_prop%=0 igniter_rep%=48.28 same_as_igniter%=0
+# physics tick=10000 whole_decays=31 whole_decays_active=18 wick=74 rotations=0 rot_walled=0 copies_started=1031 copies_cut=0 copies_born=107 copies_born_cut=0 births=115
+15000	28	48	6.25	20.8333	1	59	28	24	24	10	9144	9169	44	0	13	0	12106	0	589488
+# census tick=15000 active=28 replicators=5 pfx_replicators=0 genotypes=28 replicator_genotypes=5 nonrep_self/copy/reignite=0/16/7 mean_age_rep/nonrep=6781/7301 ip_span_rep/nonrep=10/11.4762 trials=149 strict=0 born_fail=5 born_fail_genotypes=5
+# lineage tick=15000 rep_sites=0 rep_genotypes=0 rep_depth=0 rep_filled=0 loose_sites=5 loose_genotypes=5 loose_depth=1.2 loose_filled=5 prop_sites=0 prop_genotypes=0 prop_depth=0 prop_filled=0 other_sites=23 other_genotypes=23 other_depth=0 other_filled=21
+# fidelity tick=15000 window=5000 births=48 self/copy/reignite=0/24/24 reignite_tested=24 no_mass=0 ext_blocked=9535 conflicts=79 walled=2581
+# fidcopy tick=15000 parent=rep births=13 child_rep%=15.38 child_strict%=15.38 child_prop%=0 parent_len=32.1538 exact=2(2) point=0(0) gap=0(0) multi=3(0) env=8(0) parent_filled=0(0) diffs/birth: written=2.15385 foreign=2.38462 residue=5.84615 gap=0
+# fidcopy tick=15000 parent=loose births=4 child_rep%=25 child_strict%=0 child_prop%=0 parent_len=52.75 exact=1(0) point=0(0) gap=0(0) multi=0(0) env=3(0) parent_filled=4(0) diffs/birth: written=13.5 foreign=1.5 residue=0.75 gap=0
+# fidcopy tick=15000 parent=prop births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=15000 parent=other births=7 child_rep%=14.29 child_strict%=0 child_prop%=0 parent_len=54.1429 exact=0(0) point=1(0) gap=0(0) multi=1(0) env=5(0) parent_filled=7(0) diffs/birth: written=22.8571 foreign=10.1429 residue=3.14286 gap=0.142857
+# fidgeno tick=15000 rep_parent_genotypes=3 with_min10=1 their_births=10 child_strict%_q25/q50/q75=20/20/20
+# fidtop tick=15000 rank=1 status=rep births=10 child_strict%=20 len=29 exact=2(2) point=0(0) gap=0(0) multi=2(0) env=6(0) parent_filled=0(0) founder_exact/copies=3/3 hex=011b1d011b1f06190117190218021a041a0521071905170000000000220018001a08c00000000000000000000000000000000000000000000000000000000000
+# fidtop tick=15000 rank=2 status=rep births=2 child_strict%=0 len=48 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=2(0) parent_filled=0(0) founder_exact/copies=3/3 hex=011b1d011b1f06190117190218021a041a0521071905170000000000220018001a08c000000000011b1d011b1f06190100000218021a040005000700051700ce
+# fidtop tick=15000 rank=3 status=rep births=1 child_strict%=0 len=31 exact=0(0) point=0(0) gap=0(0) multi=1(0) env=0(0) parent_filled=0(0) founder_exact/copies=3/3 hex=011b1d011b1f06190117190218021a041a0521071905170000000000220018001a08c00000000000000000d80000000000000000000000000000000000000000
+# fidreig tick=15000 tested=24 child_rep%=0 child_strict%=0 child_prop%=0 igniter_rep%=0 same_as_igniter%=0
+# physics tick=15000 whole_decays=63 whole_decays_active=41 wick=136 rotations=0 rot_walled=0 copies_started=2151 copies_cut=0 copies_born=146 copies_born_cut=0 births=163
+20000	18	12	0	0	1	59	18	6	6	0	9149	9181	49	0	0	0	7386	0	589648
+# census tick=20000 active=18 replicators=4 pfx_replicators=0 genotypes=18 replicator_genotypes=4 nonrep_self/copy/reignite=0/10/4 mean_age_rep/nonrep=11830/10089 ip_span_rep/nonrep=10/11.7692 trials=227 strict=0 born_fail=4 born_fail_genotypes=4
+# lineage tick=20000 rep_sites=0 rep_genotypes=0 rep_depth=0 rep_filled=0 loose_sites=4 loose_genotypes=4 loose_depth=1.25 loose_filled=4 prop_sites=0 prop_genotypes=0 prop_depth=0 prop_filled=0 other_sites=14 other_genotypes=14 other_depth=0 other_filled=12
+# fidelity tick=20000 window=5000 births=12 self/copy/reignite=0/6/6 reignite_tested=6 no_mass=0 ext_blocked=3470 conflicts=11 walled=1796
+# fidcopy tick=20000 parent=rep births=1 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=39 exact=0(0) point=1(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=2 foreign=0 residue=0 gap=0
+# fidcopy tick=20000 parent=loose births=1 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=36 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=1(0) parent_filled=1(0) diffs/birth: written=0 foreign=1 residue=6 gap=0
+# fidcopy tick=20000 parent=prop births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=20000 parent=other births=4 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=56.75 exact=0(0) point=0(0) gap=0(0) multi=2(0) env=2(0) parent_filled=4(0) diffs/birth: written=27 foreign=4.5 residue=1.25 gap=2.5
+# fidgeno tick=20000 rep_parent_genotypes=1 with_min10=0 their_births=0 child_strict%_q25/q50/q75=0/0/0
+# fidtop tick=20000 rank=1 status=loose births=1 child_strict%=0 len=36 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=1(0) parent_filled=1(0) founder_exact/copies=2/2 hex=011b1d011b1f06190117190218021a041a05210719051700000000db222218181a08c0c000bb0022000000d80000000000000000000000000000000000000000
+# fidtop tick=20000 rank=2 status=rep births=1 child_strict%=0 len=39 exact=0(0) point=1(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) founder_exact/copies=1/1 hex=011b1d011b1f06190117190218021a041a0521072105170000000000220018001a08c000010000000000000000000000010000021a0004000007070717000001
+# fidreig tick=20000 tested=6 child_rep%=0 child_strict%=0 child_prop%=0 igniter_rep%=50 same_as_igniter%=0
+# physics tick=20000 whole_decays=86 whole_decays_active=54 wick=158 rotations=0 rot_walled=0 copies_started=2963 copies_cut=0 copies_born=157 copies_born_cut=0 births=175
+25000	13	2	0	0	1	59	13	1	1	0	9154	9187	49	0	0	0	5748	0	589717
+# census tick=25000 active=13 replicators=4 pfx_replicators=0 genotypes=13 replicator_genotypes=4 nonrep_self/copy/reignite=0/8/1 mean_age_rep/nonrep=16830/15661 ip_span_rep/nonrep=10/9 trials=241 strict=0 born_fail=4 born_fail_genotypes=4
+# lineage tick=25000 rep_sites=0 rep_genotypes=0 rep_depth=0 rep_filled=0 loose_sites=4 loose_genotypes=4 loose_depth=1.25 loose_filled=4 prop_sites=0 prop_genotypes=0 prop_depth=0 prop_filled=0 other_sites=9 other_genotypes=9 other_depth=0 other_filled=7
+# fidelity tick=25000 window=5000 births=2 self/copy/reignite=0/1/1 reignite_tested=1 no_mass=0 ext_blocked=2540 conflicts=8 walled=994
+# fidcopy tick=25000 parent=rep births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=25000 parent=loose births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=25000 parent=prop births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=25000 parent=other births=1 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=38 exact=0(0) point=0(0) gap=0(0) multi=1(0) env=0(0) parent_filled=1(0) diffs/birth: written=59 foreign=0 residue=0 gap=0
+# fidgeno tick=25000 rep_parent_genotypes=0 with_min10=0 their_births=0 child_strict%_q25/q50/q75=0/0/0
+# fidreig tick=25000 tested=1 child_rep%=0 child_strict%=0 child_prop%=0 igniter_rep%=0 same_as_igniter%=0
+# physics tick=25000 whole_decays=98 whole_decays_active=58 wick=165 rotations=0 rot_walled=0 copies_started=3549 copies_cut=0 copies_born=158 copies_born_cut=0 births=177
+30000	5	0	0	0	1	10	5	0	0	0	9165	9198	46	0	0	0	2884	0	589824
+# census tick=30000 active=5 replicators=3 pfx_replicators=0 genotypes=5 replicator_genotypes=3 nonrep_self/copy/reignite=0/1/1 mean_age_rep/nonrep=20617/16996 ip_span_rep/nonrep=10/10.5 trials=244 strict=0 born_fail=3 born_fail_genotypes=3
+# lineage tick=30000 rep_sites=0 rep_genotypes=0 rep_depth=0 rep_filled=0 loose_sites=3 loose_genotypes=3 loose_depth=1 loose_filled=3 prop_sites=0 prop_genotypes=0 prop_depth=0 prop_filled=0 other_sites=2 other_genotypes=2 other_depth=0 other_filled=1
+# fidelity tick=30000 window=5000 births=0 self/copy/reignite=0/0/0 reignite_tested=0 no_mass=0 ext_blocked=1528 conflicts=2 walled=436
+# fidcopy tick=30000 parent=rep births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=30000 parent=loose births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=30000 parent=prop births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=30000 parent=other births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidgeno tick=30000 rep_parent_genotypes=0 with_min10=0 their_births=0 child_strict%_q25/q50/q75=0/0/0
+# fidreig tick=30000 tested=0 child_rep%=0 child_strict%=0 child_prop%=0 igniter_rep%=0 same_as_igniter%=0
+# physics tick=30000 whole_decays=114 whole_decays_active=66 wick=173 rotations=0 rot_walled=0 copies_started=3623 copies_cut=0 copies_born=158 copies_born_cut=0 births=177
+35000	4	0	0	0	1	10	4	0	0	0	9169	9200	43	0	0	0	0	0	589824
+# census tick=35000 active=4 replicators=2 pfx_replicators=0 genotypes=4 replicator_genotypes=2 nonrep_self/copy/reignite=0/1/1 mean_age_rep/nonrep=22867/21996 ip_span_rep/nonrep=10/10.5 trials=245 strict=0 born_fail=2 born_fail_genotypes=2
+# lineage tick=35000 rep_sites=0 rep_genotypes=0 rep_depth=0 rep_filled=0 loose_sites=2 loose_genotypes=2 loose_depth=1 loose_filled=2 prop_sites=0 prop_genotypes=0 prop_depth=0 prop_filled=0 other_sites=2 other_genotypes=2 other_depth=0 other_filled=1
+# fidelity tick=35000 window=5000 births=0 self/copy/reignite=0/0/0 reignite_tested=0 no_mass=0 ext_blocked=326 conflicts=0 walled=0
+# fidcopy tick=35000 parent=rep births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=35000 parent=loose births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=35000 parent=prop births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=35000 parent=other births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidgeno tick=35000 rep_parent_genotypes=0 with_min10=0 their_births=0 child_strict%_q25/q50/q75=0/0/0
+# fidreig tick=35000 tested=0 child_rep%=0 child_strict%=0 child_prop%=0 igniter_rep%=0 same_as_igniter%=0
+# physics tick=35000 whole_decays=122 whole_decays_active=67 wick=174 rotations=0 rot_walled=0 copies_started=3650 copies_cut=0 copies_born=158 copies_born_cut=0 births=177
+40000	4	0	0	0	1	10	4	0	0	0	9172	9201	40	0	0	0	0	0	589824
+# census tick=40000 active=4 replicators=2 pfx_replicators=0 genotypes=4 replicator_genotypes=2 nonrep_self/copy/reignite=0/1/1 mean_age_rep/nonrep=27867/26996 ip_span_rep/nonrep=10/10.5 trials=246 strict=0 born_fail=2 born_fail_genotypes=2
+# lineage tick=40000 rep_sites=0 rep_genotypes=0 rep_depth=0 rep_filled=0 loose_sites=2 loose_genotypes=2 loose_depth=1 loose_filled=2 prop_sites=0 prop_genotypes=0 prop_depth=0 prop_filled=0 other_sites=2 other_genotypes=2 other_depth=0 other_filled=1
+# fidelity tick=40000 window=5000 births=0 self/copy/reignite=0/0/0 reignite_tested=0 no_mass=0 ext_blocked=333 conflicts=0 walled=0
+# fidcopy tick=40000 parent=rep births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=40000 parent=loose births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=40000 parent=prop births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=40000 parent=other births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidgeno tick=40000 rep_parent_genotypes=0 with_min10=0 their_births=0 child_strict%_q25/q50/q75=0/0/0
+# fidreig tick=40000 tested=0 child_rep%=0 child_strict%=0 child_prop%=0 igniter_rep%=0 same_as_igniter%=0
+# physics tick=40000 whole_decays=130 whole_decays_active=67 wick=174 rotations=0 rot_walled=0 copies_started=3677 copies_cut=0 copies_born=158 copies_born_cut=0 births=177
+45000	4	0	0	0	1	10	4	0	0	0	9174	9203	38	0	0	0	0	0	589824
+# census tick=45000 active=4 replicators=2 pfx_replicators=0 genotypes=4 replicator_genotypes=2 nonrep_self/copy/reignite=0/1/1 mean_age_rep/nonrep=32867/31996 ip_span_rep/nonrep=10/10.5 trials=247 strict=0 born_fail=2 born_fail_genotypes=2
+# lineage tick=45000 rep_sites=0 rep_genotypes=0 rep_depth=0 rep_filled=0 loose_sites=2 loose_genotypes=2 loose_depth=1 loose_filled=2 prop_sites=0 prop_genotypes=0 prop_depth=0 prop_filled=0 other_sites=2 other_genotypes=2 other_depth=0 other_filled=1
+# fidelity tick=45000 window=5000 births=0 self/copy/reignite=0/0/0 reignite_tested=0 no_mass=0 ext_blocked=301 conflicts=0 walled=0
+# fidcopy tick=45000 parent=rep births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=45000 parent=loose births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=45000 parent=prop births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=45000 parent=other births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidgeno tick=45000 rep_parent_genotypes=0 with_min10=0 their_births=0 child_strict%_q25/q50/q75=0/0/0
+# fidreig tick=45000 tested=0 child_rep%=0 child_strict%=0 child_prop%=0 igniter_rep%=0 same_as_igniter%=0
+# physics tick=45000 whole_decays=136 whole_decays_active=67 wick=174 rotations=0 rot_walled=0 copies_started=3703 copies_cut=0 copies_born=158 copies_born_cut=0 births=177
+50000	2	0	0	0	1	4	2	0	0	0	9178	9206	36	0	0	0	0	0	589824
+# census tick=50000 active=2 replicators=2 pfx_replicators=0 genotypes=2 replicator_genotypes=2 nonrep_self/copy/reignite=0/0/0 mean_age_rep/nonrep=37867/0 ip_span_rep/nonrep=10/0 trials=247 strict=0 born_fail=2 born_fail_genotypes=2
+# lineage tick=50000 rep_sites=0 rep_genotypes=0 rep_depth=0 rep_filled=0 loose_sites=2 loose_genotypes=2 loose_depth=1 loose_filled=2 prop_sites=0 prop_genotypes=0 prop_depth=0 prop_filled=0 other_sites=0 other_genotypes=0 other_depth=0 other_filled=0
+# fidelity tick=50000 window=5000 births=0 self/copy/reignite=0/0/0 reignite_tested=0 no_mass=0 ext_blocked=179 conflicts=0 walled=0
+# fidcopy tick=50000 parent=rep births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=50000 parent=loose births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=50000 parent=prop births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=50000 parent=other births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidgeno tick=50000 rep_parent_genotypes=0 with_min10=0 their_births=0 child_strict%_q25/q50/q75=0/0/0
+# fidreig tick=50000 tested=0 child_rep%=0 child_strict%=0 child_prop%=0 igniter_rep%=0 same_as_igniter%=0
+# physics tick=50000 whole_decays=144 whole_decays_active=69 wick=176 rotations=0 rot_walled=0 copies_started=3723 copies_cut=0 copies_born=158 copies_born_cut=0 births=177
+55000	2	0	0	0	1	4	2	0	0	0	9184	9209	30	0	0	0	0	0	589824
+# census tick=55000 active=2 replicators=2 pfx_replicators=0 genotypes=2 replicator_genotypes=2 nonrep_self/copy/reignite=0/0/0 mean_age_rep/nonrep=42867/0 ip_span_rep/nonrep=10/0 trials=247 strict=0 born_fail=2 born_fail_genotypes=2
+# lineage tick=55000 rep_sites=0 rep_genotypes=0 rep_depth=0 rep_filled=0 loose_sites=2 loose_genotypes=2 loose_depth=1 loose_filled=2 prop_sites=0 prop_genotypes=0 prop_depth=0 prop_filled=0 other_sites=0 other_genotypes=0 other_depth=0 other_filled=0
+# fidelity tick=55000 window=5000 births=0 self/copy/reignite=0/0/0 reignite_tested=0 no_mass=0 ext_blocked=106 conflicts=0 walled=0
+# fidcopy tick=55000 parent=rep births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=55000 parent=loose births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=55000 parent=prop births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=55000 parent=other births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidgeno tick=55000 rep_parent_genotypes=0 with_min10=0 their_births=0 child_strict%_q25/q50/q75=0/0/0
+# fidreig tick=55000 tested=0 child_rep%=0 child_strict%=0 child_prop%=0 igniter_rep%=0 same_as_igniter%=0
+# physics tick=55000 whole_decays=153 whole_decays_active=69 wick=176 rotations=0 rot_walled=0 copies_started=3731 copies_cut=0 copies_born=158 copies_born_cut=0 births=177
+60000	2	0	0	0	1	4	2	0	0	0	9184	9209	30	0	0	0	0	0	589818
+# census tick=60000 active=2 replicators=2 pfx_replicators=0 genotypes=2 replicator_genotypes=2 nonrep_self/copy/reignite=0/0/0 mean_age_rep/nonrep=47867/0 ip_span_rep/nonrep=10/0 trials=247 strict=0 born_fail=2 born_fail_genotypes=2
+# lineage tick=60000 rep_sites=0 rep_genotypes=0 rep_depth=0 rep_filled=0 loose_sites=2 loose_genotypes=2 loose_depth=1 loose_filled=2 prop_sites=0 prop_genotypes=0 prop_depth=0 prop_filled=0 other_sites=0 other_genotypes=0 other_depth=0 other_filled=0
+# fidelity tick=60000 window=5000 births=0 self/copy/reignite=0/0/0 reignite_tested=0 no_mass=0 ext_blocked=88 conflicts=0 walled=0
+# fidcopy tick=60000 parent=rep births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=60000 parent=loose births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=60000 parent=prop births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=60000 parent=other births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidgeno tick=60000 rep_parent_genotypes=0 with_min10=0 their_births=0 child_strict%_q25/q50/q75=0/0/0
+# fidreig tick=60000 tested=0 child_rep%=0 child_strict%=0 child_prop%=0 igniter_rep%=0 same_as_igniter%=0
+# physics tick=60000 whole_decays=154 whole_decays_active=69 wick=176 rotations=0 rot_walled=0 copies_started=3738 copies_cut=0 copies_born=158 copies_born_cut=0 births=177
+65000	2	0	0	0	1	4	2	0	0	0	9186	9209	28	0	0	0	0	0	589824
+# census tick=65000 active=2 replicators=2 pfx_replicators=0 genotypes=2 replicator_genotypes=2 nonrep_self/copy/reignite=0/0/0 mean_age_rep/nonrep=52867/0 ip_span_rep/nonrep=10/0 trials=247 strict=0 born_fail=2 born_fail_genotypes=2
+# lineage tick=65000 rep_sites=0 rep_genotypes=0 rep_depth=0 rep_filled=0 loose_sites=2 loose_genotypes=2 loose_depth=1 loose_filled=2 prop_sites=0 prop_genotypes=0 prop_depth=0 prop_filled=0 other_sites=0 other_genotypes=0 other_depth=0 other_filled=0
+# fidelity tick=65000 window=5000 births=0 self/copy/reignite=0/0/0 reignite_tested=0 no_mass=0 ext_blocked=98 conflicts=0 walled=0
+# fidcopy tick=65000 parent=rep births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=65000 parent=loose births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=65000 parent=prop births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=65000 parent=other births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidgeno tick=65000 rep_parent_genotypes=0 with_min10=0 their_births=0 child_strict%_q25/q50/q75=0/0/0
+# fidreig tick=65000 tested=0 child_rep%=0 child_strict%=0 child_prop%=0 igniter_rep%=0 same_as_igniter%=0
+# physics tick=65000 whole_decays=157 whole_decays_active=69 wick=176 rotations=0 rot_walled=0 copies_started=3745 copies_cut=0 copies_born=158 copies_born_cut=0 births=177
+70000	1	0	0	0	1	6	1	0	0	0	9188	9210	27	0	0	0	0	0	589824
+# census tick=70000 active=1 replicators=1 pfx_replicators=0 genotypes=1 replicator_genotypes=1 nonrep_self/copy/reignite=0/0/0 mean_age_rep/nonrep=58672/0 ip_span_rep/nonrep=10/0 trials=247 strict=0 born_fail=1 born_fail_genotypes=1
+# lineage tick=70000 rep_sites=0 rep_genotypes=0 rep_depth=0 rep_filled=0 loose_sites=1 loose_genotypes=1 loose_depth=1 loose_filled=1 prop_sites=0 prop_genotypes=0 prop_depth=0 prop_filled=0 other_sites=0 other_genotypes=0 other_depth=0 other_filled=0
+# fidelity tick=70000 window=5000 births=0 self/copy/reignite=0/0/0 reignite_tested=0 no_mass=0 ext_blocked=86 conflicts=0 walled=0
+# fidcopy tick=70000 parent=rep births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=70000 parent=loose births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=70000 parent=prop births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=70000 parent=other births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidgeno tick=70000 rep_parent_genotypes=0 with_min10=0 their_births=0 child_strict%_q25/q50/q75=0/0/0
+# fidreig tick=70000 tested=0 child_rep%=0 child_strict%=0 child_prop%=0 igniter_rep%=0 same_as_igniter%=0
+# physics tick=70000 whole_decays=161 whole_decays_active=70 wick=177 rotations=0 rot_walled=0 copies_started=3753 copies_cut=0 copies_born=158 copies_born_cut=0 births=177
+75000	1	0	0	0	1	6	1	0	0	0	9190	9210	25	0	0	0	0	0	589824
+# census tick=75000 active=1 replicators=1 pfx_replicators=0 genotypes=1 replicator_genotypes=1 nonrep_self/copy/reignite=0/0/0 mean_age_rep/nonrep=63672/0 ip_span_rep/nonrep=10/0 trials=247 strict=0 born_fail=1 born_fail_genotypes=1
+# lineage tick=75000 rep_sites=0 rep_genotypes=0 rep_depth=0 rep_filled=0 loose_sites=1 loose_genotypes=1 loose_depth=1 loose_filled=1 prop_sites=0 prop_genotypes=0 prop_depth=0 prop_filled=0 other_sites=0 other_genotypes=0 other_depth=0 other_filled=0
+# fidelity tick=75000 window=5000 births=0 self/copy/reignite=0/0/0 reignite_tested=0 no_mass=0 ext_blocked=41 conflicts=0 walled=0
+# fidcopy tick=75000 parent=rep births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=75000 parent=loose births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=75000 parent=prop births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=75000 parent=other births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidgeno tick=75000 rep_parent_genotypes=0 with_min10=0 their_births=0 child_strict%_q25/q50/q75=0/0/0
+# fidreig tick=75000 tested=0 child_rep%=0 child_strict%=0 child_prop%=0 igniter_rep%=0 same_as_igniter%=0
+# physics tick=75000 whole_decays=163 whole_decays_active=70 wick=177 rotations=0 rot_walled=0 copies_started=3757 copies_cut=0 copies_born=158 copies_born_cut=0 births=177
+80000	1	0	0	0	1	6	1	0	0	0	9192	9210	23	0	0	0	0	0	589824
+# census tick=80000 active=1 replicators=1 pfx_replicators=0 genotypes=1 replicator_genotypes=1 nonrep_self/copy/reignite=0/0/0 mean_age_rep/nonrep=68672/0 ip_span_rep/nonrep=10/0 trials=247 strict=0 born_fail=1 born_fail_genotypes=1
+# lineage tick=80000 rep_sites=0 rep_genotypes=0 rep_depth=0 rep_filled=0 loose_sites=1 loose_genotypes=1 loose_depth=1 loose_filled=1 prop_sites=0 prop_genotypes=0 prop_depth=0 prop_filled=0 other_sites=0 other_genotypes=0 other_depth=0 other_filled=0
+# fidelity tick=80000 window=5000 births=0 self/copy/reignite=0/0/0 reignite_tested=0 no_mass=0 ext_blocked=44 conflicts=0 walled=0
+# fidcopy tick=80000 parent=rep births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=80000 parent=loose births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=80000 parent=prop births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidcopy tick=80000 parent=other births=0 child_rep%=0 child_strict%=0 child_prop%=0 parent_len=0 exact=0(0) point=0(0) gap=0(0) multi=0(0) env=0(0) parent_filled=0(0) diffs/birth: written=0 foreign=0 residue=0 gap=0
+# fidgeno tick=80000 rep_parent_genotypes=0 with_min10=0 their_births=0 child_strict%_q25/q50/q75=0/0/0
+# fidreig tick=80000 tested=0 child_rep%=0 child_strict%=0 child_prop%=0 igniter_rep%=0 same_as_igniter%=0
+# physics tick=80000 whole_decays=166 whole_decays_active=70 wick=177 rotations=0 rot_walled=0 copies_started=3761 copies_cut=0 copies_born=158 copies_born_cut=0 births=177
+parent intact  copy births=59 intact_child=54.2373% mean_copy_diff=3.77966 mean_life=4946 fertile=61.0169%
+parent intact  reignite births=11 intact_child=0% mean_copy_diff=14.2727 mean_life=1286 fertile=0%
+parent altered copy births=50 intact_child=2% mean_copy_diff=25.72 mean_life=6888 fertile=28%
+parent altered reignite births=57 intact_child=0% mean_copy_diff=37.1579 mean_life=2008 fertile=24.5614%
+copy differences by offset (top): 34:103 27:99 23:94 29:89 33:88 28:87 31:84 0:80 35:80 30:77 1:76 32:74
+altered parents with most births (offset:ancestor>now):
+  7  43:0>216 
+  6  27:0>219 29:0>34 31:0>24 35:0>192 36:0>192 37:0>192 38:0>192 
+  3  23:0>1 27:0>219 29:0>34 31:0>1 35:0>192 36:0>1 37:0>23 38:0>25 
+  3  27:0>219 29:0>34 31:0>24 35:0>192 
+  3  27:0>34 29:0>24 31:0>26 63:0>1 
+  3  39:0>1 40:0>27 41:0>29 42:0>1 43:0>27 44:0>31 45:0>6 46:0>25 
+intact-parent copy diffs per birth (n=67): foreign=0.850746 decay=0.477612 mut=1.19403 residue=1.79104 (residue where parent inert: 1.1194)
+  foreign top offsets: 0:7 1:7 34:5 27:4 29:3 31:3 35:3 63:3 23:2 62:2
+  decay top offsets: 28:6 30:6 32:6 2:1 3:1 9:1 10:1 16:1 40:1 41:1
+  mut top offsets: 34:9 27:8 29:8 31:7 35:7 33:6 23:3 20:2 21:2 22:2
+  residue top offsets: 29:10 31:10 27:9 35:9 33:7 34:6 23:5 28:5 0:4 63:4
+final tick=83389 active=0 free=442151 code=196 ext_blocked=31352 ext_erased=0
+# physics tick=83389 whole_decays=169 whole_decays_active=71 wick=178 rotations=0 rot_walled=0 copies_started=3764 copies_cut=0 copies_born=158 copies_born_cut=0 births=177

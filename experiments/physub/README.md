@@ -19,9 +19,10 @@ cmake --build experiments/physub/build -j
 ctest --test-dir experiments/physub/build --output-on-failure
 ```
 
-`ps_test` runs 12 mechanism tests. Under the default configuration test 2 prints the replay
-digest `6fb0e06a3160cc24`; CTest fails if it changes, because that means the default dynamics
-changed.
+The build also compiles the small-grid checks in `checks/` (`-DPHYSUB_CHECKS=OFF` skips
+them). `ps_test` runs 12 mechanism tests. Under the default configuration test 2 prints the
+replay digest `6fb0e06a3160cc24`; CTest fails if it changes, because that means the default
+dynamics changed.
 
 ## Run
 
@@ -40,8 +41,10 @@ python3 -m http.server 8765 -d viewer   # then open http://localhost:8765/?file=
   expand a variable holding several arguments with `${=args}`; `ps_probe` rejects an
   argument that contains a space.
 - A 96x96, 100k-tick run takes about 10-25 minutes on one core.
-- `runs/` and `viewer/data/` are git-ignored. Results are reproduced from the job lists in
-  `scripts/jobs/` with the recorded seeds.
+- `runs/` holds the outputs of v13-v30 (a `.tsv` and a `.err` per job); `viewer/data/` is
+  git-ignored. Results are reproduced from the job lists in `scripts/jobs/` with the
+  recorded seeds. `scripts/analysis/` holds the scripts that computed the README tables and
+  `checks/` the small-grid checks; each has a README that maps files to versions.
 
 ## Model
 
@@ -139,6 +142,9 @@ python3 -m http.server 8765 -d viewer   # then open http://localhost:8765/?file=
 | `tests/ps_test.cpp` | Ledgers, replay, walls, ancestor, starvation, bond barrier, act_cap, ext_write, ext_active, mut_scope, p_dead, energy diffusion, bond storage, dead_quiet, whole decay, block rotation, whole decay per class, per-op decay tables, census trial and its seeding limit, copy-difference classes, writer records and inert operands |
 | `viewer/index.html` | Replay viewer (layers, inspector, timeline) |
 | `scripts/run_jobs.sh`, `scripts/jobs/` | Parallel runner and the v8-v30 job lists |
+| `scripts/analysis/` | Analysis scripts behind the v13-v30 tables, mapped to versions in its README |
+| `checks/` | Small-grid checks quoted as scratch checks in v14-v28, mapped in its README |
+| `runs/` | Outputs of the v13-v30 job lists |
 
 `ps_probe` columns per interval: births, `exact%`, `intact_parent%`, top genotype, `copies`
 (child mostly written by the parent) and `reignites` (child code already present),
@@ -1658,8 +1664,8 @@ do not alter the dynamics: the v9 baseline is byte-identical to v8.
     do = 33 mod 64. Leaving one of them unreset gives a shift of 31, and leaving both
     gives 62 (−2).
 
-    Scratch checks (not tracked, mutation and decay off, 9x9 worlds) show three ways a
-    census-strict key copies off register:
+    Scratch checks (now `checks/chk_shift`, `chk_probe` and `chk_born`; mutation and decay
+    off, 9x9 worlds) show three ways a census-strict key copies off register:
     - *Filled 36.* All 255 values of a filled 36 pass the census, which starts from reset
       counters. Started from copy-born counters, none is strict (one seed: 5 copies, none
       exact). Single substitutions at offsets 0-2 (the so reset) and 5 give another 120

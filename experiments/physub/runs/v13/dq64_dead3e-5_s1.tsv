@@ -1,0 +1,42 @@
+tick	active	births	exact%	intact_parent%	top_count	top_dist	distinct	copies	reignites	intact_copies	blank	open0	dead	pfx_active	pfx_copies	ext_erased	stalls	starved	energy
+10000	916	1290	65.8915	54.7287	426	0	220	1031	259	695	8058	8065	242	431	695	0	19014	0	589231
+# census tick=10000 active=916 replicators=695 pfx_replicators=429 genotypes=220 replicator_genotypes=54 nonrep_self/copy/reignite=0/212/9 mean_age_rep/nonrep=2801/3697 ip_span_rep/nonrep=4.50216/7.32812 trials=220
+20000	3508	8074	30.0966	17.4635	866	0	1312	3184	4890	1369	4780	4804	928	883	1376	0	344738	0	577912
+# census tick=20000 active=3508 replicators=2138 pfx_replicators=877 genotypes=1312 replicator_genotypes=273 nonrep_self/copy/reignite=0/1272/98 mean_age_rep/nonrep=5265/7583 ip_span_rep/nonrep=5.14506/7.3271 trials=1432
+30000	6593	19281	16.5292	8.86883	1098	0	3200	4380	14901	1657	673	726	1950	1154	1694	0	2050561	0	558260
+# census tick=30000 active=6593 replicators=3166 pfx_replicators=1143 genotypes=3200 replicator_genotypes=508 nonrep_self/copy/reignite=0/3142/285 mean_age_rep/nonrep=8116/11494 ip_span_rep/nonrep=5.40873/7.28261 trials=4143
+40000	6359	25221	2.55343	0.935728	477	0	4295	1276	23945	210	16	162	2841	534	259	0	2946259	0	555192
+# census tick=40000 active=6359 replicators=1931 pfx_replicators=523 genotypes=4295 replicator_genotypes=502 nonrep_self/copy/reignite=0/4026/402 mean_age_rep/nonrep=15316/18524 ip_span_rep/nonrep=5.89741/7.13927 trials=7407
+50000	5435	36651	0.2974	0.182805	221	0	4468	575	36076	55	16	390	3765	265	63	0	2998285	0	556257
+# census tick=50000 active=5435 replicators=1077 pfx_replicators=257 genotypes=4468 replicator_genotypes=425 nonrep_self/copy/reignite=0/3889/469 mean_age_rep/nonrep=22326/26191 ip_span_rep/nonrep=6.44413/6.70857 trials=10610
+60000	4624	42239	0.250953	0.118374	104	0	4164	612	41627	48	16	775	4576	131	60	0	2872712	0	558973
+# census tick=60000 active=4624 replicators=661 pfx_replicators=122 genotypes=4164 replicator_genotypes=321 nonrep_self/copy/reignite=0/3485/478 mean_age_rep/nonrep=26394/33610 ip_span_rep/nonrep=6.62957/6.33015 trials=13642
+70000	3905	54704	0.118821	0.0438725	57	0	3682	414	54290	23	20	1358	5291	78	37	0	2643079	0	561690
+# census tick=70000 active=3905 replicators=402 pfx_replicators=72 genotypes=3682 replicator_genotypes=229 nonrep_self/copy/reignite=0/3046/457 mean_age_rep/nonrep=30567/40612 ip_span_rep/nonrep=6.89447/6.24147 trials=16287
+80000	3267	61207	0.0914928	0.0359436	32	0	3160	318	60889	19	29	1988	5920	42	23	0	2422974	0	564264
+# census tick=80000 active=3267 replicators=271 pfx_replicators=40 genotypes=3160 replicator_genotypes=182 nonrep_self/copy/reignite=0/2576/420 mean_age_rep/nonrep=32857/47682 ip_span_rep/nonrep=6.97398/5.81518 trials=18545
+90000	2755	58069	0.0895486	0.0309976	22	0	2696	289	57780	17	34	2679	6427	29	27	0	2133073	0	567803
+# census tick=90000 active=2755 replicators=187 pfx_replicators=27 genotypes=2696 replicator_genotypes=135 nonrep_self/copy/reignite=0/2152/416 mean_age_rep/nonrep=33356/54002 ip_span_rep/nonrep=6.97326/5.73219 trials=20494
+100000	2353	67565	0.0651225	0.0162806	14	0	2317	224	67341	10	46	3390	6817	20	16	0	1853180	0	570997
+# census tick=100000 active=2353 replicators=129 pfx_replicators=20 genotypes=2317 replicator_genotypes=101 nonrep_self/copy/reignite=0/1835/389 mean_age_rep/nonrep=32657/60628 ip_span_rep/nonrep=7.36434/5.28793 trials=22220
+parent intact  copy births=4103 intact_child=80.9164% mean_copy_diff=0.699488 mean_life=35888 fertile=79.9171%
+parent intact  reignite births=151 intact_child=29.8013% mean_copy_diff=14.5563 mean_life=27004 fertile=32.4503%
+parent altered copy births=8200 intact_child=2.54878% mean_copy_diff=8.72683 mean_life=24821 fertile=57.622%
+parent altered reignite births=361854 intact_child=0.00773793% mean_copy_diff=33.4065 mean_life=86 fertile=2.73536%
+copy differences by offset (top): 34:322523 0:260667 38:257545 40:255694 36:254532 61:240602 63:235418 57:234680 62:234543 60:233517 58:231899 59:228012
+altered parents with most births (offset:ancestor>now):
+  4540  0:1>46 4:34>1 7:32>46 8:1>34 9:32>36 10:40>1 11:4>34 12:44>38 
+  4017  0:1>151 3:1>65 5:38>0 6:6>7 12:44>0 17:32>0 19:31>3 28:5>0 35:42>0 
+  3356  0:1>116 1:34>14 2:36>144 3:1>216 4:34>133 5:38>168 6:6>50 7:32>122 
+  3255  0:1>223 1:34>108 2:36>194 3:1>255 4:34>42 8:1>33 10:40>44 11:4>192 
+  3028  1:34>0 6:6>7 34:0>192 
+  2944  0:1>185 4:34>0 7:32>0 17:32>0 21:33>0 25:43>0 30:0>44 34:0>24 
+intact-parent copy diffs per birth (n=4250): foreign=0.139294 decay=0.08 mut=0.354353 residue=0.152706 (residue where parent inert: 0.0736471)
+  foreign top offsets: 34:65 36:26 38:22 40:20 30:19 47:19 1:18 42:18 58:18 57:17
+  decay top offsets: 35:18 37:18 39:17 29:16 41:16 43:16 45:16 27:15 25:13 15:12
+  mut top offsets: 14:37 8:35 43:34 39:33 42:33 41:32 9:31 15:31 10:30 27:30
+  residue top offsets: 34:21 38:20 17:18 42:18 63:18 58:17 62:17 28:16 53:16 60:16
+# 14 active, dist 0: 1:mov 34:ignite 36:unwall 1:mov 34:ignite 38:inc 6:rnd 32:jmp 1:mov 32:jmp 40:jz 4:jz 44:wall 5:jmp 45:unwall 1:mov 30:dec 32:jmp 2:inc 31:jz 2:inc 33:rnd 4:jz 33:rnd 5:jmp 43:ignite 7:ignite 32:jmp 5:jmp 30:dec . . . . . 42:rnd . 31:jz . 33:rnd . 44:wall 192:dec 15:rnd . 6:rnd . . . . . . . . . . . . . . . . . .
+# 6 active, dist 18: 1:mov 34:ignite 36:unwall 1:mov 34:ignite 38:inc 6:rnd 32:jmp 1:mov 32:jmp 40:jz 4:jz 44:wall 5:jmp 45:unwall 1:mov 30:dec 32:jmp 2:inc 31:jz 2:inc 33:rnd 4:jz 33:rnd 5:jmp 43:ignite 7:ignite 32:jmp 5:jmp 30:dec . . . . 192:dec 42:rnd . 31:jz . 33:rnd . 44:wall 192:dec 15:rnd . 6:rnd 36:unwall 1:mov 34:ignite 38:inc 6:rnd 32:jmp 1:mov . 40:jz 4:jz 44:wall 5:jmp 45:unwall 1:mov 30:dec 73:mov 2:inc 31:jz
+# 4 active, dist 1: 1:mov 34:ignite 36:unwall 1:mov 34:ignite 38:inc 6:rnd 32:jmp 1:mov 32:jmp 40:jz 4:jz 44:wall 5:jmp 45:unwall 1:mov 30:dec 32:jmp 2:inc 31:jz 2:inc 33:rnd 4:jz 33:rnd 5:jmp 43:ignite 7:ignite 32:jmp 5:jmp 30:dec . . . . 1:mov 42:rnd . 31:jz . 33:rnd . 44:wall 192:dec 15:rnd . 6:rnd . . . . . . . . . . . . . . . . . .
+final tick=100000 active=2353 free=209330 code=229715 ext_blocked=13411707 ext_erased=0

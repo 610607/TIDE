@@ -1,0 +1,35 @@
+tick	active	births	exact%	intact_parent%	top_count	top_dist	distinct	copies	reignites	intact_copies	blank	open0	dead	pfx_active	pfx_copies	ext_erased	stalls	starved	energy
+2000	1	0	0	0	1	0	1	0	0	0	2286	2296	17	1	0	0	0	0	147456
+# physics tick=2000 whole_decays=0 whole_decays_active=0 wick=0 rotations=11558 rot_walled=0 copies_started=7 copies_cut=6 copies_born=0 copies_born_cut=0 births=0
+4000	1	0	0	0	1	0	1	0	0	0	2263	2290	40	1	0	0	0	0	147456
+# physics tick=4000 whole_decays=0 whole_decays_active=0 wick=0 rotations=23235 rot_walled=0 copies_started=13 copies_cut=13 copies_born=0 copies_born_cut=0 births=0
+6000	1	0	0	0	1	0	1	0	0	0	2253	2284	50	1	0	0	0	0	147456
+# physics tick=6000 whole_decays=0 whole_decays_active=0 wick=0 rotations=34865 rot_walled=0 copies_started=19 copies_cut=19 copies_born=0 copies_born_cut=0 births=0
+8000	1	0	0	0	1	0	1	0	0	0	2237	2278	66	1	0	0	0	0	147456
+# physics tick=8000 whole_decays=0 whole_decays_active=0 wick=0 rotations=46318 rot_walled=0 copies_started=25 copies_cut=25 copies_born=0 copies_born_cut=0 births=0
+10000	2	1	0	100	1	1	2	1	0	1	2211	2267	91	0	1	0	0	0	147442
+# physics tick=10000 whole_decays=0 whole_decays_active=0 wick=0 rotations=57655 rot_walled=0 copies_started=34 copies_cut=34 copies_born=1 copies_born_cut=1 births=1
+12000	2	0	0	0	1	1	2	0	0	0	2177	2244	125	0	0	0	0	0	147456
+# physics tick=12000 whole_decays=0 whole_decays_active=0 wick=0 rotations=69098 rot_walled=0 copies_started=35 copies_cut=35 copies_born=1 copies_born_cut=1 births=1
+14000	2	0	0	0	1	1	2	0	0	0	2150	2227	152	0	0	0	14	0	147456
+# physics tick=14000 whole_decays=0 whole_decays_active=0 wick=0 rotations=80746 rot_walled=0 copies_started=37 copies_cut=37 copies_born=1 copies_born_cut=1 births=1
+16000	2	0	0	0	1	1	2	0	0	0	2126	2210	176	0	0	0	0	0	147456
+# physics tick=16000 whole_decays=0 whole_decays_active=0 wick=0 rotations=92180 rot_walled=0 copies_started=38 copies_cut=38 copies_born=1 copies_born_cut=1 births=1
+18000	2	1	0	0	1	2	2	0	1	0	2118	2208	184	0	0	0	144	0	147408
+# physics tick=18000 whole_decays=0 whole_decays_active=0 wick=1 rotations=103624 rot_walled=0 copies_started=40 copies_cut=40 copies_born=2 copies_born_cut=2 births=2
+20000	2	1	0	0	1	2	2	0	1	0	2100	2206	202	0	0	0	322	0	147429
+# physics tick=20000 whole_decays=0 whole_decays_active=0 wick=2 rotations=115249 rot_walled=0 copies_started=41 copies_cut=41 copies_born=3 copies_born_cut=3 births=3
+parent intact  copy births=1 intact_child=0% mean_copy_diff=3 mean_life=11517 fertile=100%
+parent altered reignite births=2 intact_child=0% mean_copy_diff=33 mean_life=1 fertile=0%
+copy differences by offset (top): 0:2 1:2 2:2 3:2 4:2 5:2 6:2 7:2 8:2 9:2 10:2 11:2
+altered parents with most births (offset:ancestor>now):
+  2  29:30>0 35:42>0 37:31>0 39:33>0 
+intact-parent copy diffs per birth (n=1): foreign=0 decay=0 mut=0 residue=3 (residue where parent inert: 0)
+  foreign top offsets:
+  decay top offsets:
+  mut top offsets:
+  residue top offsets: 35:1 37:1 39:1
+# 1 active, dist 2: 1:mov 34:ignite 36:unwall 1:mov 34:ignite 38:inc 6:rnd 32:jmp 1:mov 32:jmp 40:jz 4:jz 44:wall 5:jmp 45:unwall 1:mov . 32:jmp 2:inc 31:jz 2:inc 33:rnd 4:jz 33:rnd 5:jmp . 7:ignite 32:jmp 5:jmp 30:dec . . . . . 42:rnd . 31:jz . 33:rnd . 44:wall 192:dec 15:rnd . 6:rnd . . . . . . . . . . . . . . . . . .
+# 1 active, dist 4: 1:mov 34:ignite 36:unwall 1:mov 34:ignite 38:inc 6:rnd 32:jmp 1:mov 32:jmp 40:jz 4:jz 44:wall 5:jmp 45:unwall 1:mov 30:dec 32:jmp 2:inc 31:jz 2:inc 33:rnd 4:jz 33:rnd 5:jmp 43:ignite 7:ignite 32:jmp 5:jmp . . . . . . . . . . . . 44:wall 192:dec 15:rnd . 6:rnd . . . . . . . . . . . . . . . . . .
+final tick=20000 active=2 free=108377 code=2215 ext_blocked=102 ext_erased=0
+# physics tick=20000 whole_decays=0 whole_decays_active=0 wick=2 rotations=115249 rot_walled=0 copies_started=41 copies_cut=41 copies_born=3 copies_born_cut=3 births=3

@@ -1,0 +1,53 @@
+tick	active	births	exact%	intact_parent%	top_count	top_dist	distinct	copies	reignites	intact_copies	blank	open0	dead	pfx_active	pfx_copies	ext_erased	stalls	starved	energy
+10000	910	1280	65.9375	54.8438	424	0	221	1022	258	691	8057	8064	249	430	691	0	19014	0	589231
+# census tick=10000 active=910 replicators=691 pfx_replicators=428 genotypes=221 replicator_genotypes=56 nonrep_self/copy/reignite=0/210/9 mean_age_rep/nonrep=2814/3683 ip_span_rep/nonrep=4.46744/7.28226 trials=221
+# physics tick=10000 whole_decays=0 whole_decays_active=0 wick=371 rotations=0 rot_walled=0 copies_started=1536 copies_cut=0 copies_born=1088 copies_born_cut=0 births=1280
+20000	3624	7808	32.9406	20.415	1035	0	1260	3278	4530	1554	4566	4588	1026	1052	1560	0	336356	0	578422
+# census tick=20000 active=3624 replicators=2285 pfx_replicators=1046 genotypes=1260 replicator_genotypes=269 nonrep_self/copy/reignite=0/1263/76 mean_age_rep/nonrep=5052/7665 ip_span_rep/nonrep=4.92951/7.32859 trials=1374
+# physics tick=20000 whole_decays=0 whole_decays_active=0 wick=5467 rotations=0 rot_walled=0 copies_started=20018 copies_cut=0 copies_born=7488 copies_born_cut=0 births=9090
+30000	6463	17074	17.6409	9.86295	1112	0	3080	4318	12756	1651	614	640	2139	1182	1716	0	1986527	0	560404
+# census tick=30000 active=6463 replicators=3047 pfx_replicators=1172 genotypes=3080 replicator_genotypes=485 nonrep_self/copy/reignite=0/3173/243 mean_age_rep/nonrep=8612/11955 ip_span_rep/nonrep=5.43364/7.23144 trials=3961
+# physics tick=30000 whole_decays=0 whole_decays_active=0 wick=19703 rotations=0 rot_walled=0 copies_started=99468 copies_cut=0 copies_born=19857 copies_born_cut=0 births=26165
+40000	6076	22709	1.94196	0.722181	459	0	4116	1662	21047	155	23	71	3117	507	165	0	2737643	0	557660
+# census tick=40000 active=6076 replicators=1733 pfx_replicators=494 genotypes=4116 replicator_genotypes=456 nonrep_self/copy/reignite=0/4004/339 mean_age_rep/nonrep=16558/19498 ip_span_rep/nonrep=6.14038/7.11814 trials=7032
+# physics tick=40000 whole_decays=0 whole_decays_active=0 wick=42797 rotations=0 rot_walled=0 copies_started=236069 copies_cut=0 copies_born=37139 copies_born_cut=0 births=48872
+50000	5197	33392	0.0748682	0.0509104	199	0	4301	854	32538	12	18	146	4001	232	15	0	2812714	0	558182
+# census tick=50000 active=5197 replicators=864 pfx_replicators=220 genotypes=4301 replicator_genotypes=325 nonrep_self/copy/reignite=0/3921/412 mean_age_rep/nonrep=25537/27922 ip_span_rep/nonrep=6.42459/6.71225 trials=10022
+# physics tick=50000 whole_decays=0 whole_decays_active=0 wick=77072 rotations=0 rot_walled=0 copies_started=384750 copies_cut=0 copies_born=60688 copies_born_cut=0 births=82268
+60000	4362	43404	0.0230394	0.0230394	88	0	3988	249	43155	9	20	245	4834	100	10	0	2684479	0	560395
+# census tick=60000 active=4362 replicators=449 pfx_replicators=94 genotypes=3988 replicator_genotypes=220 nonrep_self/copy/reignite=0/3486/427 mean_age_rep/nonrep=32142/36544 ip_span_rep/nonrep=6.46429/6.22142 trials=12796
+# physics tick=60000 whole_decays=0 whole_decays_active=0 wick=121316 rotations=0 rot_walled=0 copies_started=535287 copies_cut=0 copies_born=91014 copies_born_cut=0 births=125677
+70000	3701	54344	0.014721	0.014721	46	0	3533	338	54006	8	22	375	5493	57	10	0	2536891	0	562217
+# census tick=70000 active=3701 replicators=248 pfx_replicators=55 genotypes=3533 replicator_genotypes=142 nonrep_self/copy/reignite=0/3042/411 mean_age_rep/nonrep=38685/45134 ip_span_rep/nonrep=6.91129/5.8999 trials=15240
+# physics tick=70000 whole_decays=0 whole_decays_active=0 wick=176314 rotations=0 rot_walled=0 copies_started=681148 copies_cut=0 copies_born=124169 copies_born_cut=0 births=180014
+80000	3090	56880	0.0123066	0.00175809	20	0	3025	306	56574	1	23	533	6103	31	5	0	2324499	0	565303
+# census tick=80000 active=3090 replicators=149 pfx_replicators=30 genotypes=3025 replicator_genotypes=102 nonrep_self/copy/reignite=0/2539/402 mean_age_rep/nonrep=44074/53648 ip_span_rep/nonrep=7.16216/5.49377 trials=17309
+# physics tick=80000 whole_decays=0 whole_decays_active=0 wick=233808 rotations=0 rot_walled=0 copies_started=813274 copies_cut=0 copies_born=156513 copies_born_cut=0 births=236897
+90000	2527	52332	0.00573263	0.00382175	8	0	2500	59	52273	1	24	712	6665	14	1	0	1966932	0	569545
+# census tick=90000 active=2527 replicators=81 pfx_replicators=13 genotypes=2500 replicator_genotypes=61 nonrep_self/copy/reignite=0/2090/356 mean_age_rep/nonrep=51841/62130 ip_span_rep/nonrep=6.93827/5.37631 trials=19039
+# physics tick=90000 whole_decays=0 whole_decays_active=0 wick=286705 rotations=0 rot_walled=0 copies_started=932459 copies_cut=0 copies_born=187863 copies_born_cut=0 births=289231
+100000	2089	45227	0.00221107	0.00221107	4	0	2080	32	45195	1	26	911	7101	6	1	0	1687516	0	572581
+# census tick=100000 active=2089 replicators=39 pfx_replicators=5 genotypes=2080 replicator_genotypes=32 nonrep_self/copy/reignite=0/1731/319 mean_age_rep/nonrep=53713/70591 ip_span_rep/nonrep=7/4.96942 trials=20464
+# physics tick=100000 whole_decays=0 whole_decays_active=0 wick=332368 rotations=0 rot_walled=0 copies_started=1038442 copies_cut=0 copies_born=215859 copies_born_cut=0 births=334456
+parent intact  copy births=4083 intact_child=84.0558% mean_copy_diff=0.498898 mean_life=40372 fertile=81.4842%
+parent intact  reignite births=100 intact_child=37% mean_copy_diff=12.22 mean_life=34162 fertile=39%
+parent altered copy births=8035 intact_child=2.09085% mean_copy_diff=13.7028 mean_life=21782 fertile=45.0902%
+parent altered reignite births=322238 intact_child=0.00558593% mean_copy_diff=29.9634 mean_life=84 fertile=3.7733%
+copy differences by offset (top): 34:268189 38:247586 36:245346 40:235906 62:217330 61:216054 30:216043 0:207910 63:207037 46:206626 60:205756 57:205755
+altered parents with most births (offset:ancestor>now):
+  4017  0:1>151 3:1>65 5:38>0 6:6>7 12:44>0 17:32>0 19:31>3 28:5>0 35:42>0 
+  3540  1:34>44 2:36>192 3:1>15 4:34>59 5:38>137 6:6>5 7:32>33 8:1>5 
+  3327  0:1>237 1:34>112 8:1>0 9:32>0 14:45>0 15:1>31 17:32>0 21:33>205 
+  3225  6:6>223 12:44>0 16:30>0 19:31>0 23:33>0 35:42>0 
+  2974  1:34>0 6:6>223 43:15>0 
+  2737  4:34>0 5:38>40 6:6>4 7:32>0 8:1>5 9:32>195 10:40>1 11:4>30 12:44>32 
+intact-parent copy diffs per birth (n=4174): foreign=0.0697173 decay=0.0745089 mut=0.331337 residue=0.0553426 (residue where parent inert: 0.00910398)
+  foreign top offsets: 34:35 36:12 42:10 58:10 1:9 57:9 59:9 61:9 30:8 38:8
+  decay top offsets: 35:17 39:16 45:15 29:14 37:14 43:13 15:12 41:12 18:11 42:11
+  mut top offsets: 14:33 41:32 9:31 27:31 43:31 42:30 15:29 39:29 8:28 20:28
+  residue top offsets: 17:11 27:8 37:8 8:7 14:7 20:7 21:7 24:7 28:7 29:7
+# 4 active, dist 0: 1:mov 34:ignite 36:unwall 1:mov 34:ignite 38:inc 6:rnd 32:jmp 1:mov 32:jmp 40:jz 4:jz 44:wall 5:jmp 45:unwall 1:mov 30:dec 32:jmp 2:inc 31:jz 2:inc 33:rnd 4:jz 33:rnd 5:jmp 43:ignite 7:ignite 32:jmp 5:jmp 30:dec . . . . . 42:rnd . 31:jz . 33:rnd . 44:wall 192:dec 15:rnd . 6:rnd . . . . . . . . . . . . . . . . . .
+# 3 active, dist 1: 1:mov 34:ignite 36:unwall 1:mov 34:ignite 38:inc 6:rnd 32:jmp 1:mov 32:jmp 40:jz 4:jz 44:wall 5:jmp 45:unwall 1:mov 30:dec 32:jmp 2:inc 31:jz 2:inc 33:rnd 4:jz 33:rnd 5:jmp 43:ignite 7:ignite 32:jmp 5:jmp 30:dec . . . . 1:mov 42:rnd . 31:jz . 33:rnd . 44:wall 192:dec 15:rnd . 6:rnd . . . . . . . . . . . . . . . . . .
+# 2 active, dist 1: 1:mov 34:ignite 36:unwall 1:mov 34:ignite 38:inc 6:rnd 32:jmp 1:mov 32:jmp 40:jz 4:jz 44:wall 5:jmp 45:unwall 1:mov 30:dec . 2:inc 31:jz 2:inc 33:rnd 4:jz 33:rnd 5:jmp 43:ignite 7:ignite 32:jmp 5:jmp 30:dec . . . . . 42:rnd . 31:jz . 33:rnd . 44:wall 192:dec 15:rnd . 6:rnd . . . . . . . . . . . . . . . . . .
+final tick=100000 active=2089 free=100651 code=338825 ext_blocked=10051548 ext_erased=0
+# physics tick=100000 whole_decays=0 whole_decays_active=0 wick=332368 rotations=0 rot_walled=0 copies_started=1038442 copies_cut=0 copies_born=215859 copies_born_cut=0 births=334456

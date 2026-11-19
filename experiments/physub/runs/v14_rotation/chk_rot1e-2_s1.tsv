@@ -1,0 +1,15 @@
+tick	active	births	exact%	intact_parent%	top_count	top_dist	distinct	copies	reignites	intact_copies	blank	open0	dead	pfx_active	pfx_copies	ext_erased	stalls	starved	energy
+2000	1	0	0	0	1	0	1	0	0	0	2288	2296	15	1	0	0	0	0	147456
+# physics tick=2000 whole_decays=0 whole_decays_active=0 wick=0 rotations=11548 rot_walled=0 copies_started=7 copies_cut=6 copies_born=0 copies_born_cut=0 births=0
+parent intact  copy births=1 intact_child=0% mean_copy_diff=22 mean_life=5 fertile=0%
+parent altered copy births=1 intact_child=0% mean_copy_diff=11 mean_life=4 fertile=0%
+copy differences by offset (top): 12:2 18:2 19:2 20:2 21:2 22:2 23:2 24:2 25:2 0:1 11:1 13:1
+altered parents with most births (offset:ancestor>now):
+  1  0:1>0 
+intact-parent copy diffs per birth (n=1): foreign=0 decay=0 mut=0 residue=22 (residue where parent inert: 0)
+  foreign top offsets:
+  decay top offsets:
+  mut top offsets:
+  residue top offsets: 12:1 13:1 14:1 15:1 16:1 17:1 18:1 19:1 20:1 21:1
+final tick=2615 active=0 free=110258 code=334 ext_blocked=1 ext_erased=0
+# physics tick=2615 whole_decays=0 whole_decays_active=0 wick=3 rotations=15188 rot_walled=0 copies_started=8 copies_cut=8 copies_born=2 copies_born_cut=2 births=2
