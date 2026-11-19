@@ -1,0 +1,11 @@
+# v30: copy errors only on cross-site MOVs (mut_scope=cross; revision 80a16c9).
+# One mechanism changed against v27 zero_m195_s1/s2 and fail_m195_s1/s2 (same seeds,
+# configuration and observers; ext_active left at allow): a MOV into its own site writes the
+# byte it read, which removes copy errors in counter set-up and resets (the counter-reset
+# route to off-register copying). MOVs into neighbors keep their errors. Criterion 1
+# (research channel): with copy error, strict sites do not fall from 350k to 500k, and
+# strict at 500k / strict at 50k >= 0.8 (v27: 0.44-0.49).
+zero_m195_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000 fate=1 trace=1 route=1 length=1 mut_scope=cross
+zero_m195_s2 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=2 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000 fate=1 trace=1 route=1 length=1 mut_scope=cross
+fail_m195_s1 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000 fate=1 inert_operand=fail trace=1 route=1 length=1 mut_scope=cross
+fail_m195_s2 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=2 ext_write=fill census=1 classes=1,2,3,4 fidelity=5000 fate=1 inert_operand=fail trace=1 route=1 length=1 mut_scope=cross
