@@ -109,6 +109,7 @@ bool apply(Config& c, RunOpts& r, const std::string& k, const std::string& v) {
   else if (k == "e_erase") c.e_erase = static_cast<int32_t>(n);
   else if (k == "ext_write") return parse_ext_write(v, c.ext_write);
   else if (k == "ext_active") return parse_ext_active(v, c.ext_active);
+  else if (k == "mut_scope") return parse_mut_scope(v, c.mut_scope);
   else if (k == "inert_operand") return parse_inert_operand(v, c.inert_operand);
   else if (k == "anc") r.anc = v;
   else if (k == "frames") r.frames = v;

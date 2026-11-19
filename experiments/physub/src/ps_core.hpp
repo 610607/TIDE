@@ -104,6 +104,23 @@ inline bool parse_ext_active(const std::string& s, ExtActive& out) {
   return true;
 }
 
+// Which MOVs copy error (p_mut) applies to. A MOV that reads a non-inert byte may write a
+// random non-inert byte instead.
+//  All   : every MOV
+//  Cross : only a MOV whose destination pointer names a neighbor; a MOV into its own site
+//          writes the byte it read. A cross-site MOV draws its error as under All.
+// Other writes (INC, DEC, RND) carry no copy error under either. The census trial runs
+// without copy error, so the scope does not affect it.
+enum class MutScope : uint8_t { All, Cross };
+
+// Parses "all" | "cross"; returns false on anything else.
+inline bool parse_mut_scope(const std::string& s, MutScope& out) {
+  if (s == "all") out = MutScope::All;
+  else if (s == "cross") out = MutScope::Cross;
+  else return false;
+  return true;
+}
+
 // What an INERT operand byte (one of the bytes after the opcode) means.
 //  Zero : offset 0 of the executing site, like any byte value read mod site_len
 //  Fail : no offset; the instruction fails. It pays e_op, advances ip by its length and has
@@ -151,6 +168,7 @@ struct Config {
   int32_t e_wall = 2;          // price of WALL
   uint8_t w_max = 8;           // wall units per half-edge
   double p_mut = 0.0;          // copy error per written byte
+  MutScope mut_scope = MutScope::All;  // which MOVs p_mut applies to
   double p_hydro = 1e-5;       // per non-inert byte per tick
   // Diagnostic only, not a candidate rule: hydrolysis rate for bytes of sites with no
   // activation. Negative = same as p_hydro (off).

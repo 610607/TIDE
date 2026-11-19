@@ -62,8 +62,10 @@ void World::plan_mov(int32_t site, int ip, Intent& it) const {
     return;
   }
   uint8_t byte = at(src, soff);
-  // Copy error replaces a non-inert byte with a random non-inert one.
-  if (byte != INERT && t_mut_ > 0 && (key(kMut, id) >> 32) < t_mut_) {
+  // Copy error replaces a non-inert byte with a random non-inert one (with mut_scope=cross,
+  // only when the destination is a neighbor).
+  const bool mut_here = cfg_.mut_scope == MutScope::All || ddir != kSelf;
+  if (byte != INERT && mut_here && t_mut_ > 0 && (key(kMut, id) >> 32) < t_mut_) {
     byte = static_cast<uint8_t>(1 + key(kMutByte, id) % kByteValues);
   }
   const uint8_t old = at(dst, doff);

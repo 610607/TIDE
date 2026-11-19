@@ -261,6 +261,52 @@ void test_ext_active() {
             << idle.stats.ext_active_blocked << "\n";
 }
 
+// mut_scope=cross: with every MOV in error (p_mut 1), a MOV into the own site writes the byte
+// it read, and a MOV into a neighbor writes the same erroneous byte as under all.
+struct MutScopeRun {
+  uint8_t own = 0;
+  uint8_t nbr = 0;
+  bool ledger = false;
+};
+
+MutScopeRun mut_scope_run(MutScope scope) {
+  Config cfg = small_config();
+  cfg.p_hydro = 0.0;
+  cfg.p_mut = 1.0;
+  cfg.mut_scope = scope;
+  World w(cfg);
+  std::vector<uint8_t> prog(22, INERT);
+  const uint8_t mov = static_cast<uint8_t>(MOV + 1), jmp = static_cast<uint8_t>(JMP + 1);
+  prog[0] = mov; prog[1] = 10; prog[2] = 12;   // MOV [own 20] -> [own 21]
+  prog[3] = mov; prog[4] = 10; prog[5] = 14;   // MOV [own 20] -> [north 21]
+  prog[6] = jmp; prog[7] = 9;                  // [9] INERT: ip = 0
+  prog[11] = 20; prog[13] = 21;                // [10], [12] INERT: own site
+  prog[14] = 1; prog[15] = 21;                 // direction 0 (north)
+  prog[20] = 100;
+  const int32_t site = w.site_index(8, 8);
+  const int32_t north = w.site_index(8, 7);  // direction 0: y - 1
+  w.set_free_mass(site, cfg.site_len);
+  w.set_free_mass(north, cfg.site_len);
+  assert(w.seed_program(8, 8, prog));
+  w.run(30);
+  MutScopeRun r;
+  r.own = w.site_bytes(site)[21];
+  r.nbr = w.site_bytes(north)[21];
+  r.ledger = w.ledger_ok();
+  return r;
+}
+
+void test_mut_scope() {
+  const MutScopeRun all = mut_scope_run(MutScope::All);
+  const MutScopeRun cross = mut_scope_run(MutScope::Cross);
+  assert(all.ledger && cross.ledger);
+  assert(cross.own == 100 && all.own != INERT && all.own != 100);
+  assert(cross.nbr == all.nbr && all.nbr != INERT && all.nbr != 100);
+  std::cout << "[ps test 8c] mut_scope own byte all/cross: " << int(all.own) << '/'
+            << int(cross.own) << " neighbor byte: " << int(all.nbr) << '/' << int(cross.nbr)
+            << "\n";
+}
+
 // Diagnostic p_dead: bytes of sites with no activation hydrolyze at their own rate, the
 // active site keeps its code, and the matter ledger stays exact.
 void test_dead_hydrolysis() {
@@ -841,6 +887,7 @@ int main() {
   test_multislot_ledgers_and_replay();
   test_ext_write_modes();
   test_ext_active();
+  test_mut_scope();
   test_dead_hydrolysis();
   test_energy_diffusion();
   test_bond_store();
