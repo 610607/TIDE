@@ -6,7 +6,8 @@ rule and value here is provisional configuration for experiments, not a decided 
 Do not copy rules from here into `docs/substrate-primitives.md` until they are finalized.
 
 Related design notes: [`docs/physical-substrate-model.md`](../../docs/physical-substrate-model.md),
-[`docs/substrate-primitives.md`](../../docs/substrate-primitives.md).
+[`docs/substrate-primitives.md`](../../docs/substrate-primitives.md). A summary of v13-v30
+(conclusions, criterion 1, open questions) is in [`STATUS.md`](STATUS.md).
 
 ## Build and test
 
