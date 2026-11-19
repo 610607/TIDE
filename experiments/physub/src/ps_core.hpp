@@ -342,6 +342,12 @@ public:
   // Site moves made by this tick's rotations, as (from, to); observers that index by site
   // apply them before reading this tick's births.
   const std::vector<std::pair<int32_t, int32_t>>& moves_this_tick() const { return moves_log_; }
+  // Copy observer, read-only (used by checks/chk_cut_pop.cpp and chk_cut_short.cpp): the body
+  // of the site's current copy target (-1 if none), whether a rotation cut that copy, and the
+  // body at the site.
+  int32_t copy_target(int32_t s) const { return copy_to_[s]; }
+  bool copy_was_cut(int32_t s) const { return copy_cut_[s] != 0; }
+  int32_t body(int32_t s) const { return body_[s]; }
 
 private:
   Config cfg_;

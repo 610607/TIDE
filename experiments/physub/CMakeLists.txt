@@ -39,6 +39,11 @@ foreach(app ps_run ps_probe ps_knockout ps_copycut ps_scan)
   target_compile_options(${app} PRIVATE ${PHYSUB_WARNINGS})
 endforeach()
 
+option(PHYSUB_CHECKS "Build the small-grid checks in checks/" ON)
+if(PHYSUB_CHECKS)
+  add_subdirectory(checks)
+endif()
+
 # Tests rely on assert, so keep it active in every build type.
 add_executable(ps_test tests/ps_test.cpp)
 target_link_libraries(ps_test PRIVATE physub)
