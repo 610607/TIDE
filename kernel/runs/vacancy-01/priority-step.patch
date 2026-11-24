@@ -1,0 +1,23 @@
+--- vm.cpp
++++ vm.cpp
+@@ -92,6 +92,10 @@
+ }
+ 
+ void World::step(std::vector<Event>* events, bool reverse) {
++    step_with_preferred_claimant(events, reverse, -1);
++}
++
++void World::step_with_preferred_claimant(std::vector<Event>* events, bool reverse, int preferred) {
+     if (tick_ == std::numeric_limits<Tick>::max()) throw std::overflow_error("tick exhausted");
+     if (events) events->clear();
+     auto next = sites_;
+@@ -139,7 +143,8 @@
+             e.effect = Effect::busy;
+             const int dest = placement(id, cpu.bearing);
+             e.target = dest;
+-            if (dest >= 0 && (winners[dest] < 0 || priority(id) < priority(winners[dest])))
++            if (dest >= 0 && (winners[dest] < 0 || id == preferred ||
++                (winners[dest] != preferred && priority(id) < priority(winners[dest]))))
+                 winners[dest] = id;
+             break;
+         }

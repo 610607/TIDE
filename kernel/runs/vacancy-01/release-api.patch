@@ -1,0 +1,10 @@
+--- vm.hpp
++++ vm.hpp
+@@ -83,6 +83,7 @@
+     int neighbor(int origin, int direction) const;
+     const Site& at(int site) const { return sites_.at(site); }
+     void seed_site(int site, std::string bytes, int pc = 0, int bearing = 1);
++    void release_idle_for_experiment(int site);
+     void set_access(int site, Access access);
+     void step(std::vector<Event>* events = nullptr, bool reverse = false);
+     std::string state() const;
