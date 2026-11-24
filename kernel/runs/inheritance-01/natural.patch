@@ -1,0 +1,13 @@
+--- natural.py
++++ natural.py
+@@ -82 +82 @@
+-    require([int(r["seed"]) for r in fields] == list(range(3137,11329)), "wrong prospective seed budget")
++    require([int(r["seed"]) for r in fields] == list(range(11329,19521)), "wrong replication seed budget")
+@@ -92 +92 @@
+-        score, links, pairs = audit(dict(r,cohort="prospective"),world,assays)
++        score, links, pairs = audit(dict(r,cohort="replication"),world,assays)
+@@ -99,2 +99,2 @@
+-        if (seed-3136) % 1024 == 0:
+-            print(f"{seed-3136}/8192 fields checked",flush=True)
++        if (seed-11328) % 1024 == 0:
++            print(f"{seed-11328}/8192 fields checked",flush=True)

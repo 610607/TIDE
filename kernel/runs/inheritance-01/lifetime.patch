@@ -1,0 +1,114 @@
+--- fork.cpp
++++ fork.cpp
+@@ -22,18 +22,22 @@
+     if (kind == tide::Bank::reserved) return "reserved";
+     return "free";
+ }
+-struct Identity { int width, seed, site, born; };
+-enum class Mode { ordinary, deny_own, deny_all };
++struct Identity { int width, seed, site, born; std::string genome_hex; bool test_live = false; };
++enum class Mode { ordinary, deny_own, deny_all, deny_live };
+ void follow(const tide::World& start, Identity id, Mode mode, bool reverse, std::ostream& scores,
+             std::ostream& products, std::ostream& windows) {
+     tide::World w = start;
+     const std::string key = std::to_string(id.width)+"\t"+std::to_string(id.seed)+"\t"+
+         std::to_string(id.site)+"\t"+std::to_string(id.born);
+-    const char* label = mode == Mode::ordinary ? "ordinary" : mode == Mode::deny_own ? "deny_own" : "deny_all";
++    const char* label = mode == Mode::ordinary ? "ordinary" :
++                        mode == Mode::deny_own ? "deny_own" : mode == Mode::deny_live ? "deny_live" : "deny_all";
+     const auto digest = w.hash();
+     int denied = 0, first_denied = 0, births = 0, reader_births = 0, reads = 0, own_reads = 0;
+-    std::string inputs;
++    std::string inputs, source_kinds;
+     int writes_from_own = 0;
++    int living_site = -1;
++    tide::Tick living_born = 0;
++    bool single_living_source = true;
+     bool first_copy_pending = true;
+     std::vector<tide::Event> events;
+     while (w.at(id.site).kind == tide::Bank::occupied && w.at(id.site).born == static_cast<tide::Tick>(id.born)) {
+@@ -45,7 +49,9 @@
+         const bool external_copy = eligible && c.pc < static_cast<int>(code.size()) && code[c.pc] == 'C' &&
+                                    c.source >= 0 && c.source != id.site;
+         const bool from_own = external_copy && c.source == c.target;
+-        const bool block = external_copy && (mode == Mode::deny_all || (mode == Mode::deny_own && from_own));
++        const bool from_live = external_copy && w.at(c.source).kind == tide::Bank::occupied;
++        const bool block = external_copy && (mode == Mode::deny_all || (mode == Mode::deny_own && from_own) ||
++                                             (mode == Mode::deny_live && from_live));
+         if (block) {
+             ++denied;
+             if (first_denied == 0) first_denied = static_cast<int>(w.tick()+1);
+@@ -70,10 +76,23 @@
+         if (block && e.effect != tide::Effect::failed_copy) throw std::logic_error("ineffective mask");
+         if (e.effect == tide::Effect::reserve) {
+             inputs.clear();
++            source_kinds.clear();
+             writes_from_own = 0;
++            living_site = -1;
++            living_born = 0;
++            single_living_source = true;
+         }
+         if (e.effect == tide::Effect::copy) {
+             if (e.write_offset != static_cast<int>(inputs.size())) throw std::logic_error("out of order copy");
++            if (inputs.empty() && from_live) {
++                living_site = e.read_site;
++                living_born = e.read_contact.born;
++            }
++            single_living_source = single_living_source && from_live && e.read_site == living_site &&
++                                   e.read_contact.born == living_born && e.read_offset == e.write_offset;
++            const auto bank = e.read_contact.kind;
++            source_kinds.push_back(e.read_site == id.site ? 's' : bank == tide::Bank::occupied ? 'o' :
++                                   bank == tide::Bank::reserved ? 'r' : 'f');
+             inputs.push_back(static_cast<char>(e.input));
+             reads += e.read_contact.site >= 0;
+             own_reads += from_own;
+@@ -84,7 +103,9 @@
+             reader_births += e.product == "RSCLD";
+             if (inputs.size() != e.product.size()) throw std::logic_error("incomplete copy provenance");
+             products << key << '\t' << label << '\t' << e.tick << '\t' << e.target << '\t' << hex(inputs)
+-                     << '\t' << hex(e.product) << '\t' << writes_from_own << '\n';
++                     << '\t' << hex(e.product) << '\t' << writes_from_own
++                     << '\t' << (single_living_source ? living_site : -1) << '\t'
++                     << (single_living_source ? std::to_string(living_born) : "-") << '\t' << source_kinds << '\n';
+         }
+     }
+     scores << key << '\t' << label << '\t' << digest << '\t' << w.tick() << '\t' << denied << '\t'
+@@ -102,9 +123,10 @@
+     for (int t = 0; t < id.born; ++t) world.step(nullptr,reverse);
+     const auto& focal = world.at(id.site);
+     if (focal.kind != tide::Bank::occupied || focal.born != static_cast<tide::Tick>(id.born) ||
+-        focal.bytes != "RSCLD") throw std::logic_error("focal reconstruction differs");
++        hex(focal.bytes) != id.genome_hex) throw std::logic_error("focal reconstruction differs");
+     for (auto mode : {Mode::ordinary,Mode::deny_own,Mode::deny_all})
+         follow(world,id,mode,reverse,scores,products,windows);
++    if (id.test_live) follow(world,id,Mode::deny_live,reverse,scores,products,windows);
+ }
+ }
+ int main(int argc, char** argv) {
+@@ -117,16 +139,21 @@
+             *out << "width\tseed\tsite\tborn\t";
+         }
+         scores << "branch\tstart_fnv64\tdeath\tblocked_attempts\tfirst_block\treads\town_reads\tbirths\treader_births\n";
+-        products << "branch\ttick\tchild_site\tinputs_hex\tproduct_hex\town_reserved_bytes\n";
++        products << "branch\ttick\tchild_site\tinputs_hex\tproduct_hex\town_reserved_bytes\tlive_donor_site\tlive_donor_born\tsource_kinds\n";
+         windows << "tick\teast_kind\teast_born\teast_owner\teast_hex\tfree_neighbors\top\teffect\ttarget\n";
+         for (std::string line; std::getline(std::cin,line);) {
+             std::istringstream row(line);
+-            Identity id;
+-            std::string extra;
+-            if (!(row>>id.width>>id.seed>>id.site>>id.born) || (row>>extra) ||
+-                (id.width!=4 && id.width!=8 && id.width!=16) || id.seed<321 || id.seed>576 ||
++            Identity id{};
++            std::string flag, extra;
++            if (!(row>>id.width>>id.seed>>id.site>>id.born) ||
++                (id.width!=4 && id.width!=8 && id.width!=16) || (id.seed!=3562 && (id.seed<11329 || id.seed>19520)) ||
+                 id.site<0 || id.site>=64 || id.born<1 || id.born>2048)
+                 throw std::invalid_argument("invalid target identity");
++            if (!(row >> id.genome_hex)) id.genome_hex = hex("RSCLD");
++            if (row >> flag) {
++                if (flag != "live" || (row >> extra)) throw std::invalid_argument("unknown focal option");
++                id.test_live = true;
++            }
+             run(id,argc==5,scores,products,windows);
+         }
+         scores.close(); products.close(); windows.close();

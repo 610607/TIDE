@@ -1,0 +1,13 @@
+seed	chain_mother_born	chain_daughter_born	chain_grandchild_born	role	site	born	child_site	child_born	placement	donor_site	donor_born	daughter_reads_mother	first_copy	donor_death	donor_steps_to_death	ordinary_births	deny_all_births	deny_live_births	deny_live_blocks	deny_live_product_sources	deny_live_original_transfer
+3562	425	464	477	mother	17	425	16	464	W	18	386	0	454	467	13	3	0	2	14	rrrrr,rrrrr	0
+3562	425	464	477	daughter	16	464	31	477	W	17	425	1	467	506	39	2	0	1	25	frrrr	0
+3562	519	558	571	mother	17	519	16	558	W	18	480	0	548	561	13	3	0	2	14	rrrrr,rrrrr	0
+3562	519	558	571	daughter	16	558	31	571	W	17	519	1	561	600	39	2	0	1	20	frrrr	0
+11942	146	185	198	mother	51	146	50	185	W	52	107	0	175	188	13	3	0	2	14	rrrrr,rrrrr	0
+11942	146	185	198	daughter	50	185	49	198	W	51	146	1	188	227	39	2	0	1	20	frrrr	0
+11942	185	198	211	mother	50	185	49	198	W	51	146	0	188	227	39	2	0	1	20	frrrr	0
+11942	185	198	211	daughter	49	198	48	211	W	50	185	1	201	266	65	1	0	1	33	frrrr	0
+11942	198	211	224	mother	49	198	48	211	W	50	185	0	201	266	65	1	0	1	33	frrrr	0
+11942	198	211	224	daughter	48	211	63	224	W	49	198	1	214	279	65	1	0	1	33	frrrr	0
+11942	211	224	239	mother	48	211	63	224	W	49	198	0	214	279	65	1	0	1	33	frrrr	0
+11942	211	224	239	daughter	63	224	62	239	W	48	211	1	229	292	63	1	0	1	32	frrrr	0

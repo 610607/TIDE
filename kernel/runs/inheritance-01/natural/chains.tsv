@@ -1,0 +1,5 @@
+seed	mother_site	mother_born	daughter_site	daughter_born	grandchild_site	grandchild_born	depth	confirmed
+11942	51	146	50	185	49	198	2	1
+11942	50	185	49	198	48	211	3	1
+11942	49	198	48	211	63	224	4	1
+11942	48	211	63	224	62	239	5	1
