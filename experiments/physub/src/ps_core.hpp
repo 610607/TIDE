@@ -339,6 +339,9 @@ public:
     uint64_t by_parent = 0, by_other = 0;
   };
   const std::vector<Birth>& births_this_tick() const { return births_log_; }
+  // Optional observer of cross-site writes denied by the target's monomer check.
+  void observe_mass_refusals() { log_mass_refusals_ = true; }
+  const std::vector<int32_t>& mass_refusals_this_tick() const { return mass_refusals_; }
   // Site moves made by this tick's rotations, as (from, to); observers that index by site
   // apply them before reading this tick's births.
   const std::vector<std::pair<int32_t, int32_t>>& moves_this_tick() const { return moves_log_; }
@@ -372,6 +375,8 @@ private:
   std::vector<uint8_t> copy_dir_;    // direction of that write
   std::vector<uint8_t> copy_cut_;    // copy cut by a rotation
   std::vector<std::pair<int32_t, int32_t>> moves_log_;  // observer: cleared every tick
+  bool log_mass_refusals_ = false;
+  std::vector<int32_t> mass_refusals_;  // writer sites, cleared every tick
   Stats stats_;
   int64_t mass_total_ = 0;
   int64_t energy_in_ = 0;            // cumulative inflow

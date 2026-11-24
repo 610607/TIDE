@@ -8,6 +8,8 @@ Do not copy rules from here into `docs/substrate-primitives.md` until they are f
 Related design notes: [`docs/physical-substrate-model.md`](../../docs/physical-substrate-model.md),
 [`docs/substrate-primitives.md`](../../docs/substrate-primitives.md). A summary of v13-v30
 (conclusions, criterion 1, open questions) is in [`STATUS.md`](STATUS.md).
+The [v31 paired matter control](runs/v31/README.md) tests the effect of initial monomer supply
+with the replication assay held at the v27 stock.
 
 ## Build and test
 

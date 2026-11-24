@@ -6,13 +6,14 @@
 //        [decay_table=T decay_ratio=R] [classes=T1,T2,...] [anc=polite|copier]
 //        [fidelity=W] [fate=1] [trace=1] [route=1] [length=1] [role=1] [inert_operand=zero|fail]
 //        [census_topup=1|0] [census_born=1|0] [ext_write=allow|fill|erase]
-//        [ext_active=allow|refuse] [mut_scope=all|cross]
+//        [ext_active=allow|refuse] [mut_scope=all|cross] [census_mass0=M] [mass_fate=1]
 
 #include "ps_census.hpp"
 #include "ps_core.hpp"
 
 #include <algorithm>
 #include <array>
+#include <charconv>
 #include <cstdlib>
 #include <cstring>
 #include <memory>
@@ -173,8 +174,11 @@ void print_window(const World& w, const Window& win, const Stats& prev) {
 bool g_census_topup = true;
 bool g_census_born = true;
 
-TrialResult run_trial(const Config& run_cfg, const std::string& key) {
-  return census::run_trial(run_cfg, key, *g_ref, g_census_topup, g_census_born);
+// Fixed for the lifetime of both census caches. Defaults to the main world configuration.
+Config g_trial_cfg;
+
+TrialResult run_trial(const std::string& key) {
+  return census::run_trial(g_trial_cfg, key, *g_ref, g_census_topup, g_census_born);
 }
 
 // Kind of the activation now running at a site; seeded founders count as self.
@@ -193,7 +197,7 @@ void print_census(const World& w, const std::vector<Record>& recs,
     if (!w.site_active(s)) continue;
     const std::string key = masked(w, s);
     auto it = cache.find(key);
-    if (it == cache.end()) it = cache.emplace(key, run_trial(w.config(), key)).first;
+    if (it == cache.end()) it = cache.emplace(key, run_trial(key)).first;
     const bool r = it->second.replicator;
     strict += it->second.strict();
     born_fail += it->second.reset_strict() && !it->second.born_strict;
@@ -435,7 +439,7 @@ void print_fidelity(const World& w, const FidWindow& fw, uint64_t window,
                     std::map<std::string, TrialResult>& cache) {
   auto verdict = [&](const std::string& key) -> const TrialResult& {
     auto it = cache.find(key);
-    if (it == cache.end()) it = cache.emplace(key, run_trial(w.config(), key)).first;
+    if (it == cache.end()) it = cache.emplace(key, run_trial(key)).first;
     return it->second;
   };
   auto mean = [](uint64_t a, uint64_t b) { return b ? static_cast<double>(a) / b : 0.0; };
@@ -535,7 +539,7 @@ void print_lineage(const World& w, std::map<std::string, TrialResult>& cache) {
     if (!w.site_active(s)) continue;
     const std::string key = masked(w, s);
     auto it = cache.find(key);
-    if (it == cache.end()) it = cache.emplace(key, run_trial(w.config(), key)).first;
+    if (it == cache.end()) it = cache.emplace(key, run_trial(key)).first;
     const int st = status_of(it->second);
     sites[st] += 1;
     depth[st] += static_cast<uint64_t>(it->second.depth);
@@ -571,7 +575,6 @@ void print_lineage(const World& w, std::map<std::string, TrialResult>& cache) {
 // census cache, so the census output (including its trial count) is unchanged; prime() hands
 // the census the verdicts it would compute for the active sites.
 enum End { kEndDecay = 0, kEndWick, kEnds };
-constexpr const char* kEndName[kEnds] = {"decay", "wick"};
 // Writer of an in-place change: the site itself, or the status of the foreign writer's
 // activation (kWNone: the writer's site is not active).
 enum Writer { kWSelf = kStatuses, kWNone, kWriters };
@@ -579,6 +582,7 @@ constexpr const char* kWriterName[kWriters] = {"rep", "loose", "prop", "other", 
 
 struct Fate {
   bool on = false;
+  bool mass_refused = false;  // this activation has had a cross-site write refused for lack of mass
   bool converted = false;  // was strict, lost strict status in place
   int status = kOther;
   int start_ip = 0;        // ignition offset
@@ -811,14 +815,9 @@ struct LengthTally {
 // their role in the parent's key; non-strict env children: foreign-written differing offsets
 // by their role in the parent's key.
 enum ByteRole { kBRDir = 0, kBROpnd, kBRVal, kBRNone, kBRSub, kByteRoles };
-constexpr const char* kByteRoleName[kByteRoles] = {"dir", "opnd", "val", "none", "sub"};
 enum RoleCls { kRCDirOnly = 0, kRCDirMixed, kRCOpnd, kRCVal, kRCSub, kRCNone, kRoleCls };
-constexpr const char* kRoleClsName[kRoleCls] = {"dir_only", "dir_mixed", "opnd",
-                                                "val",      "sub",       "none"};
 // In-place byte kinds for the length ledger: added (INERT before) by role, removed, substituted.
 enum LenByte { kLBAddDir = 0, kLBAddOpnd, kLBAddVal, kLBAddNone, kLBRem, kLBSub, kLenBytes };
-constexpr const char* kLenByteName[kLenBytes] = {"add_dir",  "add_opnd", "add_val",
-                                                 "add_none", "rem",      "sub"};
 struct RoleTally {
   uint64_t loss[2][kLossRoutes][kRoleCls] = {};  // [off entry][route][class]
   uint64_t loss_kept[2][kLossRoutes] = {};       // strict once foreign dir fills are undone
@@ -877,13 +876,14 @@ struct FateTally {
 class FateObserver {
 public:
   FateObserver(const World& w, const std::map<std::string, TrialResult>& census,
-               bool trace = false, bool route = false, bool length = false, bool role = false)
+               bool trace = false, bool route = false, bool length = false, bool role = false,
+               bool mass_fate = false)
       : w_(w), census_(census), len_(w.config().site_len),
         sites_(w.config().width * w.config().height),
         src_ptr_(g_ref->name == "polite" ? 30 : 23),
         fate_(sites_), snap_(static_cast<size_t>(sites_) * len_), next_ip_(sites_, 0),
         trace_(trace), route_(route), prev_ip_(sites_, 0), last_(sites_), length_(length),
-        z_(sites_, 0), comp_(sites_, 0), exec_(sites_, 0), ctl_(sites_, 0), role_(role) {
+        z_(sites_, 0), comp_(sites_, 0), exec_(sites_, 0), ctl_(sites_, 0), role_(role), mass_fate_(mass_fate) {
     const auto& ref = *g_ref->program;
     for (int v : g_ref->volatile_offsets) {
       vol_mask_ |= uint64_t{1} << v;
@@ -913,7 +913,7 @@ public:
     const auto c = census_.find(key);
     if (c != census_.end()) return status_of(c->second);
     auto it = cache_.find(key);
-    if (it == cache_.end()) it = cache_.emplace(key, run_trial(w_.config(), key)).first;
+    if (it == cache_.end()) it = cache_.emplace(key, run_trial(key)).first;
     return status_of(it->second);
   }
 
@@ -931,6 +931,13 @@ public:
 
   // Call after every tick, before reading the census.
   void observe() {
+    if (mass_fate_) {
+      for (const int32_t writer : w_.mass_refusals_this_tick()) {
+        ++cross_refusals_;
+        if (!fate_[writer].mass_refused) ++first_refusals_;
+        fate_[writer].mass_refused = true;
+      }
+    }
     if (trace_) prev_ip_ = next_ip_;  // the instruction each tracked activation just ran
     if (length_) {
       for (int32_t s = 0; s < sites_; ++s) {
@@ -945,6 +952,11 @@ public:
       const Fate parent = fate_[b.parent];
       const LastEnd prev = last_[b.child];
       start(b.child);
+      if (mass_fate_ && kind == kCopy) {
+        const int exposed = parent.mass_refused;
+        ++copy_births_[exposed];
+        strict_children_[exposed] += fate_[b.child].status == kRep;
+      }
       if (length_) l_birth(b, kind, parent);
       t_.born[fate_[b.child].status][kind] += 1;
       t_.born_rep_start0 += fate_[b.child].status == kRep && fate_[b.child].start_ip == 0;
@@ -1087,6 +1099,18 @@ public:
       << " child_same=" << t_.fill_child_same << " child_src=" << t_.fill_child_src
       << " ends_decay/wick=" << t_.fill_ends[kEndDecay] << '/' << t_.fill_ends[kEndWick]
       << " life_sum=" << t_.fill_life << std::endl;
+    if (mass_fate_) {
+      const uint64_t refused = w_.stats().write_no_mass;
+      o << "# massfate tick=" << tick << " no_mass=" << refused - prev_no_mass_
+        << " cross_refused=" << cross_refusals_ << " newly_refused=" << first_refusals_
+        << " copies_clear=" << copy_births_[0] << " strict_clear=" << strict_children_[0]
+        << " copies_after_refusal=" << copy_births_[1]
+        << " strict_after_refusal=" << strict_children_[1] << std::endl;
+      prev_no_mass_ = refused;
+      cross_refusals_ = first_refusals_ = 0;
+      copy_births_ = {};
+      strict_children_ = {};
+    }
     if (length_) print_length(o);
     if (route_) print_route(o);  // reads the trace tallies, so before print_trace resets them
     if (role_) print_role(o);
@@ -1130,6 +1154,9 @@ private:
   LengthTally l_;
   // role=1 (see RoleTally).
   const bool role_;
+  const bool mass_fate_;
+  uint64_t prev_no_mass_ = 0, cross_refusals_ = 0, first_refusals_ = 0;
+  std::array<uint64_t, 2> copy_births_{}, strict_children_{};
   RoleTally rl_;
   std::map<std::string, TrialResult> role_trials_;  // keys neither the census nor cache_ holds
   int loss_cls_ = kRCNone;   // class of the strict loss being handled (for the length exit)
@@ -1151,6 +1178,7 @@ private:
   void start(int32_t s) {
     Fate& f = fate_[s];
     f.on = true;
+    f.mass_refused = false;
     f.converted = false;
     f.fill = false;
     f.status = status_of_key(masked(w_, s));
@@ -1266,7 +1294,7 @@ private:
     const auto c = census_.find(key);
     if (c != census_.end()) return c->second;
     auto it = cache_.find(key);
-    if (it == cache_.end()) it = cache_.emplace(key, run_trial(w_.config(), key)).first;
+    if (it == cache_.end()) it = cache_.emplace(key, run_trial(key)).first;
     return it->second;
   }
 
@@ -1290,7 +1318,7 @@ private:
   }
 
   bool seedable(const std::string& key) const {
-    return census::trial_bytes(key, *g_ref) <= w_.config().mass0;
+    return census::trial_bytes(key, *g_ref) <= g_trial_cfg.mass0;
   }
 
   // Verdict of a trial whose founder site is topped up to the key's byte count. Under
@@ -1300,7 +1328,7 @@ private:
     if (g_census_topup) return status_of(trial_of(key));
     auto it = topped_.find(key);
     if (it == topped_.end()) {
-      it = topped_.emplace(key, status_of(census::run_trial(w_.config(), key, *g_ref, true,
+      it = topped_.emplace(key, status_of(census::run_trial(g_trial_cfg, key, *g_ref, true,
                                                             g_census_born)))
                .first;
     }
@@ -1395,7 +1423,7 @@ private:
     constexpr uint64_t kTail = ~((uint64_t{1} << 46) - 1);
     std::string key(reinterpret_cast<const char*>(old), len_);
     for (int v : g_ref->volatile_offsets) key[v] = 0;
-    const bool past = census::trial_bytes(key, *g_ref) > w_.config().mass0;
+    const bool past = census::trial_bytes(key, *g_ref) > g_trial_cfg.mass0;
     int r = kLFOther;
     if (wc == kWSelf) {
       r = (mask & 1) ? kLSelf0 : kLSelfOther;
@@ -1424,7 +1452,7 @@ private:
     const auto it = cache_.find(key);
     if (it != cache_.end()) return it->second;
     auto r = role_trials_.find(key);
-    if (r == role_trials_.end()) r = role_trials_.emplace(key, run_trial(w_.config(), key)).first;
+    if (r == role_trials_.end()) r = role_trials_.emplace(key, run_trial(key)).first;
     return r->second;
   }
 
@@ -2104,12 +2132,12 @@ private:
       const int st = fate_[s].status;
       const int n = census::trial_bytes(key, *g_ref);
       need[st][n <= 40 ? 0 : std::min(kBins - 1, (n - 41) / 4 + 1)] += 1;
-      if (n <= w_.config().mass0) continue;
+      if (n <= g_trial_cfg.mass0) continue;
       unseeded[st] += 1;
       keys.insert(key);
       topped[topped_status(key)] += 1;
     }
-    o << "# tracekey tick=" << tick << " mass0=" << w_.config().mass0
+    o << "# tracekey tick=" << tick << " mass0=" << g_trial_cfg.mass0
       << " bins=<=40,41-44,45-48,49-52,53-56,57-60,61-64";
     for (int st = 0; st < kStatuses; ++st) {
       o << ' ' << kStatusName[st] << "_bytes=";
@@ -2204,6 +2232,8 @@ int main(int argc, char** argv) {
   bool trace = false;             // trace=1: writers, igniters and matter (needs fate=1)
   bool route = false;             // route=1: strict ledger by entry and loss route (needs trace=1)
   bool length = false;            // length=1: length of strict keys (needs trace=1)
+  int census_mass0 = -1;
+  bool mass_fate = false;
   bool role = false;              // role=1: roles of INERT in changed bytes (needs route, length)
   for (int i = 1; i < argc; ++i) {
     const std::string a = argv[i];
@@ -2234,6 +2264,15 @@ int main(int argc, char** argv) {
       while (std::getline(list, item, ',')) class_tables.push_back(std::atoi(item.c_str()));
     }
     else if (k == "mass0") cfg.mass0 = std::atoi(v.c_str());
+    else if (k == "census_mass0") {
+      const char* end = v.data() + v.size();
+      const auto parsed = std::from_chars(v.data(), end, census_mass0);
+      if (parsed.ec != std::errc{} || parsed.ptr != end || census_mass0 < 0) {
+        std::cerr << "bad census_mass0: " << v << '\n';
+        return 1;
+      }
+    }
+    else if (k == "mass_fate") mass_fate = v == "1";
     else if (k == "rival") rival = v == "1";
     else if (k == "census") census = v == "1";
     else if (k == "physics") physics = v == "1";
@@ -2326,7 +2365,14 @@ int main(int argc, char** argv) {
     std::cerr << "fate needs census=1 and p_rot 0\n";
     return 1;
   }
+  if (mass_fate && !fate) {
+    std::cerr << "mass_fate needs fate=1\n";
+    return 1;
+  }
   World w(cfg);
+  g_trial_cfg = w.config();
+  if (census_mass0 >= 0) g_trial_cfg.mass0 = census_mass0;
+  if (mass_fate) w.observe_mass_refusals();
   const int ax = rival ? cfg.width / 4 : cfg.width / 2;
   w.seed_program(ax, cfg.height / 2, ref_program());
   if (rival) w.seed_program(3 * cfg.width / 4, cfg.height / 2, ancestor());
@@ -2341,7 +2387,7 @@ int main(int argc, char** argv) {
   std::map<std::string, TrialResult> census_cache;  // program text -> trial (census=1)
   FidWindow fid;
   std::unique_ptr<FateObserver> fates;
-  if (fate) fates = std::make_unique<FateObserver>(w, census_cache, trace, route, length, role);
+  if (fate) fates = std::make_unique<FateObserver>(w, census_cache, trace, route, length, role, mass_fate);
   std::cout << "tick\tactive\tbirths\texact%\tintact_parent%\ttop_count\ttop_dist\tdistinct"
                "\tcopies\treignites\tintact_copies\tblank\topen0\tdead\tpfx_active\tpfx_copies\text_erased\tstalls\tstarved\tenergy\n";
   const bool physics_line = physics || cfg.hydro_whole != Whole::Off || cfg.p_rot > 0.0;

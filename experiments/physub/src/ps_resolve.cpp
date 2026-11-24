@@ -55,6 +55,7 @@ void World::step() {
   }
   fresh_.assign(act_.size(), false);
   births_log_.clear();
+  mass_refusals_.clear();
   pay_energy(intents);
   apply_writes(intents);
   apply_walls(intents);
@@ -152,6 +153,7 @@ void World::apply_writes(std::vector<Intent>& intents) {
     if (old == INERT && it.byte != INERT) {
       if (free_[it.site] == 0) {
         stats_.write_no_mass += 1;
+        if (log_mass_refusals_ && it.dir != kSelf) mass_refusals_.push_back(it.origin_site);
         continue;
       }
       free_[it.site] -= 1;       // polymerization embeds one monomer

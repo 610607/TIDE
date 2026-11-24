@@ -1,0 +1,13 @@
+# v31 paired matter control against v27. The isolated census always starts with 48
+# monomers per site and keeps founder top-up and the copy-born trial. Re-run the four
+# controls because the archived v27 files lack per-parent copy-write refusal histories.
+# mass_fate counts cross-site MOV refusals and all later copy births of that activation.
+# Only mass0 differs within a named seed/operand pair.
+zero_s1_m48 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill inert_operand=zero census=1 fidelity=5000 fate=1 mass_fate=1 census_mass0=48 census_topup=1 census_born=1 mass0=48
+zero_s1_m64 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill inert_operand=zero census=1 fidelity=5000 fate=1 mass_fate=1 census_mass0=48 census_topup=1 census_born=1 mass0=64
+fail_s1_m48 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill inert_operand=fail census=1 fidelity=5000 fate=1 mass_fate=1 census_mass0=48 census_topup=1 census_born=1 mass0=48
+fail_s1_m64 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=1 ext_write=fill inert_operand=fail census=1 fidelity=5000 fate=1 mass_fate=1 census_mass0=48 census_topup=1 census_born=1 mass0=64
+zero_s2_m48 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=2 ext_write=fill inert_operand=zero census=1 fidelity=5000 fate=1 mass_fate=1 census_mass0=48 census_topup=1 census_born=1 mass0=48
+zero_s2_m64 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=2 ext_write=fill inert_operand=zero census=1 fidelity=5000 fate=1 mass_fate=1 census_mass0=48 census_topup=1 census_born=1 mass0=64
+fail_s2_m48 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=2 ext_write=fill inert_operand=fail census=1 fidelity=5000 fate=1 mass_fate=1 census_mass0=48 census_topup=1 census_born=1 mass0=48
+fail_s2_m64 ps_probe width=96 height=96 ticks=500000 interval=50000 p_mut=0.003 p_hydro=1.95e-6 hydro_whole=1 seed=2 ext_write=fill inert_operand=fail census=1 fidelity=5000 fate=1 mass_fate=1 census_mass0=48 census_topup=1 census_born=1 mass0=64
