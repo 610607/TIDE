@@ -1,0 +1,5 @@
+seed	daughter_site	daughter_born	birth_number	child_site	child_born	first_copy	last_copy	direction_to_mother	mother_death	mother_alive_reads	actual_maternal_reads	inputs	product
+2437	36	1688	1	37	1718	1708	1716	S	1744	5	0	R.CLD	R.CJD
+2437	36	1688	2	52	1741	1731	1739	S	1744	5	0	R.CJD	R.CJD
+2437	4	1741	1	3	1754	1744	1752	N	1744	1	0	R.CLD	R.CLD
+2437	36	1688	3	20	1757	1747	1755	S	1744	0	0	R.CJD	R.CJD

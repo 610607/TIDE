@@ -1,0 +1,15 @@
+# All natural births in the archived wide fields
+
+Retrospective analysis after the seed-2437 family was known. Include the two full prospective cohorts from the vacancy study, seeds 577–1088 and 1089–3136. Use all births through tick 2,048 in the ordinary 16 × 4 reference world. Verify the seed-level counts, population status and final state hashes. The historical cases and intervention branches are outside these cohorts.
+
+Count a natural intact link when an RSCLD mother copies five unchanged bytes from one living external RSCLD individual, identified by site and birth tick, and produces an RSCLD daughter. Count every birth independently of the mother's earlier copy attempts, encounters, allocations and offspring. Chain links only through the actual parent and child identities. Report later births, longest consecutive chain, and any daughter still alive at the cutoff. Records can end before an individual's death.
+
+Also apply the established permission assay to all field mother–daughter–grandchild events with successful external reads before birth at both ends. Use the two actual first-contact backgrounds and the original controls, cycle definition and 4,096-tick limit. Include changes in offspring genome and mark first contacts with non-live banks. Report each cohort's event and seed counts. These runs reuse the previous seeds and do not provide an independent replication.
+
+Use the selected seed-2437 field record separately to determine whether daughters had access to a still-living adjacent mother over each observed five-copy interval, regardless of direction. Evaluate every completed allocation of both daughters. Record observed substitutions. Use those observations to design a direction-only test.
+
+## Single-allocation direction test
+
+Added after the all-birth census and four ordinary windows were inspected, before executing direction forks. Include all four completed daughter allocations from the selected family. Recreate the state immediately before the first copy of each allocation. The youngest daughter's first copy coincides with its mother's age-death step. Another window starts after the mother's death. Include both. For each allocation compare its original read source, the mother's neighboring site, and that same maternal-site source with the focal's external reads denied. Set the read address once. Leave the existing reservation, instruction pointer, read offset, bearing, VM mutation draws, donor bytes and other CPUs untouched. Address the site even after it is reused. Track the identity and status of the actual source on every successful copy.
+
+Stop the branch at the first focal birth or focal death. Record every input and product, number of original living maternal bytes, read failures, end tick and world hash. The primary result is an exact RSCLD product from five unchanged bytes of the still-living mother. Check each ordinary product against the archived field and compare reverse field traversal. These diagnostic forks test sufficiency in a known family. They supply no additional independent seeds.
