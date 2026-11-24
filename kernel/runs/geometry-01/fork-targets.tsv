@@ -1,0 +1,12 @@
+width	seed	site	born	reason
+4	349	24	1793	reader_daughter
+4	349	28	1740	reader_mother
+8	390	29	603	reader_mother
+8	390	30	629	reader_daughter
+16	419	62	1445	compatible_east
+16	555	56	1946	reader_mother
+16	555	57	1959	reader_daughter
+16	561	26	1992	compatible_east,reader_mother
+16	561	27	2048	reader_daughter
+16	569	29	841	compatible_east,reader_mother
+16	569	30	883	reader_daughter

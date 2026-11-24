@@ -1,0 +1,5 @@
+width	seed	tick	births	deaths	living	final80_births	status	state_fnv64
+8	65	512	307	261	47	47	reproducing	11003b5d0f2d09d0
+8	66	512	317	268	50	50	reproducing	b3b1a07aaa535d4c
+8	67	512	309	265	45	45	reproducing	b834c15b2889fed1
+8	68	512	312	263	50	50	reproducing	9acf05fa0314ec86

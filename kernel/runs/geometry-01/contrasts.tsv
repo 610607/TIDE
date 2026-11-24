@@ -1,0 +1,5 @@
+width	endpoint	paired_seeds	neither	both	square_only	rectangle_only	rectangle_minus_square_seeds
+4	compatible_at_attempt	256	256	0	0	0	0
+4	confirmed_pairs	256	256	0	0	0	0
+16	compatible_at_attempt	256	256	0	0	0	0
+16	confirmed_pairs	256	256	0	0	0	0

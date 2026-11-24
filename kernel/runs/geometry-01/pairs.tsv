@@ -1,0 +1,6 @@
+width	seed	tick	grandchild_site	mother_site	mother_born	mother_hex	mother_first_tick	mother_first_kind	mother_first_site	mother_first_hex	mother_assay	mother_result	child_site	child_born	child_hex	child_first_tick	child_first_kind	child_first_site	child_first_hex	child_assay	child_result	grandchild_hex	confirmed
+8	390	658	31	29	603	5253434c44	619	r	30	522e434c44	-	reserved_first	30	629	5253434c44	648	r	31	522e434c48	-	reserved_first	522e434c48	0
+4	349	1834	28	28	1740	5253434c44	1745	o	29	522e434c44	read-5253434c44-522e434c44-E	inconclusive	24	1793	5253434c44	1824	o	25	522e434c44	read-5253434c44-522e434c44-E	inconclusive	522e434c44	0
+4	349	1848	25	28	1740	5253434c44	1745	o	29	522e434c44	read-5253434c44-522e434c44-E	inconclusive	24	1793	5253434c44	1824	o	25	522e434c44	read-5253434c44-522e434c44-E	inconclusive	522e434c44	0
+16	555	2011	58	56	1946	5253434c44	1949	r	57	5253434c44	-	reserved_first	57	1959	5253434c44	2001	r	58	524a434c44	-	reserved_first	524a434c44	0
+16	569	934	46	29	841	5253434c44	873	r	30	5253434c44	-	reserved_first	30	883	5253434c44	924	o	31	522e434c44	read-5253434c44-522e434c44-E	inconclusive	522e434c44	0

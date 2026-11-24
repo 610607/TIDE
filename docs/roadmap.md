@@ -2,7 +2,7 @@
 
 TIDE stands for TIDE Is Digital Evolution.
 
-Updated 2026-11-23.
+Updated 2026-11-24.
 
 This roadmap is a plan. Stage contents are proposals until their rules are agreed; [AGENTS.md](../AGENTS.md) records what is decided.
 
@@ -32,6 +32,7 @@ An experience layer (observation UI, cards, controller seats for humans, AI, and
 | R4. Follow field families | Continued the seven affected prospective worlds to tick 4,096. All eight confirmed same-genome families died out. Matching genomes reappeared independently in four worlds. | [All checkpoints and family outcomes](../kernel/runs/persistence-01/README.md) |
 | R4. Behavioral persistence and spatial opportunity | Verified one historical changed fetch lineage. Of 330 engineered single substitutions, 215 retained dependence in their founder backgrounds. In 256 new read-only fields, zero of 143 newborn readers saw a compatible live neighbor through the first-copy window. | [Pedigrees, sequence panel and spatial census](../kernel/runs/transmission-01/README.md) |
 | R5. First one-variable field comparisons | Varied one byte per donor layout, then changed reclamation. A seeded reader family reached seven transmissions with retained bytes and four in the same layout with cleared bytes. Traces identified a parent reading residual code from its own daughter reservation. | [Controlled field outcomes](../kernel/runs/transmission-01/README.md#donor-supply-and-residual-memory) |
+| R5. Natural encounter timing | Ran 256 matched seeds in each of three equal-area geometries. Three readers in wide fields encountered a compatible living eastern reader while waiting to reserve space. All layouts recorded zero live matches at the first copy. Three intact transmissions from reserved bytes were verified by focal permission forks. | [All seeds, timelines and forks](../kernel/runs/geometry-01/README.md) |
 
 The pilot's budget, five-byte ancestor and substitution-only mutation restrict the interpretation. A remaining question is which spatial conditions bring independently arising readers and compatible banks together often enough for serial transmission.
 
