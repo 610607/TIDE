@@ -1,0 +1,71 @@
+--- field.cpp
++++ field.cpp
+@@ -37,7 +37,7 @@
+     World world;
+     SpatialExperiment space;
+     int seed, threshold;
+-    bool random_birth, reverse;
++    bool random_birth, random_placement, reverse;
+     std::array<int,64> ids{};
+     std::vector<Life> lives;
+     std::vector<Product> products;
+@@ -51,7 +51,8 @@
+         return cfg;
+     }
+     Study(int seed,const std::string& arm,bool reverse):world(config(seed)),space(world),seed(seed),
+-        threshold(arm=="low"?1:arm=="high"?16:0),random_birth(arm=="bearing"),reverse(reverse) {
++        threshold(0),random_birth(arm=="bearing" || arm=="read"),
++        random_placement(arm=="bearing" || arm=="place"),reverse(reverse) {
+         ids.fill(-1); ids[36]=0;
+         world.seed_site(36,"R..CLD");
+         lives.emplace_back(36,0,"R..CLD");
+@@ -108,19 +109,20 @@
+         lives.emplace_back(e.target,t,e.product);
+         recent+=t>end_tick-80;
+         external_births+=a.external;
+-        int bearing=random_birth?static_cast<int>(SpatialExperiment::draw(seed,t,128+e.target)%4):1;
+-        SpatialExperiment::orient(world,e.target,bearing);
++        int draw=static_cast<int>(SpatialExperiment::draw(seed,t,128+e.target)%4);
++        int bearing=random_birth?draw:1;
++        world.set_birth_bearings(e.target,bearing,random_placement?draw:1);
+         ++initial_bearings[bearing];
+         if (!a.one_identity || !a.aligned || !a.unchanged) return;
+         int donor=a.first;
+         require(donor>=0 && lives[donor].bytes==e.product,"exact copy mismatch");
+         if (actor==donor) { lives[actor].self_copy=true; return; }
+         lives[donor].supplied=true;
++        products.push_back({child,actor,donor,e.actor,a});
+         if (lives[actor].bytes==e.product) return;
+         lives[actor].contact(donor).flags|=produced;
+         lives[child].enrolled=true;
+         ++directions[a.direction];
+-        products.push_back({child,actor,donor,e.actor,a});
+     }
+     void run() {
+         std::vector<Event> events;
+@@ -169,10 +171,11 @@
+         require(int(lives.size())-deaths==living,"population imbalance");
+         seeds<<seed<<'\t'<<arm<<'\t'<<lives.size()-1<<'\t'<<deaths<<'\t'<<living<<'\t'<<recent<<'\t'
+              <<(!living?"extinct":recent?"reproducing":"stagnant")<<'\t'<<world.hash();
+-        for (int v:{exposure,moves,pairs,facing,available,actual,productive,started,switched,external_births,int(products.size())})
++        const int enrolled=directions[0]+directions[1]+directions[2]+directions[3];
++        for (int v:{exposure,moves,pairs,facing,available,actual,productive,started,switched,external_births,enrolled})
+             seeds<<'\t'<<v;
+         for (int v:directions) seeds<<'\t'<<v;
+-        for (int v:{complete,self,donor_again,again,int(products.size())-complete}) seeds<<'\t'<<v;
++        for (int v:{complete,self,donor_again,again,enrolled-complete}) seeds<<'\t'<<v;
+         for (int v:initial_bearings) seeds<<'\t'<<v;
+         seeds<<'\t'<<std::count_if(lives.begin(),lives.end(),[](const Life& p){return p.reader && p.born<end_tick;})<<'\n';
+         for (const auto& entry:products) {
+@@ -235,9 +238,9 @@
+     try {
+         if (argc==2 && std::string_view(argv[1])=="--test") {controls(); return 0;}
+         if ((argc!=4 && argc!=5) || (argc==5 && std::string_view(argv[4])!="--reverse"))
+-            throw std::invalid_argument("usage: field SEED east|bearing|low|high DIR [--reverse]");
++            throw std::invalid_argument("usage: field SEED east|read|place|bearing DIR [--reverse]");
+         std::string arm=argv[2];
+-        require(arm=="east" || arm=="bearing" || arm=="low" || arm=="high","unknown arm");
++        require(arm=="east" || arm=="bearing" || arm=="read" || arm=="place","unknown arm");
+         int seed=std::stoi(argv[1]);
+         require(seed>=19521 && seed<=21568,"seed outside cohort");
+         Study study(seed,arm,argc==5); study.run(); study.write(arm,argv[3]);

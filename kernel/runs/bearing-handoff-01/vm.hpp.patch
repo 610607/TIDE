@@ -1,0 +1,16 @@
+--- vm.hpp
++++ vm.hpp
+@@ -40,2 +40,3 @@
+     int source = -1, read = 0, target = -1, written = 0;
++    int placement_offset = 0;
+ };
+@@ -76,3 +77,9 @@
+ class World {
++    friend struct SpatialExperiment;
+ public:
++    void set_birth_bearings(int site, int reading, int placement) {
++        auto& cpu = sites_.at(site).cpu;
++        cpu.bearing = reading;
++        cpu.placement_offset = (placement - reading + 4) % 4;
++    }
+     explicit World(Config config);

@@ -1,0 +1,30 @@
+--- vm.cpp
++++ vm.cpp
+@@ -137,7 +137,7 @@
+             if (cpu.target >= 0) break;
+             --cpu.pc;
+             e.effect = Effect::busy;
+-            const int dest = placement(id, cpu.bearing);
++            const int dest = placement(id, (cpu.bearing + cpu.placement_offset) % 4);
+             e.target = dest;
+             if (dest >= 0 && (winners[dest] < 0 || priority(id) < priority(winners[dest])))
+                 winners[dest] = id;
+@@ -251,6 +251,10 @@
+         for (int field : {c.bank, c.pc, c.resume, c.bearing, c.source, c.read, c.target, c.written})
+             word(field);
+     }
++    if (std::any_of(sites_.begin(), sites_.end(), [](const Site& s) { return s.cpu.placement_offset != 0; })) {
++        out += "TIDE-placement-offset";
++        for (const auto& site : sites_) word(site.cpu.placement_offset);
++    }
+     return out;
+ }
+ std::string World::state() const { return serialize(true); }
+@@ -282,6 +286,7 @@
+         if (s.bytes.empty() || !local(c.bank) || (c.source != -1 && !local(c.source)) ||
+             (c.bank == i) != (c.resume == -1) || c.read < 0 || c.read > capacity ||
+             c.pc < 0 || c.pc > capacity || c.bearing < 0 || c.bearing > 3 ||
++            c.placement_offset < 0 || c.placement_offset > 3 ||
+             c.written < 0 || c.written > static_cast<int>(s.bytes.size()) ||
+             (c.target < 0 && c.written) || (c.target >= 0 && (!local(c.target) ||
+             at(c.target).kind != Bank::reserved || at(c.target).owner != i)))

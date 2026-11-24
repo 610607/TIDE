@@ -1,0 +1,13 @@
+cohort	arm	worlds	births	enrolled	complete	incomplete	original	handoff	after_death	original_and_handoff	handoff_unlike	after_death_unlike	self_again	any_supplier	east_complete	east_original	east_handoff	east_after_death	other_complete	other_original	other_handoff	other_after_death	reproducing	stagnant	extinct	enrolled_worlds	original_worlds	handoff_worlds	after_death_worlds
+pilot	east	1024	1260961	1632	1563	69	0	4	3	0	4	3	957	4	28	0	0	0	1535	0	4	3	1024	0	0	752	0	4	3
+pilot	read	1024	1260638	2436	2350	86	248	6	4	0	6	4	1527	254	1022	248	2	1	1328	0	4	3	1024	0	0	879	219	6	4
+pilot	place	1024	1255391	1582	1517	65	0	2	0	0	2	0	930	2	26	0	0	0	1491	0	2	0	1024	0	0	757	0	2	0
+pilot	bearing	1024	1255785	2299	2194	105	223	5	1	2	5	1	1413	226	941	220	2	0	1253	3	3	1	1024	0	0	859	190	5	1
+replication	east	1024	1260422	1529	1468	61	0	2	1	0	2	1	951	2	31	0	1	1	1437	0	1	0	1024	0	0	738	0	2	1
+replication	read	1024	1260263	2264	2179	85	215	1	0	1	1	0	1411	215	975	215	1	0	1204	0	0	0	1024	0	0	858	191	1	0
+replication	place	1024	1255365	1649	1585	64	0	5	2	0	5	2	993	5	32	0	0	0	1553	0	5	2	1024	0	0	766	0	5	2
+replication	bearing	1024	1255234	2371	2273	98	252	5	2	0	5	2	1488	257	923	252	2	1	1350	0	3	1	1024	0	0	871	219	5	2
+pooled	east	2048	2521383	3161	3031	130	0	6	4	0	6	4	1908	6	59	0	1	1	2972	0	5	3	2048	0	0	1490	0	6	4
+pooled	read	2048	2520901	4700	4529	171	463	7	4	1	7	4	2938	469	1997	463	3	1	2532	0	4	3	2048	0	0	1737	410	7	4
+pooled	place	2048	2510756	3231	3102	129	0	7	2	0	7	2	1923	7	58	0	0	0	3044	0	7	2	2048	0	0	1523	0	7	2
+pooled	bearing	2048	2511019	4670	4467	203	475	10	3	2	10	3	2901	483	1864	472	4	1	2603	3	6	2	2048	0	0	1730	409	10	3
