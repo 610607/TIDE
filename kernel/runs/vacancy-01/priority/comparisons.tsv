@@ -1,0 +1,13 @@
+cohort	first	second	paired_cases	both	first_only	second_only	neither	paired_seeds	seed_both	seed_first_only	seed_second_only	seed_neither
+historical	local	ordinary	3	0	0	0	3	3	0	0	0	3
+historical	local	remote	3	0	0	0	3	3	0	0	0	3
+historical	grant	local	3	0	3	0	0	3	0	3	0	0
+historical	grant	grant_denied	3	0	3	0	0	3	0	3	0	0
+prospective	local	ordinary	2	0	0	0	2	2	0	0	0	2
+prospective	local	remote	2	0	0	0	2	2	0	0	0	2
+prospective	grant	local	2	0	0	0	2	2	0	0	0	2
+prospective	grant	grant_denied	2	0	0	0	2	2	0	0	0	2
+replication	local	ordinary	7	1	1	0	5	7	1	1	0	5
+replication	local	remote	7	1	1	0	5	7	1	1	0	5
+replication	grant	local	7	2	2	0	3	7	2	2	0	3
+replication	grant	grant_denied	7	0	4	0	3	7	0	4	0	3

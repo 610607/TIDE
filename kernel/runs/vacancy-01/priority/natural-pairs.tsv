@@ -1,0 +1,5 @@
+seed	founder_site	founder_born	daughter_site	daughter_born	grandchild_site	grandchild_born	founder_assay	founder_result	daughter_assay	daughter_result	confirmed
+2437	20	1663	36	1688	37	1718	read-5253434c44-5253434c44-E	dependent	-	reserved_first	0
+2437	20	1663	36	1688	52	1741	read-5253434c44-5253434c44-E	dependent	-	reserved_first	0
+2437	20	1663	36	1688	20	1757	read-5253434c44-5253434c44-E	dependent	-	reserved_first	0
+2437	20	1663	4	1741	3	1754	read-5253434c44-5253434c44-E	dependent	read-5253434c44-522e434c44-E	inconclusive	0

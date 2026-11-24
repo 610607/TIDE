@@ -1,0 +1,10 @@
+width	seed	site	born	branch	start_fnv64	death	blocked_attempts	first_block	reads	own_reads	births	reader_births
+16	2437	20	1663	ordinary	5a4ece81a4df9f51	1744	0	0	10	0	2	2
+16	2437	20	1663	deny_own	5a4ece81a4df9f51	1744	0	0	10	0	2	2
+16	2437	20	1663	deny_all	5a4ece81a4df9f51	1744	33	1678	0	0	0	0
+16	2437	36	1688	ordinary	23200f86082fd95f	1769	0	0	15	5	3	0
+16	2437	36	1688	deny_own	23200f86082fd95f	1769	31	1708	0	0	0	0
+16	2437	36	1688	deny_all	23200f86082fd95f	1769	31	1708	0	0	0	0
+16	2437	4	1741	ordinary	0dc0b1f74fbe256a	1822	0	0	5	0	1	0
+16	2437	4	1741	deny_own	0dc0b1f74fbe256a	1822	0	0	5	0	1	0
+16	2437	4	1741	deny_all	0dc0b1f74fbe256a	1822	39	1744	0	0	0	0

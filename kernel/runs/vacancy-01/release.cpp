@@ -1,4 +1,4 @@
-// Linked only with the study's augmented class declaration and unchanged VM implementation.
+// Linked only into study forks. The census uses the reference VM directly.
 #include "vm.hpp"
 #include <stdexcept>
 

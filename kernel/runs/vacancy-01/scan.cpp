@@ -16,7 +16,7 @@ struct Encounter {
 };
 void scan(int seed, bool reverse, std::ostream& seeds, std::ostream& readers, std::ostream& encounters) {
     auto w = initial(seed);
-    const std::string cohort = seed <= 576 ? "historical" : "prospective";
+    const std::string cohort = seed <= 576 ? "historical" : seed <= 1088 ? "prospective" : "replication";
     std::array<int,64> index;
     index.fill(-1);
     std::vector<Reader> people;
@@ -98,14 +98,21 @@ void scan(int seed, bool reverse, std::ostream& seeds, std::ostream& readers, st
 }
 int main(int argc,char** argv) {
     try {
-        if ((argc!=2 && argc!=3) || (argc==3 && std::string_view(argv[2])!="--reverse"))
-            throw std::invalid_argument("usage: scan OUTPUT_DIR [--reverse]");
+        if (argc<2) throw std::invalid_argument("usage: scan OUTPUT_DIR [--additional] [--reverse]");
+        bool additional=false, reverse=false;
+        for (int i=2; i<argc; ++i) {
+            const std::string_view flag=argv[i];
+            if (flag=="--additional") additional=true;
+            else if (flag=="--reverse") reverse=true;
+            else throw std::invalid_argument("unknown scan flag");
+        }
         const std::string dir = argv[1];
         auto s = output(dir,"seeds.tsv","cohort\tseed\tbirths\tdeaths\tliving\tfinal80_births\tstatus\treaders\tencounters\tstate_fnv64");
         auto r = output(dir,"readers.tsv","cohort\tseed\tsite\tborn\tencounter_tick\tfirst_copy\teffect\tfirst_bank\tfirst_donor_born\tfirst_source_hex\tbirths\tdeath");
         auto e = output(dir,"encounters.tsv","cohort\tseed\tsite\tborn\topening\tdonor_site\tdonor_born\tfree\teligible_sites\tstart_fnv64\tordinary_end_fnv64");
-        for (int seed : {419,561,569}) scan(seed,argc==3,s,r,e);
-        for (int seed=577; seed<=1088; ++seed) scan(seed,argc==3,s,r,e);
+        if (!additional) for (int seed : {419,561,569}) scan(seed,reverse,s,r,e);
+        for (int seed=additional?1089:577; seed<=(additional?3136:1088); ++seed)
+            scan(seed,reverse,s,r,e);
         s.close(); r.close(); e.close();
     } catch (const std::exception& e) { std::cerr << e.what() << '\n'; return 1; }
 }

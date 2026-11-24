@@ -1,0 +1,4 @@
+cohort	seeds	births	reproducing	stagnant	extinct	readers	first_attempts	live_match_at_first_attempt	encounters	encounter_seeds	ordinary_positive_seeds
+historical	3	3887	3	0	0	14	12	0	3	3	0
+prospective	512	663119	512	0	0	1106	898	0	2	2	0
+replication	2048	2650078	2048	0	0	4288	3536	2	7	7	1

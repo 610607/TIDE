@@ -1,0 +1,11 @@
+--- fork.cpp
++++ fork.cpp
+@@ -124,7 +124,7 @@
+             Identity id;
+             std::string extra;
+             if (!(row>>id.width>>id.seed>>id.site>>id.born) || (row>>extra) ||
+-                (id.width!=4 && id.width!=8 && id.width!=16) || id.seed<321 || id.seed>576 ||
++                (id.width!=4 && id.width!=8 && id.width!=16) || id.seed<577 || id.seed>3136 ||
+                 id.site<0 || id.site>=64 || id.born<1 || id.born>2048)
+                 throw std::invalid_argument("invalid target identity");
+             run(id,argc==5,scores,products,windows);

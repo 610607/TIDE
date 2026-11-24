@@ -1,0 +1,13 @@
+cohort	seed	site	born	opening	donor_death_minus_opening	focal_death_minus_opening	sufficient_age_window	immediate_last_copy	immediate_division	grant_first_birth	original_live_bytes	substituted	grant_outcome
+historical	419	62	1445	1446	39	80	1	1456	1458	1458	5	0	live_intact
+historical	561	26	1992	1993	42	80	1	2003	2005	2005	5	0	live_intact
+historical	569	29	841	842	28	80	1	852	854	854	5	0	live_intact
+prospective	581	45	921	922	0	80	0	932	934	934	0	0	donor_age_limit
+prospective	675	46	1485	1554	80	12	0	1564	1566	0	-	-	focal_age_limit
+replication	1254	2	1301	1302	4	80	0	1312	1314	1314	2	0	donor_age_limit
+replication	1396	63	1834	1835	0	80	0	1845	1847	1847	0	0	donor_age_limit
+replication	1531	19	1543	1544	5	80	0	1554	1556	1556	2	0	donor_age_limit
+replication	2019	56	1676	1689	80	68	1	1699	1701	1701	5	0	live_intact
+replication	2374	47	1527	1542	80	66	1	1552	1554	1554	5	0	live_intact
+replication	2437	20	1663	1666	80	78	1	1676	1678	1678	5	0	live_intact
+replication	2526	12	1414	1415	36	80	1	1425	1427	1427	5	0	live_intact

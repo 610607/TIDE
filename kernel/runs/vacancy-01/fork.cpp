@@ -1,6 +1,5 @@
 #include "common.hpp"
 #include <iostream>
-#include <limits>
 #include <sstream>
 
 using namespace vacancy;
@@ -38,13 +37,16 @@ bool same_site(const tide::Site& a,const tide::Site& b) {
     };
     return fields(a)==fields(b);
 }
-enum class Arm { ordinary, local, remote, local_denied };
+enum class Arm { ordinary, local, remote, local_denied, sham_priority, grant, grant_denied };
 const char* label(Arm arm) {
     switch(arm) {
     case Arm::ordinary: return "ordinary";
     case Arm::local: return "local";
     case Arm::remote: return "remote";
     case Arm::local_denied: return "local_denied";
+    case Arm::sham_priority: return "sham_priority";
+    case Arm::grant: return "grant";
+    case Arm::grant_denied: return "grant_denied";
     }
     throw std::logic_error("unknown arm");
 }
@@ -100,7 +102,9 @@ void follow(const tide::World& start,const Case& c,int local,bool preferred,Arm 
         require(w.tick()==start.tick() && w.at(victim).bytes==start.at(victim).bytes &&
                 w.at(victim).kind==tide::Bank::free && live_count(w)==live_count(start)-1,"bad vacancy ledger");
     }
-    if(arm==Arm::local_denied) w.set_access(c.site,{});
+    const bool denied=arm==Arm::local_denied || arm==Arm::grant_denied;
+    const bool grant=arm==Arm::grant || arm==Arm::grant_denied;
+    if(denied) w.set_access(c.site,{});
     int initial_live=live_count(w);
     std::string post=w.hash(), key=c.cohort+"\t"+std::to_string(c.seed)+"\t"+std::to_string(c.site)+"\t"+
         std::to_string(c.born)+"\t"+std::to_string(c.opening)+"\t"+std::to_string(local);
@@ -112,7 +116,10 @@ void follow(const tide::World& start,const Case& c,int local,bool preferred,Arm 
     std::string opening_effect;
     std::vector<tide::Event> events;
     for(int k=0;k<follow_ticks;++k) {
-        w.step(&events,reverse); w.check();
+        if(k==0 && (grant || arm==Arm::sham_priority))
+            w.step_with_preferred_claimant(&events,reverse,c.site);
+        else w.step(&events,reverse);
+        w.check();
         const int t=static_cast<int>(w.tick());
         for(const auto& e:events) {
             const bool founder=e.actor==c.site && e.actor_born==static_cast<tide::Tick>(c.born);
@@ -130,7 +137,7 @@ void follow(const tide::World& start,const Case& c,int local,bool preferred,Arm 
             }
             if(e.effect==tide::Effect::death) {
                 ++deaths; p={};
-                if(founder && arm==Arm::local_denied) w.set_access(c.site,start.config().access);
+                if(founder && denied) w.set_access(c.site,start.config().access);
             }
             if(p.depth>=0 && e.effect==tide::Effect::reserve) p.copies={};
             if(p.depth>=0 && e.effect==tide::Effect::copy) p.copies.record(e,c);
@@ -165,8 +172,10 @@ void follow(const tide::World& start,const Case& c,int local,bool preferred,Arm 
     int living=live_count(w),family_live=0,reader_live=0;
     for (const auto& p:members) { family_live+=p.family; reader_live+=p.depth>=0; }
     require(initial_live+births-deaths==living && !opening_effect.empty(),"invalid follow-up ledger");
-    if(arm==Arm::ordinary) require(w.hash()==c.end_hash,"ordinary follow-up diverged");
-    if(arm==Arm::local_denied) require(founder_births==0 && !copy,"focal permission control failed");
+    if(arm==Arm::ordinary || arm==Arm::sham_priority)
+        require(w.hash()==c.end_hash,"ordinary follow-up diverged");
+    if(denied) require(founder_births==0 && !copy,"focal permission control failed");
+    if(grant) require(reserve==c.opening && opening_target==local,"opening grant failed");
     const bool remote=arm==Arm::remote;
     const int diff=remote?mismatches(start.at(local).bytes,start.at(victim).bytes):-1;
     const int age_diff=remote?std::abs(static_cast<int>(start.at(local).born)-static_cast<int>(start.at(victim).born)):-1;
@@ -180,7 +189,7 @@ void follow(const tide::World& start,const Case& c,int local,bool preferred,Arm 
         <<'\t'<<living<<'\t'<<recent<<'\t'<<(!living?"extinct":recent?"reproducing":"stagnant")<<'\t'<<w.hash()<<'\n';
 }
 
-void run(const Case& c, bool reverse, Outputs& out) {
+void run(const Case& c, bool reverse, bool priority, Outputs& out) {
     auto start=initial(c.seed);
     for(int t=1;t<c.opening;++t) start.step(nullptr,reverse);
     start.check();
@@ -191,31 +200,50 @@ void run(const Case& c, bool reverse, Outputs& out) {
     auto options=eligible_sites(start,c.site);
     require(free_neighbors(start,c.site)==c.free && site_list(options)==c.eligible,"eligibility changed");
     follow(start,c,-1,false,Arm::ordinary,-1,reverse,out);
-    if(c.free) return;
+    if(c.free || options.empty()) return;
+    if(priority) follow(start,c,-1,false,Arm::sham_priority,-1,reverse,out);
     for(int local:options) {
         bool preferred=local==options.front();
-        if(!preferred && c.cohort=="prospective") break;
+        if(!preferred && c.cohort!="historical") break;
         follow(start,c,local,preferred,Arm::local,local,reverse,out);
         int far=matched_remote(start,c,local);
         if(far>=0) follow(start,c,local,preferred,Arm::remote,far,reverse,out);
         follow(start,c,local,preferred,Arm::local_denied,local,reverse,out);
+        if(priority) {
+            follow(start,c,local,preferred,Arm::grant,local,reverse,out);
+            follow(start,c,local,preferred,Arm::grant_denied,local,reverse,out);
+        }
+    }
+}
+void replay(const std::string& path,bool reverse,bool priority,Outputs& out) {
+    std::ifstream in(path);
+    std::string line;
+    require(static_cast<bool>(std::getline(in,line)),"missing encounter table");
+    while(std::getline(in,line)) {
+        std::istringstream row(line);
+        Case c;
+        std::string extra;
+        if(!(row>>c.cohort>>c.seed>>c.site>>c.born>>c.opening>>c.east>>c.east_born>>c.free>>c.eligible>>
+             c.start_hash>>c.end_hash) || (row>>extra)) throw std::invalid_argument("bad encounter record");
+        run(c,reverse,priority,out);
     }
 }
 }
 int main(int argc,char** argv) {
     try {
-        if((argc!=2 && argc!=3) || (argc==3 && std::string_view(argv[2])!="--reverse"))
-            throw std::invalid_argument("usage: fork OUTPUT_DIR [--reverse]");
-        std::ifstream in(std::string(argv[1])+"/encounters.tsv");
-        std::string line;
-        require(static_cast<bool>(std::getline(in,line)),"missing encounter table");
-        Outputs out(argv[1]);
-        while(std::getline(in,line)) {
-            std::istringstream row(line); Case c; std::string extra;
-            if(!(row>>c.cohort>>c.seed>>c.site>>c.born>>c.opening>>c.east>>c.east_born>>c.free>>c.eligible>>
-                 c.start_hash>>c.end_hash) || (row>>extra)) throw std::invalid_argument("bad encounter record");
-            run(c,argc==3,out);
+        if(argc<2) throw std::invalid_argument("usage: fork OUTPUT_DIR [--priority] [--include ENCOUNTERS] [--reverse]");
+        bool reverse=false, priority=false;
+        std::string previous;
+        for(int i=2;i<argc;++i) {
+            const std::string_view flag=argv[i];
+            if(flag=="--reverse") reverse=true;
+            else if(flag=="--priority") priority=true;
+            else if(flag=="--include" && i+1<argc) previous=argv[++i];
+            else throw std::invalid_argument("unknown or incomplete fork flag");
         }
+        Outputs out(argv[1]);
+        if(!previous.empty()) replay(previous,reverse,priority,out);
+        replay(std::string(argv[1])+"/encounters.tsv",reverse,priority,out);
         out.branches.close(); out.products.close(); out.claims.close();
     } catch(const std::exception& e) {std::cerr<<e.what()<<'\n';return 1;}
 }
