@@ -1,0 +1,6 @@
+--- vm.hpp
++++ vm.hpp
+@@ -86,2 +86,3 @@
+     void set_access(int site, Access access);
++    void replace_newborn(int site, const std::string& original, const std::string& assigned);
+     void step(std::vector<Event>* events = nullptr, bool reverse = false);

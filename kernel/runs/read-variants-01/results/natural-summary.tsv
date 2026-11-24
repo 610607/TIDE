@@ -1,0 +1,7 @@
+seed	panel	cases	dependent	reproduces_under_denial	no_ordinary_birth	with_dependent_daughter	with_same_dependent_daughter
+3562	control	12	10	0	2	4	4
+3562	permutation	1428	0	29	1399	0	0
+3562	substitution	660	0	71	589	0	0
+11942	control	10	10	0	0	6	6
+11942	permutation	1190	0	29	1161	0	0
+11942	substitution	550	0	70	480	0	0
