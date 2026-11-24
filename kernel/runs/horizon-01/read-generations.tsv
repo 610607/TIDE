@@ -1,0 +1,11 @@
+assay	horizon	branch	generation	focal_hex	result	end_tick	first_equal_tick	period	neighbor_reads	neighbor_fetches	product_hex
+read-5253434c44-522e434c44-E	4096	on	1	5253434c44	birth	13	-	-	5	0	522e434c44
+read-5253434c44-522e434c44-E	4096	on	2	522e434c44	birth	13	-	-	0	0	522e434c44
+read-5253434c44-522e434c44-E	4096	on	3	522e434c44	birth	13	-	-	0	0	522e434c44
+read-5253434c44-522e434c44-E	4096	off	1	5253434c44	cycle	106	104	2	0	0	-
+read-5253434c44-522e434c44-E	4096	ancestor_on	1	522e434c44	birth	13	-	-	0	0	522e434c44
+read-5253434c44-522e434c44-E	4096	ancestor_on	2	522e434c44	birth	13	-	-	0	0	522e434c44
+read-5253434c44-522e434c44-E	4096	ancestor_on	3	522e434c44	birth	13	-	-	0	0	522e434c44
+read-5253434c44-522e434c44-E	4096	ancestor_off	1	522e434c44	birth	13	-	-	0	0	522e434c44
+read-5253434c44-522e434c44-E	4096	ancestor_off	2	522e434c44	birth	13	-	-	0	0	522e434c44
+read-5253434c44-522e434c44-E	4096	ancestor_off	3	522e434c44	birth	13	-	-	0	0	522e434c44

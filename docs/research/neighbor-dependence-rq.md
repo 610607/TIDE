@@ -1,0 +1,29 @@
+# Can descendants inherit a dependence on a neighbor?
+
+**First research question, agreed 2026-11-23.** Starting from an independently reproducing ancestor, can descendants evolve a heritable dependence on reading a neighbor's data or fetching its instructions? Measure the two channels separately and identify which lineage reproduces.
+
+**Worked example.** A descendant's CPU fetches a neighbor's copy loop. The loop copies the caller's bytes into its daughter, which inherits and repeats the borrowing behavior. If the loop redirects the CPU to copy the provider, the product carries the provider's program. Counting births at the caller alone would credit the wrong lineage. [Worked birth](../r0-worked-birth.md)
+
+### Closest precedents
+
+| Source | What it contributes to this question |
+| --- | --- |
+| Ray's Tierra (1991, book chapter) | Borrowed execution and redirection toward copying the provider already occur. TIDE would test which permission a descendant requires under a specified local VM. [Mechanism notes and original page references](../tierra-stringmol-kernel-notes.md#tierra) |
+| Spatial Stringmol (2021, published experiment) | A mutation-free assay examines both orientations of a reacting pair and identifies which sequence increases. TIDE can adopt that attention to the beneficiary while tracing fetch and data provenance on an individually owned CPU. [Published study and reading notes](frontier.md) |
+| Avida (software configuration, version identifier 2.14.0) | The horizontal-transfer options include selecting a neighbor for conjugation and incorporating a fragment into offspring. A descendant that inherits a fragment and subsequently reproduces unaided illustrates why acquisition alone is insufficient evidence of ongoing dependence. [Avida configuration, HGT group](https://github.com/devosoft/avida/blob/master/avida-core/support/config/avida.cfg) |
+
+### Proposed test
+
+1. **Evolve.** Compare three matched arms with neither neighbor channel enabled, data reads alone, or instruction fetch alone. Hold allocation writes, ancestor, mutation, scheduling and seed list fixed. Sample parent–daughter chains, including isolated-assay failures. Trace CPU owner, fetch and data addresses, allocation owner, product bytes and birth.
+2. **Replay.** With mutation off, retest newborn descendants from successive generations in matched neighborhoods with a live provider and free space. Fork each setup. Disable only the focal program's tested channel in one branch. Keep the provider, starting state and CPU budget matched. Test the independent ancestor and a hand-built dependent program in the same backgrounds.
+3. **Decide.** Inherited dependence requires transmitted borrowing behavior, serial births with access, and repeatable failure of serial reproduction on channel removal while the ancestor remains viable. An unused neighbor read is incidental if both outcomes match. Faster reproduction with access is a rate benefit if both branches sustain the lineage. Timeouts alone remain inconclusive. Record incidence per seed, first appearance and persistence, including stagnation, extinction and zero detections.
+
+These replays test dependence on accessible bytes. Testing dependence on the provider's ongoing execution would require pausing its CPU while keeping the bytes accessible.
+
+**First executed pilot.** Fixed programs calibrated a three-generation assay. The protocol set a 64-tick horizon per generation and a three-arm, eight-seed field budget of 512 ticks per run. One fetch seed met the paired criterion, and no read seed did. The confirmed fetch genotype disappeared before the end of its field run. See the [protocol](../../kernel/runs/pilot-01/protocol.md) and [result with lineage and replays](../../kernel/runs/pilot-01/README.md). A [disjoint batch of 24 seeds per arm](../../kernel/runs/replication-01/README.md) produced no additional confirmed case. Sixteen live-donor candidate events still reproduced for three generations with fetch and timed out upon its removal in both tested field genotypes. The assay horizon and long-term persistence remain open measurement questions.
+
+**Long-horizon test.** The 16 previously timed-out replication events met the paired criterion when the denied arenas reached exact cycles. In a prospectively budgeted set the longer assay confirmed 7 of 32 new fetch seeds. The read arm had zero two-generation candidates across 64 seeds. Copy provenance and a one-byte donor comparison showed how a reader can produce an independently reproducing daughter. [Results, field families and reproducible assays](../../kernel/runs/horizon-01/README.md)
+
+**Field persistence.** All eight confirmed prospective same-genome maternal families reached clonal extinction by tick 713. Each of their seven field populations still reproduced at tick 4,096. Four seeds produced identical sequences anew outside the tracked family. Behavioral persistence through later mutations remains open. [Extended field traces and lineage counts](../../kernel/runs/persistence-01/README.md)
+
+**Transmission and opportunity.** An archived fetch borrower copied a no-op as `H` and its changed daughter inherited dependence on the same donor background. In 256 additional read-only fields, none of 143 newborn readers had a compatible live neighbor in the window through the first copy attempt or end of observation. Arranging compatible donors in a mutation-free field allowed natural daughter placement to sustain up to seven reader transmissions with retained bytes. An intervention clearing released banks identified residual code as the source in a matched field birth. [Field evidence and controls](../../kernel/runs/transmission-01/README.md)

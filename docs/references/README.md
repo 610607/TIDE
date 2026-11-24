@@ -168,6 +168,7 @@ The figure/probe follow-up added [Artificial Life II](pdf/langton-et-al-1992-art
 
 ## Version and pagination notes
 
+- The Avida configuration inspected for the neighbor-dependence brief declares `VERSION_ID 2.14.0`. Its `HGT_GROUP` documents neighbor conjugation and fragment incorporation into offspring. This is a software configuration source, inspected on 2026-11-23. [Original configuration](https://github.com/devosoft/avida/blob/master/avida-core/support/config/avida.cfg)
 - The cached Stringmol article includes a repository cover; printed and PDF pages differ.
 - The Ray chapter uses printed book pages 371-408.
 - Sayama 1998 is distinct from the 1999 Artificial Life article.

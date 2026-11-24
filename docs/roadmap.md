@@ -2,17 +2,38 @@
 
 TIDE stands for TIDE Is Digital Evolution.
 
-Updated: 2026-11-17.
+Updated 2026-11-23.
 
 This roadmap is a plan. Stage contents are proposals until their rules are agreed; [AGENTS.md](../AGENTS.md) records what is decided.
 
-Current focus: fast exploration of substrate rules in [`experiments/physub/`](../experiments/physub/README.md). Formal verification (see the verification line below) is deferred until rules stabilize.
+The first C++ reference can separate neighbor instruction fetch from data copying. A longer paired assay confirmed heritable fetch dependence in 7 of 32 prospectively tested seeds. Tracing all 37 exposed births in the read arm showed that the daughters lost their mothers' reader sequence. All eight confirmed prospective same-genome families ended by field tick 713. A retrospective lineage retained fetch dependence across a point substitution. Across 256 new read-only seeds, no newborn reader encountered a compatible live neighbor during its first-copy window. In a seeded field, proximity and residual bytes enabled up to seven reader transmissions. [Transmission study](../kernel/runs/transmission-01/README.md) [Measurement and replay](../kernel/runs/horizon-01/README.md)
+
+The exploratory substrate series pauses at v31. Its paired runs showed that extra material improved replication while strict sites continued to decline. A lineage that requires a neighbor could fail the isolated replication assay used in those runs. [v31 results](../experiments/physub/runs/v31/README.md)
 
 ## Goal
 
 Research comes first. TIDE aims to contribute to the study of open-ended evolution in digital-life systems: a rule-driven kernel in which replication strategies and ecological relationships evolve rather than being scripted, with results that others can replay.
 
 An experience layer (observation UI, cards, controller seats for humans, AI, and LLMs) may be built later on a stable kernel interface. It consumes kernel results and does not change kernel rules.
+
+## Next milestones
+
+**Agreed first question.** Starting from an independently reproducing ancestor, can a descendant lineage evolve a heritable dependence on reading a neighbor's data or fetching its instructions? The kernel must allow the two channels to be tested separately. [RQ brief](research/neighbor-dependence-rq.md)
+
+| Milestone | Work | Evidence for moving on |
+| --- | --- | --- |
+| RQ and R0 | Implemented the first question as two separate access interventions. The contract defines each instruction, failure paths, scheduling and the space ledger. | [Research brief](research/neighbor-dependence-rq.md) · [VM v1](r0-kernel-contract.md) |
+| R1. CPU reference | The C++ reference replays from a seed. Reversing the traversal order preserves the full serialized state at every step of a 512-tick test. | [Reference tests](../kernel/tests/vm_tests.cpp) |
+| R2. Measurement | Fixed programs reproduce independently, by reading a neighbor, and by running a neighbor's instructions. A redirected-copy fixture produces the provider's program. | [Fixed-program tests](../kernel/tests/vm_tests.cpp) |
+| R3. Bounded pilot | Completed 24 runs. In one fetch seed, a field mother and daughter met the predeclared serial-replay criterion. No read seed met it. | [Protocol, records and replay](../kernel/runs/pilot-01/README.md) |
+| R3. Independent replication | Ran seeds 9–32 with the same rules and assay. Eleven fetch seeds produced candidates. None met the frozen confirmation rule. | [Independent results and every candidate](../kernel/runs/replication-01/README.md) |
+| R4. Resolve measurement uncertainty | A 4,096-tick replay resolved all 16 previously timed-out replication events. A prospective 32-seed test confirmed seven fetch seeds. Six of its eight confirmed maternal families disappeared by tick 512. | [Every event, seed and family](../kernel/runs/horizon-01/README.md) |
+| R4. Trace data-read transmission | In 37 exposed births the mother copied five neighbor bytes and produced a daughter with a different sequence. A matched live-donor comparison showed that changing one donor byte can transmit read use across three generations. | [Read paths and controlled replay](../kernel/runs/horizon-01/README.md#why-the-observed-data-reads-stopped-at-one-generation) |
+| R4. Follow field families | Continued the seven affected prospective worlds to tick 4,096. All eight confirmed same-genome families died out. Matching genomes reappeared independently in four worlds. | [All checkpoints and family outcomes](../kernel/runs/persistence-01/README.md) |
+| R4. Behavioral persistence and spatial opportunity | Verified one historical changed fetch lineage. Of 330 engineered single substitutions, 215 retained dependence in their founder backgrounds. In 256 new read-only fields, zero of 143 newborn readers saw a compatible live neighbor through the first-copy window. | [Pedigrees, sequence panel and spatial census](../kernel/runs/transmission-01/README.md) |
+| R5. First one-variable field comparisons | Varied one byte per donor layout, then changed reclamation. A seeded reader family reached seven transmissions with retained bytes and four in the same layout with cleared bytes. Traces identified a parent reading residual code from its own daughter reservation. | [Controlled field outcomes](../kernel/runs/transmission-01/README.md#donor-supply-and-residual-memory) |
+
+The pilot's budget, five-byte ancestor and substitution-only mutation restrict the interpretation. A remaining question is which spatial conditions bring independently arising readers and compatible banks together often enough for serial transmission.
 
 ## Main line
 
@@ -45,11 +66,11 @@ R4 tooling is needed to read R3 results, so its design starts before R3 runs.
 
 The GPU backend must be cross-platform. Candidates to compare before P2 include Kompute, direct Vulkan, and native WebGPU implementations. Single-vendor or single-platform APIs are not primary targets. No framework is chosen yet.
 
-Sequential random-order update remains available on the CPU as a comparison mode.
+Sequential random-order update is planned as a CPU-only comparison.
 
 ## Verification line
 
-Proposal, assessed 2026-11-17; not decided. Deferred while work focuses on fast exploration. Adopting it would add a formal model above the C++ code, so it needs agreement first; until then the single-threaded C++ implementation remains the reference, as AGENTS.md records.
+The verification proposal was assessed on 2026-11-17. Revisit it once a rule has stabilized. Adopting it would add a formal model above the C++ code and requires a separate decision. The single-threaded C++ implementation is the designated reference, as AGENTS.md records.
 
 | Step | When | Content | Exit condition |
 | --- | --- | --- | --- |

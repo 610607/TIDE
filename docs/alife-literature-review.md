@@ -87,7 +87,7 @@ These are project inferences, not sufficient conditions proved by the papers.
 | --- | --- | --- |
 | Focused literature review | Complete for this round | Sources, limitations, and open decisions above |
 | Tierra and spatial Stringmol mechanism reading | Complete for this round | [Kernel notes](tierra-stringmol-kernel-notes.md), including code comparisons and candidate experiments |
-| Research positioning and first-kernel rule discussion | In progress | Selected VM direction; research question and detailed transition rules remain open |
+| Research positioning and first-kernel rule discussion | First question selected, R0 in progress | The local VM will test inherited dependence on neighbor data reads or instruction fetches. [RQ brief](research/neighbor-dependence-rq.md) |
 | Delegated C++ implementation and integration | After rule agreement | Implementation, targeted tests, and experimental results |
 
 ## Reading scope and cache

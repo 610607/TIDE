@@ -1,0 +1,5 @@
+# Independent seed replication 01
+
+Declared after inspecting pilot 01 and before running these seeds. Run exactly seeds 9 through 32 inclusive in each of the same three arms. Keep all VM rules, ancestor, lattice, rate, age, duration, candidate screen, donor reconstruction, three-generation criterion and 64-tick assay horizon from [pilot 01](../pilot-01/protocol.md). The primary outcome is the number of seeds in each arm with at least one confirmed mother–daughter field pair. Analyze this batch separately from the discovery seeds.
+
+For each confirmed event, trace both births and the origin of the mother's contiguous same-genome family. Report its last clonal birth, final living count and depth attained in the field. A family starts where its genome first differs from that of its immediate parent on this path. An identical sequence reached independently has a different family root. Use these outcomes to describe persistence. They do not enter the confirmation rule. Keep all failing screens and runs in the records. Stop this batch at its declared seed and tick budget.

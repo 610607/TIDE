@@ -1,0 +1,17 @@
+reclamation	patch_depth	focal	permission	founder_births	family_births	reader_births	max_reader_depth	transmitting_daughters	last_reader_birth	reader_living	family_living	all_births	deaths	living	final80_births	status	state_fnv64
+empty	0	RSCLD	on	3	107	0	0	0	0	0	17	345	298	52	52	reproducing	4d29394500846c2b
+empty	0	RSCLD	off	0	0	0	0	0	0	0	0	342	295	52	52	reproducing	f03a012b1c1413ed
+empty	0	R.CLD	on	3	107	0	0	0	0	0	17	345	298	52	52	reproducing	4d29394500846c2b
+empty	0	R.CLD	off	3	107	0	0	0	0	0	17	345	298	52	52	reproducing	4d29394500846c2b
+empty	1	RSCLD	on	3	72	3	1	0	39	0	7	343	294	54	54	reproducing	1d2e7ddd3a4ff837
+empty	1	RSCLD	off	0	0	0	0	0	0	0	0	339	291	53	53	reproducing	925efca4a55e10ef
+empty	1	R.CLD	on	3	78	0	0	0	0	0	3	343	294	54	54	reproducing	b47b3a078f6e05bd
+empty	1	R.CLD	off	3	78	0	0	0	0	0	3	343	294	54	54	reproducing	b47b3a078f6e05bd
+empty	2	RSCLD	on	3	45	7	4	3	65	0	5	339	293	51	51	reproducing	e62e5b6b7c80eb04
+empty	2	RSCLD	off	0	0	0	0	0	0	0	0	337	289	53	53	reproducing	b97988ed3925e54e
+empty	2	R.CLD	on	3	85	0	0	0	0	0	6	341	293	53	53	reproducing	51525121ce1c5b52
+empty	2	R.CLD	off	3	85	0	0	0	0	0	6	341	293	53	53	reproducing	51525121ce1c5b52
+empty	3	RSCLD	on	3	16	8	4	4	65	0	0	330	284	51	51	reproducing	2aae144ed3e433c6
+empty	3	RSCLD	off	0	0	0	0	0	0	0	0	323	278	50	50	reproducing	69c52709beb32f3c
+empty	3	R.CLD	on	3	64	0	0	0	0	0	0	335	284	56	56	reproducing	02816fac1efd977c
+empty	3	R.CLD	off	3	64	0	0	0	0	0	0	335	284	56	56	reproducing	02816fac1efd977c

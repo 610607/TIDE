@@ -1,0 +1,9 @@
+seed	root_site	root_born	genome_hex	anchor_event_tick	anchor_assay	clonal_members	all_members	genomes	changed_births	retained_capacity	field_supported	last_birth	final_living	extinction_tick
+36	49	209	3e4a434c44	349	fetch-3e4a434c44-522e434c44-S	3	3	1	0	0	0	349	0	430
+36	43	334	4a2e434c44	404	fetch-4a2e434c44-522e434c44-E	9	9	1	0	0	0	632	0	713
+39	40	187	522e434a44	295	fetch-522e434a44-522e434c44-E	4	4	1	0	0	0	295	0	376
+41	57	395	524a434c48	435	fetch-524a434c48-522e434c44-E	4	4	1	0	0	0	491	0	572
+47	3	292	4a2e434c44	360	fetch-4a2e434c44-522e434c44-E	3	4	2	1	0	0	374	0	455
+50	35	159	522e4a4c44	201	fetch-522e4a4c44-522e434c44-E	3	3	1	0	0	0	201	0	282
+62	27	65	4a2e434c44	93	fetch-4a2e434c44-522e434c44-E	4	4	1	0	0	0	133	0	214
+64	26	91	522e434c4a	127	fetch-522e434c4a-522e434c44-E	3	3	1	0	0	0	127	0	208

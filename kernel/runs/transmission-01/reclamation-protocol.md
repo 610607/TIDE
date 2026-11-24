@@ -1,0 +1,5 @@
+# Reclamation sensitivity of the seeded donor experiment
+
+Declared after the retained-memory experiment. Its one-compatible-donor pedigree included births where the eastern read bank and daughter site were the same site. The source bank's opening status and ownership determine whether a reader copied its own reservation. Recover these facts for every successful copy contributing to a focal-descended birth.
+
+Repeat all 16 seeded field setups from the [control protocol](controls-protocol.md) with the existing empty-on-release policy in place of retain-on-release. Keep the same layout, 512 ticks, mutation off and permission interventions. Report both policies and every control. Record reader continuity depth, last reader birth and survival to the endpoint, and distinguish bytes read from live, free, own-reserved and other-reserved neighboring banks. Compare the earliest changed reader transmission with its opening copy provenance. This intervention clears bytes of dead bodies and released allocations throughout the field.

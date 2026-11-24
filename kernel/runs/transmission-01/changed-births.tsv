@@ -1,0 +1,2 @@
+seed	root_site	root_born	depth	parent_site	parent_born	parent_hex	child_site	child_born	child_hex	copy_inputs_hex	substitutions	parent_common_assay	child_common_assay	parent_common	child_common	retained_capacity	parent_own_assay	child_own_assay	parent_own	child_own	parent_contact_by_birth	child_first_contact_tick	child_field_births	child_births_after_contact	field_supported
+47	3	292	3	5	360	4a2e434c44	6	374	442e434c44	4a2e434c44	1	fetch-4a2e434c44-522e434c44-E	fetch-442e434c44-522e434c44-E	dependent	inconclusive	0	-	-	free_first	no_contact	1	-	0	0	0

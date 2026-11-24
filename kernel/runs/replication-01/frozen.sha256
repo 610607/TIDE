@@ -1,0 +1,5 @@
+788997ff9660a1b0f41440119863cfe3747f31df25c458210b08a625915c6030  kernel/src/vm.hpp
+640f32e84776d78c7d330240dd2dd4a8c465ef274752bfa725e773c4ffdf8a49  kernel/src/vm.cpp
+a3aa6b219886f42b9e9b828579e5605e9342c1b2e91a2b4c1a3c8bd09c05d2ce  kernel/src/assay.hpp
+0760344cfb2ebdb6c045a44ddf41108483f86082fc8cc60edf6b074d4feea59f  kernel/src/assay.cpp
+fb500ae7acec80d0fd57ec72de225554b28b8d4afb373e32cd3c5ffcaa23a013  kernel/runs/pilot-01/protocol.md
