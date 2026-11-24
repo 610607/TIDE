@@ -1,0 +1,5 @@
+# Supplementary whole-field availability check
+
+The primary census found 845 of 15,129 fully observed focal individuals ever adjacent to another living carrier of S in the post-death window. Before computing whole-field counts, fix a descriptive comparison on those same openings. Count living individuals carrying S anywhere in the field, excluding the focal individual itself. For each focal, record the number of openings with any such other individual, with any nonadjacent carrier, with another individual actually executing S, and with an adjacent individual executing S in any direction. The maximum distance that qualifies as adjacent is one cardinal step on the torus.
+
+Classify each observed focal window once as ever having an adjacent carrier, having only nonadjacent carriers when any were present, or having no other carrier anywhere at any observed opening. Report cutoff cases without an observed opening separately. A short window and a globally sparse population can both limit opportunities. This comparison neither moves individuals nor measures what would happen if a remote individual were relocated.
