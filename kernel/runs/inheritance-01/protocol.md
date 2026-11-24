@@ -1,0 +1,19 @@
+# Persistence of external-read dependence and independent recurrence
+
+Baseline b68d0c4. Freeze this protocol before examining seeds 11329 through 19520. Seed 3562 is a retrospective index case. Its pedigree size, exact-reader clonal history and the reappearance at tick 1757 were already known when this protocol was written.
+
+## Natural replication
+
+Run exactly 8192 consecutive new seeds, 11329–19520 inclusive. Use the unchanged placement-01 untreated field, a 16 × 4 torus with one independent ancestor at site 36, 80-tick age limit, first-free placement, retained bytes, external reading enabled, external fetch disabled and 20000 substitutions per million successful copies. Freeze natural enrollment at tick 2048. Apply the placement-01 primary outcome and lifetime forks unchanged. Require two consecutive mother-to-child transfers, each of five unchanged RSCLD bytes from one identified living external RSCLD. Each reproducing CPU must have ordinary offspring, blocked external copy attempts and zero lifetime offspring under focal read denial. The unit of replication is a distinct positive seed. Preserve the previous broader behavioral assay as a secondary outcome and retain every seed, including stagnant and extinct worlds.
+
+Check the untreated population ledger, exact-reader counts and terminal hash independently. Repeat with reversed field traversal and a separate optimized build. Record censored link daughters at the observation horizon. If there are zero positive worlds, stop scanning and report the fixed cohort. A positive world triggers the comparison below. The sample budget stays fixed for either outcome.
+
+## Behavior along maternal pedigrees
+
+Enroll the founder of the known seed-3562 family (site 17, born at tick 425) and every maternal descendant born by tick 2048, irrespective of genome or reproductive success. Apply the same analysis to the root of each uninterrupted exact-reader family with a confirmed chain in a new positive world. Follow each enrolled focal from its actual birth state through age death even if it falls beyond the enrollment window. Fork only that focal's external-copy access. Validate ordinary offspring inside the horizon against the untreated parent, tick, site, inputs and product. Verify birth-state hashes match across branches.
+
+Classify a focal as dependent in its birth environment when ordinary reproduction succeeds, at least one external copy attempt is blocked and denial eliminates all offspring. Retain ordinary nonreproducers as uninformative for this test and identify ordinary reproducers that can also reproduce under denial. Report whole-lifetime counts for both branches. Identify the longest uninterrupted parent-child run of dependent reproducers, counting individuals and edges separately, classify changed-genome transitions, and record later positives whose parent was outside such a run. Separate lifetime classification from births admitted to the natural cohort. Dependence on any external bank includes reading residual bytes from a reservation.
+
+For a positive replication, compare each exact chain's daughter placement, donor identity, remaining lifetime at the daughter's first qualifying copy, and contiguous dependence length within its family. Then isolate one mechanism in all confirmed mothers and daughters from both cohorts. From the same untreated birth checkpoint, deny the focal's external copies only when their source bank is occupied. Report total lifetime births and persistence of each original qualifying birth with its original living source. This tests whether living-source access is needed for any reproduction in that specific field background. Include every independent world and every enrolled focal in the comparison.
+
+Use an English-labelled Python static PNG to show parent-child relationships and paired-fork classifications. Archive seed-level outcomes, family-level records, verification instructions and run revisions.
