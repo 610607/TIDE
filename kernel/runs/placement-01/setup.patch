@@ -1,0 +1,7 @@
+--- vm.hpp
++++ vm.hpp
+@@ -86,2 +86,4 @@
+     void set_access(int site, Access access);
++    void introduce_reader(int site, int bearing);
++    void face_east(int site) { sites_.at(site).cpu.bearing = 1; }
+     void step(std::vector<Event>* events = nullptr, bool reverse = false);

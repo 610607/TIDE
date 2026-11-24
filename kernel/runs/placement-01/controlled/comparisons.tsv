@@ -1,0 +1,5 @@
+first	second	population	pairs	both	first_only	second_only	neither
+W	N	all_assigned	64	0	8	0	56
+W	N	both_first_links	18	0	7	0	11
+W	S	all_assigned	64	0	8	0	56
+W	S	both_first_links	22	0	8	0	14
