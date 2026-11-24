@@ -1,0 +1,5 @@
+--- field.cpp
++++ field.cpp
+@@ -69 +69 @@
+-    world.seed_site(36, tide::ancestor);
++    world.seed_site(36, "R..CLD");

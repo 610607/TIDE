@@ -1,0 +1,7 @@
+# Independent replication of changed-sequence read dependence
+
+Freeze this design after finishing the pilot and before examining seeds 20545–21568. The pilot had 31 confirmed changed edges in 22 of 1024 worlds. The 31 daughters had 41 ordinary offspring by tick 2048, all externally sourced, with zero exact daughter-sequence products. Three of those grandchildren were themselves enrolled as dependent reproducers by the field cutoff. These pilot observations informed the descriptive follow-up below.
+
+Run exactly 1024 new consecutive seeds 20545–21568 inclusive. Use the pilot's starting state, natural configuration, 2048-tick enrollment horizon, byte attribution, paired lifetime tests and primary seed-level endpoint unchanged. Preserve the same external-material denominators and right-censoring. Report each cohort independently, retain all outcomes, repeat the optimized reverse traversal and stop at seed 21568.
+
+For every confirmed changed edge in both cohorts, inspect all ordinary daughter products through death, including any after tick 2048, to distinguish exact sequence retention from continued external-read dependence. Report all in-window grandchildren, whether any matched the daughter regardless of source, and which grandchildren were enrolled as dependent external-material reproducers by tick 2048. Mark those alive at the cutoff. A grandchild without a demonstrated external-material birth has untested dependence under this incidence screen. Keep lifetime-only offspring separate from in-window incidence.
