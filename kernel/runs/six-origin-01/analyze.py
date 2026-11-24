@@ -20,6 +20,9 @@ TRIPLE = ("seed mother_site mother_born daughter_site daughter_born grandchild_s
           "both_single_live_intact").split()
 FOCAL = ("seed site born genome_hex start_fnv64 death exposed_births ordinary_births "
          "denied_births blocked_attempts dependent").split()
+RETENTION = ("seed mother_site mother_born daughter_site daughter_born grandchild_site grandchild_born "
+             "daughter_hex inputs_hex grandchild_hex in_window exact_sequence "
+             "grandchild_living_at_cutoff grandchild_dependent grandchild_field_births").split()
 METRICS = ("external_births external_mothers dependent_mothers changed_external_daughters "
            "changed_from_dependent changed_from_dependent_with_birth changed_from_dependent_with_external_birth "
            "candidate_edges changed_candidate_edges confirmed_unchanged_edges primary_changed_edges "
@@ -50,7 +53,7 @@ def provenance(world, child, writes):
 def forks(seed, world, children, binary, tmp, reverse):
     targets = "".join(f"16 {seed} {s} {b} {world.people[s,b].genome}\n" for s,b in sorted(children))
     if not targets:
-        return {}, []
+        return {}, [], {}
     scores, products, windows = (tmp / name for name in ("scores", "products", "windows"))
     subprocess.run([binary, scores, products, windows] + (["--reverse"] if reverse else []),
                    input=targets, text=True, check=True)
@@ -81,7 +84,7 @@ def forks(seed, world, children, binary, tmp, reverse):
         rows.append(dict(zip(FOCAL, (seed,*cpu,p.genome,ordinary["start_fnv64"],ordinary["death"],
                          len(children[cpu]),ordinary["births"],denied["births"],denied["blocked_attempts"],
                          dependent[cpu]), strict=True)))
-    return dependent, rows
+    return dependent, rows, {cpu: births[cpu+("ordinary",)] for cpu in arms}
 
 
 def analyze(seed, world, binary, tmp, reverse):
@@ -89,9 +92,9 @@ def analyze(seed, world, binary, tmp, reverse):
     for kid, writes in world.external_writes.items():
         by_parent[world.people[kid].parent].append(kid)
         sources[kid] = provenance(world, kid, writes)
-    dep, focal = forks(seed, world, by_parent, binary, tmp, reverse)
+    dep, focal, ordinary = forks(seed, world, by_parent, binary, tmp, reverse)
     counts = Counter(external_mothers=len(dep), dependent_mothers=sum(dep.values()))
-    edges, triples = [], []
+    edges, triples, retention = [], [], []
     for daughter, writes in world.external_writes.items():
         d = world.people[daughter]
         mother = d.parent
@@ -128,7 +131,14 @@ def analyze(seed, world, binary, tmp, reverse):
         counts["censored_external_daughters"] += d.death is None
         counts["censored_changed_from_dependent_without_external_birth"] += bool(
             changed and dep[mother] and not daughter_births and d.death is None)
-    return {k: counts[k] for k in METRICS}, focal, edges, triples
+        if both and changed:
+            for site, born, inputs, genome in ordinary[daughter]:
+                g = world.people.get((site, born))
+                require((g is not None) == (born <= END), "grandchild enrollment mismatch")
+                retention.append(dict(zip(RETENTION, (seed,*mother,*daughter,site,born,d.genome,inputs,
+                            genome,int(born<=END),int(genome==d.genome),int(g.death is None) if g else "-",
+                            dep.get((site,born),"-"),len(g.children) if g else "-"), strict=True)))
+    return {k: counts[k] for k in METRICS}, focal, edges, triples, retention
 
 
 def main():
@@ -136,15 +146,18 @@ def main():
     parser.add_argument("build", type=Path)
     parser.add_argument("out", type=Path)
     parser.add_argument("--reverse", action="store_true")
+    parser.add_argument("--replication", action="store_true")
     args = parser.parse_args()
     bin_dir = args.build.resolve()
     args.out.mkdir(parents=True, exist_ok=True)
     with (args.out/"reference.tsv").open("w") as reference:
-        subprocess.run([bin_dir/"reference", args.out/"controls.tsv"] + (["--reverse"] if args.reverse else []),
+        flags = (["--replication"] if args.replication else []) + (["--reverse"] if args.reverse else [])
+        subprocess.run([bin_dir/"reference", args.out/"controls.tsv", *flags],
                        stdout=reference, check=True)
     references = table(args.out/"reference.tsv")
-    require([int(r["seed"]) for r in references] == list(range(19521,20545)), "cohort differs")
-    seeds, focals, edges, triples = [], [], [], []
+    first = 20545 if args.replication else 19521
+    require([int(r["seed"]) for r in references] == list(range(first,first+1024)), "cohort differs")
+    seeds, focals, edges, triples, retention = [], [], [], [], []
     with TemporaryDirectory() as temp:
         for r in references:
             seed = int(r["seed"])
@@ -153,17 +166,19 @@ def main():
             w.people[ROOT].genome = ANCESTOR
             check_reference(census(w.people, END), w.hashes[END], r)
             require(all(len(p.genome) == 12 for p in w.people.values()), "program length changed")
-            metrics, f, e, t = analyze(seed, w, bin_dir/"lifetime", Path(temp), args.reverse)
+            metrics, f, e, t, retained = analyze(seed, w, bin_dir/"lifetime", Path(temp), args.reverse)
             seeds.append(dict(r, **metrics))
             focals.extend(f)
             edges.extend(e)
             triples.extend(t)
+            retention.extend(retained)
             if len(seeds) % 256 == 0:
                 print(f"{len(seeds)}/1024 worlds checked", flush=True)
     rows_to_file(args.out/"seeds.tsv", seeds)
     rows_to_file(args.out/"focals.tsv", focals, FOCAL)
     rows_to_file(args.out/"edges.tsv", edges, EDGE)
     rows_to_file(args.out/"grandchildren.tsv", triples, TRIPLE)
+    rows_to_file(args.out/"retention.tsv", retention, RETENTION)
     summary = []
     for k in ("births", *METRICS):
         summary.append(dict(metric=k, events=sum(int(r[k]) for r in seeds),

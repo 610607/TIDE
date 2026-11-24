@@ -1,0 +1,17 @@
+metric	events	worlds
+births	1260422	1024
+external_births	4285	967
+external_mothers	3112	967
+dependent_mothers	3112	967
+changed_external_daughters	4275	967
+changed_from_dependent	4275	967
+changed_from_dependent_with_birth	2547	875
+changed_from_dependent_with_external_birth	9	8
+candidate_edges	17	16
+changed_candidate_edges	9	8
+confirmed_unchanged_edges	8	8
+primary_changed_edges	9	8
+exact_changed_edges	0	0
+live_pair_changed_edges	1	1
+censored_external_daughters	161	124
+censored_changed_from_dependent_without_external_birth	160	123

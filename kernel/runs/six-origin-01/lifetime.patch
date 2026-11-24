@@ -11,7 +11,7 @@
 +        scores << "branch\tstart_fnv64\tdeath\tblocked_attempts\tfirst_block\treads\town_reads\tbirths\tpadded_reader_births\n";
 @@ -149 +149 @@
 -                (id.width!=4 && id.width!=8 && id.width!=16) || (id.seed!=3562 && (id.seed<11329 || id.seed>19520)) ||
-+                id.width!=16 || id.seed<19521 || id.seed>20544 ||
++                id.width!=16 || id.seed<19521 || id.seed>21568 ||
 @@ -152 +152 @@
 -            if (!(row >> id.genome_hex)) id.genome_hex = hex("RSCLD");
 +            if (!(row >> id.genome_hex) || id.genome_hex.size() != 12) throw std::invalid_argument("missing six-byte genome");
