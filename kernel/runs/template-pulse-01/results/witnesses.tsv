@@ -1,0 +1,3 @@
+cohort	seed	case_id	arm	grandchild_site	grandchild_born	great_grandchild_site	great_grandchild_born	genome_hex	inputs_hex	source_sites	source_kinds	allocation_opening_hex	bytes_from_living_daughter
+pilot	20265	20265-5-1503	matched	21	1551	22	1583	52532e434c44	52532e434c44	22,22,22,22,22,22	reserved,reserved,reserved,reserved,reserved,reserved	52532e434c44	0
+pilot	20382	20382-9-936	matched	10	953	11	969	52532e434c44	52532e434c44	11,11,11,11,11,11	reserved,reserved,reserved,reserved,reserved,reserved	52532e434c44	0

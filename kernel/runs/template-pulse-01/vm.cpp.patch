@@ -1,0 +1,14 @@
+--- vm.cpp
++++ vm.cpp
+@@ -94 +94 @@
+-void World::step(std::vector<Event>* events, bool reverse) {
++void World::step(std::vector<Event>* events, bool reverse, const ReadTemplate* pulse) {
+@@ -172,0 +173 @@
++            const bool supplied = pulse && pulse->reader == id && cpu.source != id && pulse->source == cpu.source;
+@@ -174 +175 @@
+-                cpu.read >= static_cast<int>(sites_[cpu.source].bytes.size()) ||
++                cpu.read >= static_cast<int>(supplied ? pulse->bytes.size() : sites_[cpu.source].bytes.size()) ||
+@@ -181 +182,2 @@
+-            const char input = source.bytes[cpu.read++];
++            e.supplied_template = supplied;
++            const char input = (supplied ? pulse->bytes : source.bytes)[cpu.read++];

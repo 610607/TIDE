@@ -1,0 +1,13 @@
+--- vm.hpp
++++ vm.hpp
+@@ -66,0 +67 @@
++    bool supplied_template = false;
+@@ -73,0 +75,5 @@
++};
++
++struct ReadTemplate {
++    int reader, source;
++    std::string bytes;
+@@ -87 +93 @@
+-    void step(std::vector<Event>* events = nullptr, bool reverse = false);
++    void step(std::vector<Event>* events = nullptr, bool reverse = false, const ReadTemplate* pulse = nullptr);

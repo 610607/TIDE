@@ -1,0 +1,4 @@
+cohort	exact_grandchildren	executed_exact_birth	supplied_exact_neighbor_birth	both	either_observed
+pilot	26	2	3	0	5
+replication	7	0	2	0	2
+pooled	33	2	5	0	7
