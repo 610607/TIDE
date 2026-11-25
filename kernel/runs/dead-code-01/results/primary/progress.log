@@ -52,3 +52,5 @@
 2026-11-25T14:03:28Z	world read_fetch-retain-31008: 419 s
 2026-11-25T14:03:30Z	world read_fetch-empty-31008: 415 s
 2026-11-25T14:03:30Z	batch 5/20 done
+2026-11-25T14:03:35Z	batch 5/20 pushed
+2026-11-25T14:03:35Z	batch 6/20 start: self-retain-31009 read-retain-31009 read-empty-31009 read_fetch-retain-31009 read_fetch-empty-31009 self-retain-31010 read-retain-31010 read-empty-31010
