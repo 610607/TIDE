@@ -19,3 +19,5 @@
 2026-11-25T11:26:50Z	world read_fetch-30105: 1204 s
 2026-11-25T11:26:50Z	world self-30106: 1160 s
 2026-11-25T11:26:50Z	batch 2/3 done
+2026-11-25T11:26:54Z	batch 2/3 pushed
+2026-11-25T11:26:54Z	batch 3/3 start: read-30106 read_fetch-30106 self-30107 read-30107 read_fetch-30107 self-30108 read-30108 read_fetch-30108
