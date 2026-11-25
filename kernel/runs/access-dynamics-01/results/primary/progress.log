@@ -120,3 +120,14 @@
 2026-11-25T09:56:53Z	world read_fetch-30029: 353 s
 2026-11-25T09:56:53Z	world self-30030: 349 s
 2026-11-25T09:56:53Z	batch 11/12 done
+2026-11-25T09:56:56Z	batch 11/12 pushed
+2026-11-25T09:56:56Z	batch 12/12 start: read-30030 read_fetch-30030 self-30031 read-30031 read_fetch-30031 self-30032 read-30032 read_fetch-30032
+2026-11-25T10:02:56Z	world read-30030: 360 s
+2026-11-25T10:02:56Z	world read_fetch-30030: 360 s
+2026-11-25T10:02:56Z	world self-30031: 357 s
+2026-11-25T10:02:56Z	world read-30031: 356 s
+2026-11-25T10:09:03Z	world read_fetch-30031: 370 s
+2026-11-25T10:09:03Z	world self-30032: 368 s
+2026-11-25T10:09:04Z	world read-30032: 368 s
+2026-11-25T10:09:14Z	world read_fetch-30032: 378 s
+2026-11-25T10:09:14Z	batch 12/12 done
