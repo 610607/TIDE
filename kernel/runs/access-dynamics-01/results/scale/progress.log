@@ -21,3 +21,12 @@
 2026-11-25T11:26:50Z	batch 2/3 done
 2026-11-25T11:26:54Z	batch 2/3 pushed
 2026-11-25T11:26:54Z	batch 3/3 start: read-30106 read_fetch-30106 self-30107 read-30107 read_fetch-30107 self-30108 read-30108 read_fetch-30108
+2026-11-25T11:47:18Z	world read-30106: 1224 s
+2026-11-25T11:47:43Z	world read_fetch-30106: 1249 s
+2026-11-25T11:47:43Z	world self-30107: 1215 s
+2026-11-25T11:47:43Z	world read-30107: 1231 s
+2026-11-25T12:07:37Z	world read_fetch-30107: 1227 s
+2026-11-25T12:07:37Z	world self-30108: 1110 s
+2026-11-25T12:07:37Z	world read-30108: 1108 s
+2026-11-25T12:07:57Z	world read_fetch-30108: 1213 s
+2026-11-25T12:07:57Z	batch 3/3 done
