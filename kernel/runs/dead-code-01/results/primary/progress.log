@@ -88,3 +88,12 @@
 2026-11-25T14:45:38Z	batch 8/20 done
 2026-11-25T14:45:42Z	batch 8/20 pushed
 2026-11-25T14:45:42Z	batch 9/20 start: read_fetch-empty-31013 self-retain-31014 read-retain-31014 read-empty-31014 read_fetch-retain-31014 read_fetch-empty-31014 self-retain-31015 read-retain-31015
+2026-11-25T14:52:50Z	world read_fetch-empty-31013: 427 s
+2026-11-25T14:52:50Z	world self-retain-31014: 428 s
+2026-11-25T14:52:53Z	world read-retain-31014: 431 s
+2026-11-25T14:52:53Z	world read-empty-31014: 421 s
+2026-11-25T14:59:26Z	world read_fetch-retain-31014: 403 s
+2026-11-25T14:59:35Z	world read_fetch-empty-31014: 406 s
+2026-11-25T14:59:35Z	world self-retain-31015: 402 s
+2026-11-25T14:59:35Z	world read-retain-31015: 400 s
+2026-11-25T14:59:35Z	batch 9/20 done
