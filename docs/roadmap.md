@@ -16,6 +16,8 @@ Continuing the 1,779 naturally formed first chains under breakage and fresh supp
 
 A separate six-bead lattice experiment gives those chain positions a geometry. With a supplied attraction between unlike beads, positions 2 and 5 touched in 42.75% of the equilibrium ensemble for `001011` and 17.30% for `011100`, despite being unlike in both orders. Turning the attraction off gave identical distributions across all 20 equal-composition orders. [Exact structure census, local-motion checks and figure](../experiments/chain-structure-01/README.md)
 
+Under the same moves, a U bend lasted 96 proposals on average for `001011` and 24 for `011100`. In both orders the first accepted change opened the ends. After losing all contacts before regaining the U, the chain next formed the same two-contact shape in 23.25% and 18.37% of those excursions. [Contact lifetimes and return after opening](../experiments/chain-residence-01/README.md)
+
 ## Goal
 
 Research comes first. TIDE aims to contribute to the study of open-ended evolution in digital-life systems: a rule-driven kernel in which replication strategies and ecological relationships evolve rather than being scripted, with results that others can replay.
