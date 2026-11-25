@@ -1,0 +1,10 @@
+2026-11-25T07:40:56Z	batch 1/12 start: self-30001 read-30001 read_fetch-30001 self-30002 read-30002 read_fetch-30002 self-30003 read-30003
+2026-11-25T07:46:47Z	world self-30001: 351 s
+2026-11-25T07:46:47Z	world read-30001: 351 s
+2026-11-25T07:46:50Z	world read_fetch-30001: 354 s
+2026-11-25T07:46:50Z	world self-30002: 349 s
+2026-11-25T07:52:31Z	world read-30002: 346 s
+2026-11-25T07:52:36Z	world read_fetch-30002: 349 s
+2026-11-25T07:52:36Z	world self-30003: 344 s
+2026-11-25T07:52:36Z	world read-30003: 345 s
+2026-11-25T07:52:36Z	batch 1/12 done
