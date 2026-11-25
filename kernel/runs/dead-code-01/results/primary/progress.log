@@ -76,3 +76,4 @@
 2026-11-25T14:31:03Z	batch 7/20 done
 2026-11-25T14:31:07Z	batch 7/20 pushed
 2026-11-25T14:31:07Z	stopping before batch 8/20: time limit
+2026-11-25T14:31:21Z	batch 8/20 start: read-retain-31012 read-empty-31012 read_fetch-retain-31012 read_fetch-empty-31012 self-retain-31013 read-retain-31013 read-empty-31013 read_fetch-retain-31013
