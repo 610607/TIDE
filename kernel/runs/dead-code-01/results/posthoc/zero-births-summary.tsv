@@ -1,0 +1,5 @@
+arm	endpoint	median_retain	median_empty	median_difference	median_difference_A	median_difference_B	retain_higher	retain_lower	uncorrected_p
+read	M2	115.4	357.1	-172.8	-66.35	-318.8	6	26	1.288e-06
+read	M2_without_all_zero	115.4	108.2	19.72	92.57	-38.99	18	14	0.4105
+read_fetch	M2	249.3	446.1	-134.4	-112.3	-154.4	8	24	4.891e-05
+read_fetch	M2_without_all_zero	249.3	190.4	71.39	95.33	33.71	21	11	0.02051
