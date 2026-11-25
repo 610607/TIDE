@@ -48,3 +48,5 @@
 2026-11-25T22:53:43Z	world read_fetch-retain-31108: 2395 s
 2026-11-25T22:53:43Z	world read_fetch-empty-31108: 2316 s
 2026-11-25T22:53:43Z	batch 4/4 done
+2026-11-25T22:53:47Z	batch 4/4 pushed
+2026-11-25T22:53:47Z	scale complete
