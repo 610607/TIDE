@@ -224,10 +224,44 @@ void calibrate() {
 }
 }
 
+void knockout_override() {
+    Config cfg;
+    cfg.width = 6; cfg.height = 6; cfg.boundary = Boundary::torus; cfg.placement = Placement::first_free;
+    cfg.max_age = 80;
+    auto births = [&](int offset) {
+        World w(cfg);
+        const int a = w.index(2,2);
+        w.seed_site(a, "R..CLD");
+        if (offset >= 0) {
+            auto bytes = w.at(a).bytes;
+            bytes[offset] = '.';
+            w.replace_bytes(a, bytes);
+        }
+        int n = 0;
+        for (int t = 0; t < 81; ++t) {
+            const int target = w.at(a).cpu.target;
+            w.step();
+            if (target >= 0 && w.at(target).kind == Bank::occupied && w.at(target).born == w.tick()) ++n;
+        }
+        return n;
+    };
+    World same(cfg), plain(cfg);
+    same.seed_site(0, "R..CLD"); plain.seed_site(0, "R..CLD");
+    same.replace_bytes(0, "R..CLD");
+    expect(same.hash() == plain.hash(), "identical replacement leaves state unchanged");
+    bool rejected = false;
+    try { same.replace_bytes(1, "R..CLD"); } catch (const std::invalid_argument&) { rejected = true; }
+    expect(rejected, "replacement requires an occupied bank");
+    const int intact = births(-1);
+    expect(intact > 0 && births(1) == intact && births(0) == 0 && births(3) == 0 &&
+           births(4) == 0 && births(5) == 0, "knockouts of R, C, L and D stop division");
+}
+
 int main() {
     try {
         worked_birth(); data_and_product(); conflict_and_reclamation();
         residual_access(); address_edges(); boundary_and_replay(); calibrate();
+        knockout_override();
         std::cout << "All reference checks passed\n";
     } catch (const std::exception& err) {
         std::cerr << err.what() << '\n';

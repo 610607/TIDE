@@ -84,6 +84,8 @@ public:
     const Site& at(int site) const { return sites_.at(site); }
     void seed_site(int site, std::string bytes, int pc = 0, int bearing = 1);
     void set_access(int site, Access access);
+    // Analysis override for paired knockout assays: same-length bytes for an occupied bank.
+    void replace_bytes(int site, std::string bytes);
     void step(std::vector<Event>* events = nullptr, bool reverse = false);
     std::string state() const;
     std::string dynamics() const; // Exact cycle key when age and mutation are disabled.

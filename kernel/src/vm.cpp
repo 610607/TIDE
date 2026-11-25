@@ -70,6 +70,12 @@ void World::seed_site(int id, std::string bytes, int pc, int bearing) {
     site.cpu.bearing = bearing;
 }
 void World::set_access(int id, Access access) { access_.at(id) = access; }
+void World::replace_bytes(int id, std::string bytes) {
+    auto& site = sites_.at(id);
+    if (site.kind != Bank::occupied || bytes.size() != site.bytes.size())
+        throw std::invalid_argument("invalid knockout bytes");
+    site.bytes = std::move(bytes);
+}
 
 int World::placement(int id, int bearing) const {
     const int tries = cfg_.placement == Placement::directed ? 1 : 4;
