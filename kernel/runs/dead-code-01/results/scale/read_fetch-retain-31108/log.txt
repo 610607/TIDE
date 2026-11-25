@@ -1,0 +1,7 @@
+command	study --size 64 64 --horizon 2097152 --filter 4096 1024 16384 --sensitivity  --arm read_fetch --reclamation retain --seed 31108
+revision	4bddbd109b5780390e3269f3ab380dea3c54e3a9
+exit	0
+hash_end	a16aaa14313d1296
+seconds	2395.4
+max_rss_kb	181204
+stderr	
