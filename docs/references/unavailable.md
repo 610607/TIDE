@@ -10,6 +10,9 @@ Checked: 2026-11-15. The first table lists sources not cached in the manifest. T
 | [Zhu and Szostak 2009](https://pmc.ncbi.nlm.nih.gov/articles/PMC2669828/) | Primary pages challenged on direct open; no working public PDF endpoint verified in this pass. | Relevant indexed primary Results and Discussion passages. |
 | [Gibson et al. 2010](https://doi.org/10.1126/science.1190719) | Publisher retrieval restricted; no working public PDF endpoint verified in this pass. | Relevant indexed publisher passages, with recipient-cell limitation explicit. |
 | [Bohm, Zhang and Dolson 2024](https://doi.org/10.1162/isal_a_00721) | Citation verified; no research text or public PDF recovered. | Next-reading lead only; no findings inferred. |
+| [Redfield 1988](https://pmc.ncbi.nlm.nih.gov/articles/PMC1203342/), *Evolution of bacterial transformation: is sex with dead cells ever better than no sex at all?* Genetics 119:213–221 | Checked 2026-11-25. The PMC article page loaded; its PDF endpoint returned a download-wait page, and the publisher page returned 403. | Abstract only, read on the PMC page. No methods or parameter values are claimed. |
+| [Michod, Wojciechowski and Hoelzer 1988](https://pmc.ncbi.nlm.nih.gov/articles/PMC1203263/), *DNA repair and the evolution of transformation in the bacterium Bacillus subtilis*. Genetics 118:31–39 | Checked 2026-11-25. The same PMC and publisher failures as Redfield 1988. | Abstract only, read on the PMC page. |
+| [Wilke et al. 2001](https://doi.org/10.1038/35085569), *Evolution of digital organisms at high mutation rates leads to survival of the flattest*. Nature 412:331–333 | Checked 2026-11-25. The Caltech repository record links only supplementary material; no open article PDF found. | Abstract only, read on the repository record. |
 
 ## Follow-up policy
 

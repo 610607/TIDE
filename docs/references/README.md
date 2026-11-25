@@ -2,7 +2,7 @@
 
 Retrieved and verified: 2026-11-15; decay and mobility additions 2026-11-17; genome-length additions 2026-11-18; earlier downloads registered 2026-11-19.
 
-The manifest lists **82 distinct PDFs**. Read local copies before downloading again. The [manifest](manifest.json) records source URLs, versions, byte counts, page counts, and SHA-256 hashes. Original downloaded bytes are preserved.
+The manifest lists **83 distinct PDFs**. Read local copies before downloading again. The [manifest](manifest.json) records source URLs, versions, byte counts, page counts, and SHA-256 hashes. Original downloaded bytes are preserved.
 
 Reference PDFs are local-only and ignored by Git. Public availability is not treated as a redistribution license. The generated review PDF is a separate authored artifact.
 
@@ -198,3 +198,4 @@ Read for the [access-dynamics RQ draft](../research/access-dynamics-rq.md). The 
 | [A Classification of Long-Term Evolutionary Dynamics](pdf/bedau-snyder-packard-1998-long-term-evolutionary-dynamics.pdf) | Conference paper, Artificial Life VI; the file cites both pp. 228–237 and pp. 189–198; author-hosted | 10 | [Source](https://people.reed.edu/~mab/papers/alife6.pdf) |
 | [The MODES Toolbox: Measurements of Open-Ended Dynamics in Evolving Systems](pdf/dolson-et-al-2019-modes-toolbox.pdf) | Published article, Artificial Life 25(1):50–73, deposited in NSF PAR | 25 | [Source](https://par.nsf.gov/servlets/purl/10104628) · [Article](https://doi.org/10.1162/artl_a_00280) |
 | [Validation of Evolutionary Activity Metrics for Long-Term Evolutionary Dynamics](pdf/stout-spector-2005-activity-validation.pdf) | Conference paper, GECCO 2005, pp. 137–142 | 6 | [Source](https://gpbib.cs.ucl.ac.uk/gecco2005/docs/p137.pdf) |
+| [Neutral Evolution of Mutational Robustness](pdf/van-nimwegen-crutchfield-huynen-1999-neutral-robustness-v2.pdf) | arXiv:adap-org/9903006v2, 19 March 1999; preprint of PNAS 96(17):9716–9720 | 7 | [Source](https://arxiv.org/pdf/adap-org/9903006v2) |

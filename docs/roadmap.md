@@ -70,7 +70,7 @@ The five- and six-byte studies establish heritable dependence in specified birth
 
 **Agreed second question (2026-11-25).** From the same independently reproducing ancestor, does the access permission change the population's long-term evolutionary dynamics? The three arms allow the own body only, neighbor reads, or neighbor reads plus borrowed fetch. Every other rule stays fixed. The draft measures the arms with Bedau's activity statistics and a neutral shadow, and with the MODES metrics after a persistence filter. It also states windows, endpoints, interpretation rules, seeds and a compute estimate from a [tick timing benchmark](../kernel/bench/README.md). Under those rules, full access was supported as changing dynamics relative to self-only access on one endpoint, Bedau's mean new activity; the other two comparisons were inconclusive. [Research brief](research/access-dynamics-rq.md) · [Runs](../kernel/runs/access-dynamics-01/README.md)
 
-**Proposed to follow it.** Dead code as an ecological resource ([frontier candidate 2](research/frontier.md#candidate-research-questions-proposals-only)) is a proposal ranked after the second question. It has no brief.
+**Proposed to follow it.** Dead code as an ecological resource ([frontier candidate 2](research/frontier.md#candidate-research-questions-proposals-only)) is a proposal ranked after the second question. A [draft brief](research/dead-code-rq.md) compares retained with cleared dead code under neighbor access and sets out the predictions of two hypotheses, mutation buffering and raw material. It is not agreed.
 
 ## Main line
 

@@ -1329,6 +1329,20 @@
       "sha256": "5156ee1310f51f66b9083c21157b076beb34624873c9d323634befece2d353bb",
       "validation": "Complete PDF signature and %%EOF trailer; Poppler page count and opening text checked",
       "reading_depth": "Background, normalization description and conclusions read; Channon's cited papers not read"
+    },
+    {
+      "authors": "Erik van Nimwegen, James P. Crutchfield and Martijn Huynen",
+      "bytes": 152189,
+      "pages": 7,
+      "path": "pdf/van-nimwegen-crutchfield-huynen-1999-neutral-robustness-v2.pdf",
+      "reading_depth": "Abstract, Sections I-II and the population-neutrality relation (Eq. 4) read; simulations in Section IV screened",
+      "retrieved_on": "2026-11-25",
+      "sha256": "c91a6d46f3c9ec780c75e47260376a80565c032429e4d36d41365f771785c503",
+      "source_url": "https://arxiv.org/pdf/adap-org/9903006v2",
+      "title": "Neutral Evolution of Mutational Robustness",
+      "validation": "Complete PDF signature and %%EOF trailer; Poppler page count and opening text checked",
+      "version": "arXiv:adap-org/9903006v2, 19 March 1999; preprint of PNAS 96(17):9716-9720 (1999)",
+      "year": "1999"
     }
   ]
 }
