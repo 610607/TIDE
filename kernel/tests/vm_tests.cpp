@@ -257,11 +257,57 @@ void knockout_override() {
            births(4) == 0 && births(5) == 0, "knockouts of R, C, L and D stop division");
 }
 
+void residue_override() {
+    // The fetch fixture of residual_access with a one-byte delay: the daughter's donor dies at
+    // tick 11, and the daughter completes a birth by executing the retained bytes.
+    Config cfg;
+    cfg.access.fetch = true;
+    cfg.max_age = 10;
+    auto fixture = [&]() {
+        World w(cfg);
+        w.seed_site(w.index(1,0), ".RJD");
+        for (int y : {0,1}) w.seed_site(w.index(2,y), "CCCCTP", 5);
+        while (w.tick() < 9) w.step();
+        return w;
+    };
+    const int child = cfg.width + 1, grandchild = 2 * cfg.width + 1, donor = cfg.width + 2;
+    auto births = [&](bool cleared) {
+        World w = fixture();
+        expect(w.at(child).kind == Bank::occupied && w.at(child).born == 9, "daughter born at tick 9");
+        if (cleared) { w.clear_residue(); w.set_reclamation(Reclamation::empty); }
+        int n = 0;
+        while (w.at(child).kind == Bank::occupied && w.at(child).born == 9) {
+            const int target = w.at(child).cpu.target;
+            w.step();
+            w.check();
+            if (target >= 0 && w.at(target).kind == Bank::occupied && w.at(target).born == w.tick()) ++n;
+        }
+        return n;
+    };
+    expect(births(false) == 1 && births(true) == 0, "retained dead code completes the birth; cleared code does not");
+    World w = fixture();
+    while (w.tick() < 13) w.step();
+    expect(w.at(donor).kind == Bank::free && w.at(donor).bytes == "CCCCTP", "dead donor retained");
+    expect(w.at(grandchild).kind == Bank::reserved && w.at(child).cpu.written == 1, "one byte written");
+    const auto before = w.at(grandchild).bytes;
+    World same = w;
+    w.clear_residue();
+    expect(w.at(donor).bytes.empty() && w.at(grandchild).bytes == before.substr(0, 1) + std::string(3, '\0'),
+           "free banks emptied and unwritten offsets zeroed");
+    w.check();
+    World fresh(cfg), plain(cfg);
+    fresh.seed_site(0, "R..CLD"); plain.seed_site(0, "R..CLD");
+    fresh.clear_residue();
+    expect(fresh.hash() == plain.hash(), "no residue leaves state unchanged");
+    same.set_reclamation(Reclamation::empty);
+    expect(same.config().reclamation == Reclamation::empty && same.hash() != w.hash(), "reclamation switched");
+}
+
 int main() {
     try {
         worked_birth(); data_and_product(); conflict_and_reclamation();
         residual_access(); address_edges(); boundary_and_replay(); calibrate();
-        knockout_override();
+        knockout_override(); residue_override();
         std::cout << "All reference checks passed\n";
     } catch (const std::exception& err) {
         std::cerr << err.what() << '\n';

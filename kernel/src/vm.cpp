@@ -76,6 +76,15 @@ void World::replace_bytes(int id, std::string bytes) {
         throw std::invalid_argument("invalid knockout bytes");
     site.bytes = std::move(bytes);
 }
+void World::clear_residue() {
+    for (auto& site : sites_) {
+        if (site.kind == Bank::free) site.bytes.clear();
+        if (site.kind != Bank::reserved) continue;
+        const auto written = static_cast<size_t>(sites_.at(site.owner).cpu.written);
+        std::fill(site.bytes.begin() + static_cast<long>(std::min(written, site.bytes.size())), site.bytes.end(), '\0');
+    }
+}
+void World::set_reclamation(Reclamation policy) { cfg_.reclamation = policy; }
 
 int World::placement(int id, int bearing) const {
     const int tries = cfg_.placement == Placement::directed ? 1 : 4;

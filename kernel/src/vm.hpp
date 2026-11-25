@@ -86,6 +86,10 @@ public:
     void set_access(int site, Access access);
     // Analysis override for paired knockout assays: same-length bytes for an occupied bank.
     void replace_bytes(int site, std::string bytes);
+    // Analysis overrides for residue-cleared forks: empty every free bank and zero every
+    // reservation's unwritten offsets; set the reclamation rule used by later releases.
+    void clear_residue();
+    void set_reclamation(Reclamation policy);
     void step(std::vector<Event>* events = nullptr, bool reverse = false);
     std::string state() const;
     std::string dynamics() const; // Exact cycle key when age and mutation are disabled.
