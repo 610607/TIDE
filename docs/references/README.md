@@ -2,7 +2,7 @@
 
 Retrieved and verified: 2026-11-15; decay and mobility additions 2026-11-17; genome-length additions 2026-11-18; earlier downloads registered 2026-11-19.
 
-The cache contains **72 distinct PDFs**. Read local copies before downloading again. The [manifest](manifest.json) records source URLs, versions, byte counts, page counts, and SHA-256 hashes. Original downloaded bytes are preserved.
+The manifest lists **77 distinct PDFs**. Read local copies before downloading again. The [manifest](manifest.json) records source URLs, versions, byte counts, page counts, and SHA-256 hashes. Original downloaded bytes are preserved.
 
 Reference PDFs are local-only and ignored by Git. Public availability is not treated as a redistribution license. The generated review PDF is a separate authored artifact.
 
@@ -176,3 +176,13 @@ The figure/probe follow-up added [Artificial Life II](pdf/langton-et-al-1992-art
 - Author manuscripts and journal typesettings may have different pagination. Bongard and Rubenstein copies include publisher/adjacent-article material.
 - [Tierra V5.0 manual](https://tomray.me/pubs/doc/index.html) and [Growing Neural Cellular Automata](https://distill.pub/2020/growing-ca/) remain web sources, not fabricated PDF originals.
 - The [2023 minimal-cell correction](https://www.nature.com/articles/s41586-023-06454-1) was checked as a publisher web source; the review makes no Extended Data Table-specific claims.
+
+## Origins of molecular inheritance (2026-11-25)
+
+| Published experiment | Version | Pages | Online article |
+| --- | --- | ---: | --- |
+| [Synthesis of activated pyrimidine ribonucleotides in prebiotically plausible conditions](pdf/powner-2009-pyrimidine-ribonucleotides.pdf) | Published research article, Nature 459, 239–242 (2009) | 4 | [Article](https://doi.org/10.1038/nature08013) |
+| [Synthesis of long prebiotic oligomers on mineral surfaces](pdf/ferris-1996-mineral-oligomers.pdf) | Published research article, Nature 381, 59–61 (1996), NASA repository scan | 3 | [Article](https://doi.org/10.1038/381059a0) |
+| [Copying of Mixed-Sequence RNA Templates inside Model Protocells](pdf/oflaherty-2018-copying-inside-protocells.pdf) | Published research article, Journal of the American Chemical Society 140, 5171–5178 (2018) | 8 | [Article](https://doi.org/10.1021/jacs.8b00639) |
+| [Coupled Growth and Division of Model Protocell Membranes](pdf/zhu-2009-protocell-growth-division.pdf) | Published research article, Journal of the American Chemical Society 131, 5705–5713 (2009) | 9 | [Article](https://doi.org/10.1021/ja900919c) |
+| [Competition between model protocells driven by an encapsulated catalyst](pdf/adamala-2013-protocell-competition.pdf) | Published research article, Nature Chemistry 5, 495–501 (2013) | 8 | [Article](https://doi.org/10.1038/nchem.1650) |

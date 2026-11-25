@@ -1188,6 +1188,76 @@
       "validation": "Original PDF bytes retained; pdfinfo parse and opening identity checked",
       "reading_depth": "Abstract (printed p. 3610) read from the scan's OCR text by a subagent; not cited",
       "notes": "Scan of printed pp. 3610-3618 (PDF pp. 1-9), produced on a RICOH copier. The first page carries an 'Exhibit 2087, IPR2018-00291' stamp; the file was retrieved from the IPR2018-00322 path. Cite the publisher version (Biochemistry 11:3610) rather than this copy."
+    },
+    {
+      "path": "pdf/powner-2009-pyrimidine-ribonucleotides.pdf",
+      "title": "Synthesis of activated pyrimidine ribonucleotides in prebiotically plausible conditions",
+      "authors": "Matthew W. Powner, Béatrice Gerland and John D. Sutherland",
+      "year": "2009",
+      "version": "Published research article, Nature 459, 239–242 (2009)",
+      "source_url": "https://hoffman.cm.utexas.edu/courses/nature_prebiotic_rna.pdf",
+      "article_url": "https://doi.org/10.1038/nature08013",
+      "retrieved_on": "2026-11-25",
+      "bytes": 328376,
+      "pages": 4,
+      "sha256": "ab63a94b299f7156deda40acd3b4074eb3a66def62c7fa0a3a95ae6eaeeeecea",
+      "validation": "Complete PDF signature and trailer, PDFKit page count and opening text checked"
+    },
+    {
+      "path": "pdf/ferris-1996-mineral-oligomers.pdf",
+      "title": "Synthesis of long prebiotic oligomers on mineral surfaces",
+      "authors": "James P. Ferris, Aubrey R. Hill Jr, Rihe Liu and Leslie E. Orgel",
+      "year": "1996",
+      "version": "Published research article, Nature 381, 59–61 (1996), NASA repository scan",
+      "source_url": "https://ntrs.nasa.gov/api/citations/19980119839/downloads/19980119839.pdf",
+      "article_url": "https://doi.org/10.1038/381059a0",
+      "retrieved_on": "2026-11-25",
+      "bytes": 256009,
+      "pages": 3,
+      "sha256": "b82d5d66b1f923815adb586a3502885717ba22dc6ebf37243258483e7a562f68",
+      "validation": "Complete PDF signature and trailer, PDFKit page count and opening text checked"
+    },
+    {
+      "path": "pdf/oflaherty-2018-copying-inside-protocells.pdf",
+      "title": "Copying of Mixed-Sequence RNA Templates inside Model Protocells",
+      "authors": "Derek K. O’Flaherty, Neha P. Kamat, Fatima N. Mirza, Li Li, Noam Prywes and Jack W. Szostak",
+      "year": "2018",
+      "version": "Published research article, Journal of the American Chemical Society 140, 5171–5178 (2018)",
+      "source_url": "https://uchicago.box.com/shared/static/liuf2gmthqq315jnfhgm2zqg2lb1pvaq.pdf",
+      "article_url": "https://doi.org/10.1021/jacs.8b00639",
+      "retrieved_on": "2026-11-25",
+      "bytes": 2804753,
+      "pages": 8,
+      "sha256": "7e0021587380a92560e52eb1ac9a230b534fd61178b7ccd9899aa1b07817e393",
+      "validation": "Complete PDF signature and trailer, PDFKit page count and opening text checked"
+    },
+    {
+      "path": "pdf/zhu-2009-protocell-growth-division.pdf",
+      "title": "Coupled Growth and Division of Model Protocell Membranes",
+      "authors": "Ting F. Zhu and Jack W. Szostak",
+      "year": "2009",
+      "version": "Published research article, Journal of the American Chemical Society 131, 5705–5713 (2009)",
+      "source_url": "https://uchicago.box.com/shared/static/l2ij5mjwpfbg3yflqdz065ftfco5al52.pdf",
+      "article_url": "https://doi.org/10.1021/ja900919c",
+      "retrieved_on": "2026-11-25",
+      "bytes": 1197473,
+      "pages": 9,
+      "sha256": "903f5b9aa6607cae3a15441963fbc5461eaf08634b7b7d4684db7c1c3a4a8567",
+      "validation": "Complete PDF signature and trailer, PDFKit page count and opening text checked"
+    },
+    {
+      "path": "pdf/adamala-2013-protocell-competition.pdf",
+      "title": "Competition between model protocells driven by an encapsulated catalyst",
+      "authors": "Katarzyna Adamala and Jack W. Szostak",
+      "year": "2013",
+      "version": "Published research article, Nature Chemistry 5, 495–501 (2013)",
+      "source_url": "https://uchicago.box.com/shared/static/rlu2am2vsg3zedzc39v58jgu6kyj8niq.pdf",
+      "article_url": "https://doi.org/10.1038/nchem.1650",
+      "retrieved_on": "2026-11-25",
+      "bytes": 1228847,
+      "pages": 8,
+      "sha256": "da6157e6d187fc6f020dd708dfa1b0f45a6e1b30f7816bfc5a2655124847f9f7",
+      "validation": "Complete PDF signature and trailer, PDFKit page count and opening text checked"
     }
   ]
 }
