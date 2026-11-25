@@ -1,6 +1,6 @@
 # Does neighbor access change long-term evolutionary dynamics?
 
-Full neighbor access (reads plus instruction fetch) raised one preregistered statistic over self-only access in matched 32 × 32 worlds: Bedau's mean new activity (P4). The difference held in both seed blocks and exceeded the neutral shadow's. Under the frozen rules, claim C3 is therefore supported. No MODES endpoint (novelty, change, ecology) differed in any comparison. Neighbor reads alone (C1) and adding fetch to reads (C2) were inconclusive. All 96 worlds survived the 4,194,304-tick horizon. A fetch-requiring genotype, RCCCJD, passed the persistence filter in 17 of 32 read_fetch worlds. In five worlds it was the only filtered genotype at four or more consecutive timepoints. No read-requiring genotype passed the filter in any world. [Frozen protocol](protocol.md) · [Research brief](../../../docs/research/access-dynamics-rq.md) · [Generated analysis summary](results/analysis/summary.md)
+Full neighbor access (reads plus instruction fetch) raised one preregistered statistic over self-only access in matched 32 × 32 worlds: Bedau's mean new activity (P4). The difference held in both seed blocks and exceeded the neutral shadow's. Under the frozen rules, claim C3 is therefore supported. No MODES endpoint (novelty, change, ecology) differed in any comparison. Neighbor reads alone (C1) and adding fetch to reads (C2) were inconclusive. All 96 worlds survived the 4,194,304-tick horizon. A fetch-requiring genotype, RCCCJD, passed the persistence filter in 17 of 32 read_fetch worlds. In five worlds it was the only filtered genotype at four or more consecutive timepoints. No read-requiring genotype passed the filter in any world. In a descriptive 64 × 64 check with a longer filter, RCCCJD was established in all eight read_fetch worlds. [Frozen protocol](protocol.md) · [Research brief](../../../docs/research/access-dynamics-rq.md) · [Generated analysis summary](results/analysis/summary.md)
 
 ![Per-world P1-P4 for runs and neutral shadows, cumulative novelty across the MODES window, and genotype diversity over the horizon](access-dynamics.png)
 
@@ -84,7 +84,23 @@ All 96 worlds survived to H. No world was demographically or evolutionarily stag
 
 ## Scale check (descriptive)
 
-Running: seeds 30101–30108 on 64 × 64 for 2,097,152 ticks, in three batches. Results will be added when the set completes.
+Seeds 30101–30108 ran in all three arms on a 64 × 64 torus for 2²¹ = 2,097,152 ticks, 24 worlds in all. The filter length was t = 4,096, with 13 timepoints from 4,096 to 16,384 generations. The brief runs no tests on this set. The paired counts below were computed from the endpoint table and are descriptive. [Scale summary](results/scale-analysis/summary.md) · [Per-world endpoints](results/scale-analysis/endpoints.tsv) · [Strategy episodes](results/scale-analysis/strategy_worlds.tsv)
+
+![Scale check: per-world P1-P4 for runs and shadows, cumulative novelty and genotype diversity](access-dynamics-scale.png)
+
+| Arm | P1 run / shadow | P2 run / shadow | P3 run / shadow | P4 run / shadow | Window max complexity | Evolutionary stagnation | Fetch-requiring established |
+| --- | --- | --- | --- | --- | ---: | ---: | ---: |
+| self | 1 / 19 | 0.08 / 1.46 | 0.00 / 0.38 | 13,110 / 411 | 4 | 5/8 | 0/8 |
+| read | 0 / 20 | 0.04 / 1.54 | 0.00 / 0.47 | 13,553 / 408 | 4 | 6/8 | 0/8 |
+| read_fetch | 1 / 19 | 0.54 / 1.46 | 0.22 / 0.40 | 13,795 / 439 | 6 | 5/8 | 8/8 |
+
+Medians over eight worlds per arm. All 24 worlds survived to H, none was demographically stagnant, and all reached the 13 timepoints. The population averaged 3,379–3,393 of 4,096 sites. Mean depth at H was 48,200–49,100 generations in the run and 25,700–26,300 in the shadow.
+
+Few genotypes passed the longer filter. Median novelty was 0–1 in the runs against 19–20 in the shadows. In 16 of 24 worlds, no new genotype passed at any level from 12,288 to 16,384. In self and read worlds, the filtered sets were dominated by the independent `RCCCLD`, which had replaced the ancestor. Other genotypes passed at one or two levels.
+
+In read_fetch worlds, `RCCCJD` was established in all eight (9 episodes, 3 losses). On average it was in the filtered set at 49% of timepoints, and in four worlds it was still there at 16,384. In worlds 30106 and 30107 it was the only filtered genotype until an independent genotype appeared in the window at 7,168 and 8,192. With two classes coexisting, read_fetch had higher change and ecology. P2 was higher than self in 7 of 8 seed pairs (one tie) and higher than read in 8 of 8. P3 was higher than self in 7 of 8 and higher than read in 8 of 8. Maximum complexity was 6 in every read_fetch world. P4 followed the primary order: read_fetch exceeded self in 7 of 8 pairs (median +693) and read exceeded self in 6 of 8 (median +381). The material genealogy classified no other genotype as dependent. The executor genealogy, a sensitivity analysis, also classified `RRJCLH` as both-requiring and `RSCCLD` as read-requiring once each, in world 30101.
+
+Variation births were 10.5–10.7% of births in read_fetch worlds, against 11.5% in self and 11.6% in read worlds. In the primary set, all three arms were within 11.35–11.46%. This set changed both the lattice size and the filter length relative to the primary. It therefore cannot attribute RCCCJD's longer persistence, or the P2 and P3 differences, to population size alone. Worlds took 1,045–1,249 s each and about 170 MB of memory, run from revision `15ec77c` with the frozen files unchanged.
 
 ## Validation
 
@@ -106,11 +122,12 @@ python3 kernel/runs/access-dynamics-01/run.py scale
 python3 kernel/runs/access-dynamics-01/analyze.py primary
 python3 kernel/runs/access-dynamics-01/analyze.py scale
 python3 kernel/runs/access-dynamics-01/plot.py primary
+python3 kernel/runs/access-dynamics-01/plot.py scale
 ```
 
 ## What this does not show
 
-- **Scope.** One ancestor, one mutation rate, six-byte genomes and one confirmatory lattice size. Complexity is capped at six sites, and the question compares dynamics; it cannot show open-ended growth.
+- **Scope.** One ancestor, one mutation rate, six-byte genomes and one confirmatory lattice size; the 64 × 64 check is descriptive. Complexity is capped at six sites, and the question compares dynamics; it cannot show open-ended growth.
 - **Combined access.** The arms change access to living, reserved and dead neighbors together. The P4 difference cannot be attributed to borrowed execution, dead bytes or any particular genotype without the reclamation comparison or replay experiments.
 - **Weight of the support.** C3 rests on one of four endpoints. That endpoint's window includes most genotypes, a consequence of the brief's threshold rule at these activity ranges. The MODES endpoints, which filter for persistence, found no difference. Several MODES comparisons were inconclusive rather than equivalent, so small effects on them are not excluded.
 - **Classes.** Strategy classes come from one recorded birth environment per genotype. RCCCJD's filter passages do not establish continuous inheritance.

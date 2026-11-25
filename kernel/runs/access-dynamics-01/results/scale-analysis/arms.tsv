@@ -1,0 +1,4 @@
+arm	worlds	extinct	demographic_stagnation	evolutionary_stagnation	unreached	unreached_fraction	median_P1	median_P2	median_P3	median_P4	median_shadow_P1	median_shadow_P2	median_shadow_P3	median_shadow_P4	median_complexity_max	median_mean_D	median_mean_population
+self	8	0	0	5	0	0	1	0.0769231	0	13110.1	19	1.46154	0.376384	411.037	4	294.771	3380.62
+read	8	0	0	6	0	0	0	0.0384615	0	13552.5	20	1.53846	0.474139	408.027	4	301.672	3383.42
+read_fetch	8	0	0	5	0	0	1	0.538462	0.22225	13794.6	19	1.46154	0.40156	439.398	6	282.427	3391.21
