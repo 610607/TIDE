@@ -24,3 +24,5 @@
 2026-11-25T20:10:11Z	world read_fetch-retain-31104: 2368 s
 2026-11-25T20:10:11Z	world read_fetch-empty-31104: 2308 s
 2026-11-25T20:10:11Z	batch 2/4 done
+2026-11-25T20:10:15Z	batch 2/4 pushed
+2026-11-25T20:10:15Z	stopping before batch 3/4: time limit
