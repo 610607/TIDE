@@ -1,0 +1,27 @@
+2026-11-25T12:47:30Z	validation start
+2026-11-25T12:53:02Z	world self-retain-29921: 6 s
+2026-11-25T12:53:02Z	world read-retain-29921: 6 s
+2026-11-25T12:53:02Z	world read-empty-29921: 6 s
+2026-11-25T12:53:02Z	world read_fetch-retain-29921: 6 s
+2026-11-25T12:53:02Z	world read_fetch-empty-29921: 7 s
+2026-11-25T12:53:02Z	world self-empty-29921: 7 s
+2026-11-25T12:53:02Z	world self-retain-29922: 7 s
+2026-11-25T12:53:02Z	world read-retain-29922: 7 s
+2026-11-25T12:53:02Z	world read-empty-29922: 6 s
+2026-11-25T12:53:02Z	world read_fetch-retain-29922: 8 s
+2026-11-25T12:53:02Z	world read_fetch-empty-29922: 6 s
+2026-11-25T12:53:02Z	world self-empty-29922: 6 s
+2026-11-25T12:53:02Z	world self-retain-29923: 6 s
+2026-11-25T12:53:02Z	world read-retain-29923: 7 s
+2026-11-25T12:53:02Z	world read-empty-29923: 6 s
+2026-11-25T12:53:02Z	world read_fetch-retain-29923: 8 s
+2026-11-25T12:53:02Z	world read_fetch-empty-29923: 6 s
+2026-11-25T12:53:02Z	world self-empty-29923: 6 s
+2026-11-25T12:53:02Z	world self-retain-29924: 6 s
+2026-11-25T12:53:02Z	world read-retain-29924: 6 s
+2026-11-25T12:53:02Z	world read-empty-29924: 7 s
+2026-11-25T12:53:02Z	world read_fetch-retain-29924: 7 s
+2026-11-25T12:53:02Z	world read_fetch-empty-29924: 7 s
+2026-11-25T12:53:02Z	world self-empty-29924: 7 s
+2026-11-25T12:53:02Z	world self-retain-29921-mutation-free: 98 s
+2026-11-25T12:53:02Z	validation passed

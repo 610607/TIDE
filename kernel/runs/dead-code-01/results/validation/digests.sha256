@@ -1,0 +1,8 @@
+d64d7a7b303787a638ca7aa17edffe73adba579ac2c08b1dcbcb36f39bcb0c9b  kernel/runs/dead-code-01/Makefile
+7dc06758152a54ebc747a266e06bee5d5de50d34f4b1593e843d2ef50e670af9  kernel/runs/dead-code-01/analyze.py
+e035ceef319895dd954705cab81cb147472f59c08f62fd7316396c47dd85e207  kernel/runs/dead-code-01/protocol.md
+6d870989aa8709a831a97ccf1cd7d790c461611b35c555d2d74d8f9004552bad  kernel/runs/dead-code-01/run.py
+02f124bec7a8d167bb9b26dfa81e2ec87ea2d216723f29589f2aa30ce8d213a1  kernel/runs/dead-code-01/study.cpp
+269e84c435c24111b3ded213a57dc48f2aeaba37c883a876bbfe3a0d74690147  kernel/src/vm.cpp
+8867ddfcf9dce0d666430f9493ce15bf8ff682407fbe0708fd67e78f46adf11c  kernel/src/vm.hpp
+60f9c5791738a6f441c3abb4f89e8657985a9cda41c28be0daffa6bdde8c96ef  docs/research/dead-code-rq.md

@@ -1,0 +1,5 @@
+focal	ordinary	reads_denied	fetch_denied	both_denied	informative	class	residue_cleared	residue_requiring
+R..CLD	1	1	1	1	4	independent	1	0
+RSCLD	1	0	1	0	4	read_requiring	1	0
+RJD	1	1	0	0	3	fetch_requiring	1	0
+residue	1	1	0	0	3	fetch_requiring	0	1
