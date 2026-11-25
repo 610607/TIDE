@@ -1,0 +1,16 @@
+cohort	metric	delta	low95	high95	gained	lost	tied	exact_p
+archived	handoff_worlds_per_1000	1.464844	-0.191973	3.121661	3	0	2045	0.2500000
+archived	strict_worlds_per_1000	1.464844	-0.191973	3.121661	3	0	2045	0.2500000
+archived	switch_pct	-19.213953	-21.269255	-17.158651	NA	NA	NA	NA
+archived	six_pct	18.445927	16.310798	20.581056	NA	NA	NA	NA
+archived	exact_per_world	0.288086	0.227076	0.349096	NA	NA	NA	NA
+new	handoff_worlds_per_1000	0.000000	-1.353777	1.353777	1	1	2046	1.0000000
+new	strict_worlds_per_1000	0.000000	-1.353777	1.353777	1	1	2046	1.0000000
+new	switch_pct	-17.939834	-19.984305	-15.895363	NA	NA	NA	NA
+new	six_pct	18.027723	15.807757	20.247689	NA	NA	NA	NA
+new	exact_per_world	0.356934	0.292689	0.421178	NA	NA	NA	NA
+pooled	handoff_worlds_per_1000	0.732422	-0.337467	1.802311	4	1	4091	0.3750000
+pooled	strict_worlds_per_1000	0.732422	-0.337467	1.802311	4	1	4091	0.3750000
+pooled	switch_pct	-18.557834	-20.006753	-17.108915	NA	NA	NA	NA
+pooled	six_pct	18.226605	16.685800	19.767410	NA	NA	NA	NA
+pooled	exact_per_world	0.322510	0.278204	0.366816	NA	NA	NA	NA

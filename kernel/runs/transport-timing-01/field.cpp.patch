@@ -1,0 +1,101 @@
+--- handoff.cpp
++++ field.cpp
+@@ -1,3 +1,3 @@
+ // Compare local physical transport and newborn bearing on the same natural fields.
+-#include "transport.hpp"
++#include "schedule.hpp"
+ #include "../vacancy-01/common.hpp"
+@@ -42,4 +42,7 @@
+     SpatialExperiment space;
+-    int seed, threshold;
+-    bool random_birth, reverse;
++    int seed;
++    ExchangeSchedule schedule;
++    bool reverse;
++    struct PhaseCounts {int starts=0, switches=0, six=0, exact=0;};
++    std::array<PhaseCounts,32> phases{};
+     std::array<int,64> ids{};
+@@ -58,3 +61,3 @@
+     Study(int seed,const std::string& arm,bool reverse):world(config(seed)),space(world),seed(seed),
+-        threshold(arm=="low"?1:arm=="high"?16:0),random_birth(arm=="bearing"),reverse(reverse) {
++        schedule(seed,arm=="burst"),reverse(reverse) {
+         ids.fill(-1); ids[36]=0;
+@@ -99,2 +102,3 @@
+             started+=a.started_unlike;
++            if (a.started_unlike) ++phases[schedule.phase(int(e.tick))].starts;
+         }
+@@ -102,2 +106,3 @@
+             ++switched; a.switched=true;
++            ++phases[schedule.phase(a.times[0])].switches;
+             auto found=std::find(opening.begin(),opening.end(),a.first);
+@@ -114,2 +119,4 @@
+         a.sites[a.size++]=e.read_site;
++        if (a.size==6 && a.started_unlike && a.one_identity && a.aligned)
++            ++phases[schedule.phase(a.times[0])].six;
+     }
+@@ -123,3 +130,3 @@
+         external_births+=a.external;
+-        int bearing=random_birth?static_cast<int>(SpatialExperiment::draw(seed,t,128+e.target)%4):1;
++        int bearing=1;
+         SpatialExperiment::orient(world,e.target,bearing);
+@@ -136,2 +143,3 @@
+         ++directions[a.direction];
++        ++phases[schedule.phase(a.times[0])].exact;
+     }
+@@ -155,3 +163,3 @@
+             }
+-            moves+=space.transport(world,ids,threshold,reverse);
++            moves+=schedule.advance(world,space,ids,reverse);
+             if (t%64==0) {
+@@ -170,2 +178,10 @@
+         auto ledger=vacancy::output(dir,"products.tsv","seed\tarm\tchild_site\tchild_born\tproduct\texecutor_birth_site\texecutor_born\texecutor\tdonor_birth_site\tdonor_born\texecutor_site\tfirst_direction\tread_ticks\tread_sites\tcomplete\tself_again\ttemplate_again");
++        auto budget=vacancy::output(dir,"budget.tsv","seed\tarm\toffset\tactive_ticks\tsweeps\toffers\tswaps\tedge_digest");
++        budget<<seed<<'\t'<<arm<<'\t'<<schedule.offset<<'\t'<<schedule.active_ticks<<'\t'<<schedule.sweeps
++              <<'\t'<<schedule.offers<<'\t'<<schedule.swaps<<'\t'<<std::hex<<schedule.digest<<'\n';
++        auto phase=vacancy::output(dir,"phase.tsv","seed\tarm\tphase\tstarts\tswitches\tsix\texact");
++        for (int i=0;i<32;++i) {
++            const auto& n=phases[i];
++            if (n.starts) phase<<seed<<'\t'<<arm<<'\t'<<i<<'\t'<<n.starts<<'\t'<<n.switches<<'\t'<<n.six<<'\t'<<n.exact<<'\n';
++        }
+         auto changes=vacancy::output(dir,"switches.tsv","seed\tarm\tactor_birth_site\tactor_born\tactor_site\tdonor_birth_site\tdonor_born\tdonor_now\tprevious_tick\tprevious_site\ttick\tsite\twrite_offset\tsource_bank\tsource_birth_site\tsource_born");
+@@ -213,2 +229,29 @@
+ void controls() {
++    for (int seed=1;seed<=128;++seed) {
++        ExchangeSchedule uniform(seed,false), burst(seed,true);
++        int active=0, due=0;
++        for (int t=1;t<=64;++t) {
++            require(uniform.sweeps_due(t)==1 && burst.phase(t)==burst.phase(t+32),"period");
++            active+=burst.sweeps_due(t)>0;
++            due+=burst.sweeps_due(t);
++            if (t%32==0) require(due==t && active==t/4,"burst budget");
++        }
++    }
++    World regular(Study::config(3,0));
++    regular.seed_site(17,"P....."); regular.seed_site(19,"P....+");
++    World clustered=regular, reference=regular;
++    SpatialExperiment grid(regular);
++    ExchangeSchedule even(3,false), pulses(3,true);
++    std::array<int,64> ids; ids.fill(-1); ids[17]=0; ids[19]=1;
++    auto pulse_ids=ids, reference_ids=ids;
++    for (int t=1;t<=64;++t) {
++        regular.step(); clustered.step(); reference.step();
++        even.advance(regular,grid,ids,false);
++        pulses.advance(clustered,grid,pulse_ids,true);
++        grid.transport(reference,reference_ids,16,false);
++        require(regular.hash()==reference.hash() && ids==reference_ids,"uniform reference sweep");
++        if (t%32==0)
++            require(regular.hash()==clustered.hash() && ids==pulse_ids && even.digest==pulses.digest &&
++                    even.offers==pulses.offers && even.swaps==pulses.swaps,"mobile parked-program budget");
++    }
+     World w(Study::config(1,0)); SpatialExperiment s(w);
+@@ -260,7 +303,7 @@
+         if ((argc!=4 && argc!=5) || (argc==5 && std::string_view(argv[4])!="--reverse"))
+-            throw std::invalid_argument("usage: field SEED east|low|high DIR [--reverse]");
++            throw std::invalid_argument("usage: field SEED high|burst DIR [--reverse]");
+         std::string arm=argv[2];
+-        require(arm=="east" || arm=="low" || arm=="high","unknown arm");
++        require(arm=="high" || arm=="burst","unknown arm");
+         int seed=std::stoi(argv[1]);
+-        require(seed>=19521 && seed<=23616,"seed outside cohort");
++        require(seed>=21569 && seed<=25664,"seed outside cohort");
+         Study study(seed,arm,argc==5); study.run(); study.write(arm,argv[3]);

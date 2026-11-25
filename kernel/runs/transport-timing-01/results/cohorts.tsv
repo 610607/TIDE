@@ -1,0 +1,7 @@
+cohort	arm	complete_copies	complete_original	complete_handoff	complete_post	complete_handoff_world	complete_post_world	strict_copies	strict_original	strict_handoff	strict_post	strict_handoff_world	strict_post_world	incomplete_copies	incomplete_original	incomplete_handoff	incomplete_post	incomplete_handoff_world	incomplete_post_world	starts	switches	six	exact	encounters	moves	swaps	offers	worlds	reproducing	stagnant	extinct	zero_upper95_per_1000
+archived	high	1476	1	0	0	0	0	1423	1	0	0	0	0	62	0	0	0	0	0	4362	2079	1909	1538	778693	28536414	14543500	33550732	2048	2048	0	0	1.46169
+archived	burst	2050	5	3	1	3	1	1980	5	3	1	3	1	78	0	0	0	0	0	4271	1215	2657	2128	697052	29064847	14840894	33550732	2048	2048	0	0	NA
+new	high	1455	2	1	1	1	1	1385	2	1	1	1	1	60	0	0	0	0	0	4237	2021	1846	1515	785291	28524377	14537611	33550942	2048	2048	0	0	NA
+new	burst	2173	9	1	1	1	1	2091	9	1	1	1	1	73	0	1	1	1	1	4523	1346	2786	2246	721353	29110846	14863396	33550942	2048	2048	0	0	NA
+pooled	high	2931	3	1	1	1	1	2808	3	1	1	1	1	122	0	0	0	0	0	8599	4100	3755	3053	1563984	57060791	29081111	67101674	4096	4096	0	0	NA
+pooled	burst	4223	14	4	2	4	2	4071	14	4	2	4	2	151	0	1	1	1	1	8794	2561	5443	4374	1418405	58175693	29704290	67101674	4096	4096	0	0	NA
