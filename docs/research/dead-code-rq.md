@@ -1,6 +1,6 @@
 # Does retaining dead code change evolutionary dynamics?
 
-**Draft, not agreed (2026-11-25).** This brief proposes the dead-code question, [frontier candidate 2](frontier.md#candidate-research-questions-proposals-only), as the third research question, ranked after the [access question](access-dynamics-rq.md). Nothing in it is decided, and no study seed runs until the decisions at the end are settled.
+**Third research question, agreed 2026-11-25.** This brief takes the dead-code question, [frontier candidate 2](frontier.md#candidate-research-questions-proposals-only), as the third research question, after the [access question](access-dynamics-rq.md). Every decision at the end was settled as recommended ([agreed choices](#agreed-choices)). The run protocol and records are in [dead-code-01](../../kernel/runs/dead-code-01/README.md).
 
 **Question.** Start from the same independently reproducing ancestor and the same access permission. Does keeping the bytes of dead individuals readable and executable, rather than clearing them, change the population's long-term evolutionary dynamics? The only manipulated rule is the contract's existing reclamation setting, retain or empty. The measurements are those of the access question, so its results can be compared directly.
 
@@ -113,7 +113,7 @@ Most predictions fall on different endpoints, so the hypotheses need not compete
 - against H-buffer: M1, M4 or M5 lower, or M3 or P2 higher;
 - against H-raw: M2, P1, P2 or P4 lower.
 
-**Pattern rule (proposed).** Classify each access arm's result:
+**Pattern rule.** Classify each access arm's result:
 
 | Pattern | Condition |
 | --- | --- |
@@ -137,11 +137,11 @@ The observer records, for every completed and every abandoned division:
 
 The ledger gives each birth's share of material and executed code taken from residue. It also splits the variation share into its substitution-bearing part and M2, and it checks the candidate self-execution filter above. In the empty arms, residue sources must be zero; this is a validation check. The ledger changes no transition.
 
-### Residue fork (needs an analysis hook)
+### Residue fork
 
 The access study classifies genotypes by forking at the first filtered carrier's birth with permissions or bytes changed. This study adds one fork. At that tick, every free bank and the unwritten offsets of every reservation are cleared, and the fork runs with reclamation set to empty for the carrier's lifetime. Everything else is unchanged. A genotype whose ordinary births exceed zero but whose residue-cleared births are zero is **residue-requiring**.
 
-This separates causal use of dead code from merely having it nearby, as the frontier note requires. The fork needs analysis hooks, similar to `World::replace_bytes`, to empty those banks and to switch a forked world's reclamation setting. Under AGENTS.md these are kernel changes, to be settled before they are implemented.
+This separates causal use of dead code from merely having it nearby, as the frontier note requires. The fork uses two analysis hooks, tested like `World::replace_bytes`: `World::clear_residue` empties those banks and `World::set_reclamation` switches the forked world's reclamation setting. Neither changes a transition rule.
 
 ### Optional analyses (descriptive)
 
@@ -171,7 +171,7 @@ Three checks are new:
 2. **Empty arms.** No byte or fetched instruction comes from a free bank.
 3. **Residue-fork control.** A fixture shows a fetch into a retained dead body completing a birth, and the residue-cleared fork failing it.
 
-### Seeds (proposed)
+### Seeds
 
 - **Validation.** 29921–29924.
 - **Primary.** 31001–31032, block A 31001–31016 and block B 31017–31032.
@@ -214,9 +214,11 @@ Option A with the scale check needs about 9 hours of wall time here, in committe
 - **Six-byte genomes.** As in the access study, the genome caps complexity, and the question compares dynamics. It cannot show open-ended growth.
 - **Pattern is not mechanism.** A buffer- or raw-consistent pattern is an outcome description. Residue dependence of a genotype is shown only by the residue fork, and adaptation only by replay.
 
-## Decisions needed
+## Agreed choices
 
-| # | Decision | Recommendation |
+On 2026-11-25 every decision below was settled as recommended, including option A, the new seed blocks, the residue-fork hooks, the 64 × 64 check and the optional analyses.
+
+| # | Decision | Agreed |
 | --- | --- | --- |
 | 1 | Adopt the question, with H-buffer and H-raw as outcome patterns that may both hold | Adopt |
 | 2 | How to combine with the access arms | Option A: read and read_fetch × retain and empty, plus self-retain as reference; self-empty in validation only |
