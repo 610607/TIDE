@@ -19,3 +19,8 @@
 2026-11-25T19:30:43Z	world read-empty-31103: skipped
 2026-11-25T19:30:43Z	world read_fetch-retain-31103: skipped
 2026-11-25T19:30:43Z	world read_fetch-empty-31103: skipped
+2026-11-25T20:08:06Z	world read-retain-31104: 2243 s
+2026-11-25T20:09:43Z	world read-empty-31104: 2340 s
+2026-11-25T20:10:11Z	world read_fetch-retain-31104: 2368 s
+2026-11-25T20:10:11Z	world read_fetch-empty-31104: 2308 s
+2026-11-25T20:10:11Z	batch 2/4 done
