@@ -8,3 +8,9 @@
 2026-11-25T18:35:15Z	world read_fetch-retain-31102: 2406 s
 2026-11-25T18:35:45Z	world read_fetch-empty-31102: 2412 s
 2026-11-25T18:35:45Z	batch 1/4 done
+2026-11-25T18:35:49Z	batch 1/4 pushed
+2026-11-25T18:35:49Z	batch 2/4 start: read-retain-31103 read-empty-31103 read_fetch-retain-31103 read_fetch-empty-31103 read-retain-31104 read-empty-31104 read_fetch-retain-31104 read_fetch-empty-31104
+2026-11-25T19:17:16Z	world read-retain-31103: 2487 s
+2026-11-25T19:17:16Z	world read-empty-31103: 2429 s
+2026-11-25T19:17:16Z	world read_fetch-retain-31103: 2442 s
+2026-11-25T19:17:16Z	world read_fetch-empty-31103: 2467 s
