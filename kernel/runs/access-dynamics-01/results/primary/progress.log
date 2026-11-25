@@ -74,3 +74,16 @@
 2026-11-25T09:06:00Z	world self-30019: 368 s
 2026-11-25T09:06:10Z	world read-30019: 374 s
 2026-11-25T09:06:10Z	batch 7/12 done
+2026-11-25T09:06:14Z	batch 7/12 pushed
+2026-11-25T09:06:14Z	batch 8/12 start: read_fetch-30019 self-30020 read-30020 read_fetch-30020 self-30021 read-30021 read_fetch-30021 self-30022
+2026-11-25T09:06:27Z	batch 8/12 interrupted: driver stopped and restarted detached to avoid a 2-hour limit on background commands; the four unfinished worlds are rerun from scratch
+2026-11-25T09:06:28Z	batch 8/12 start: read_fetch-30019 self-30020 read-30020 read_fetch-30020 self-30021 read-30021 read_fetch-30021 self-30022
+2026-11-25T09:13:08Z	world read_fetch-30019: 401 s
+2026-11-25T09:13:08Z	world self-30020: 388 s
+2026-11-25T09:13:08Z	world read-30020: 390 s
+2026-11-25T09:13:08Z	world read_fetch-30020: 393 s
+2026-11-25T09:19:10Z	world self-30021: 373 s
+2026-11-25T09:19:17Z	world read-30021: 380 s
+2026-11-25T09:19:21Z	world read_fetch-30021: 381 s
+2026-11-25T09:19:30Z	world self-30022: 382 s
+2026-11-25T09:19:30Z	batch 8/12 done
