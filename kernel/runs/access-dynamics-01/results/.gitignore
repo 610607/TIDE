@@ -1,0 +1,2 @@
+# Worlds still running; run.py renames each to its final directory when it completes
+.tmp-*/
