@@ -1,0 +1,4 @@
+focal	ordinary	reads_denied	fetch_denied	both_denied	informative	class
+R..CLD	1	1	1	1	4	independent
+RSCLD	1	0	1	0	4	read_requiring
+RJD	1	1	0	0	3	fetch_requiring
