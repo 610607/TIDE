@@ -154,3 +154,4 @@
 2026-11-25T16:07:58Z	batch 14/20 done
 2026-11-25T16:08:02Z	batch 14/20 pushed
 2026-11-25T16:08:02Z	stopping before batch 15/20: time limit
+2026-11-25T16:08:11Z	batch 15/20 start: read-empty-31023 read_fetch-retain-31023 read_fetch-empty-31023 self-retain-31024 read-retain-31024 read-empty-31024 read_fetch-retain-31024 read_fetch-empty-31024
