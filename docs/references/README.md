@@ -2,7 +2,7 @@
 
 Retrieved and verified: 2026-11-15; decay and mobility additions 2026-11-17; genome-length additions 2026-11-18; earlier downloads registered 2026-11-19.
 
-The manifest lists **77 distinct PDFs**. Read local copies before downloading again. The [manifest](manifest.json) records source URLs, versions, byte counts, page counts, and SHA-256 hashes. Original downloaded bytes are preserved.
+The manifest lists **82 distinct PDFs**. Read local copies before downloading again. The [manifest](manifest.json) records source URLs, versions, byte counts, page counts, and SHA-256 hashes. Original downloaded bytes are preserved.
 
 Reference PDFs are local-only and ignored by Git. Public availability is not treated as a redistribution license. The generated review PDF is a separate authored artifact.
 
@@ -186,3 +186,15 @@ The figure/probe follow-up added [Artificial Life II](pdf/langton-et-al-1992-art
 | [Copying of Mixed-Sequence RNA Templates inside Model Protocells](pdf/oflaherty-2018-copying-inside-protocells.pdf) | Published research article, Journal of the American Chemical Society 140, 5171–5178 (2018) | 8 | [Article](https://doi.org/10.1021/jacs.8b00639) |
 | [Coupled Growth and Division of Model Protocell Membranes](pdf/zhu-2009-protocell-growth-division.pdf) | Published research article, Journal of the American Chemical Society 131, 5705–5713 (2009) | 9 | [Article](https://doi.org/10.1021/ja900919c) |
 | [Competition between model protocells driven by an encapsulated catalyst](pdf/adamala-2013-protocell-competition.pdf) | Published research article, Nature Chemistry 5, 495–501 (2013) | 8 | [Article](https://doi.org/10.1038/nchem.1650) |
+
+## Evolutionary activity and MODES (2026-11-25)
+
+Read for the [access-dynamics RQ draft](../research/access-dynamics-rq.md). The three Bedau files start with a 128-byte MacBinary header before the PDF signature; the cached bytes are the original download.
+
+| Source | Version | Pages | Online source |
+| --- | --- | ---: | --- |
+| [Measurement of Evolutionary Activity, Teleology, and Life](pdf/bedau-packard-1992-evolutionary-activity.pdf) | Book chapter, Artificial Life II, pp. 431–461; author-hosted | 36 | [Source](https://people.reed.edu/~mab/publications/papers/alife2.pdf) |
+| [A Comparison of Evolutionary Activity in Artificial Evolving Systems and in the Biosphere](pdf/bedau-et-al-1997-evolutionary-activity-comparison.pdf) | Conference paper, ECAL97, pp. 125–134; author-hosted | 12 | [Source](https://people.reed.edu/~mab/publications/papers/ecal97.pdf) |
+| [A Classification of Long-Term Evolutionary Dynamics](pdf/bedau-snyder-packard-1998-long-term-evolutionary-dynamics.pdf) | Conference paper, Artificial Life VI; the file cites both pp. 228–237 and pp. 189–198; author-hosted | 10 | [Source](https://people.reed.edu/~mab/papers/alife6.pdf) |
+| [The MODES Toolbox: Measurements of Open-Ended Dynamics in Evolving Systems](pdf/dolson-et-al-2019-modes-toolbox.pdf) | Published article, Artificial Life 25(1):50–73, deposited in NSF PAR | 25 | [Source](https://par.nsf.gov/servlets/purl/10104628) · [Article](https://doi.org/10.1162/artl_a_00280) |
+| [Validation of Evolutionary Activity Metrics for Long-Term Evolutionary Dynamics](pdf/stout-spector-2005-activity-validation.pdf) | Conference paper, GECCO 2005, pp. 137–142 | 6 | [Source](https://gpbib.cs.ucl.ac.uk/gecco2005/docs/p137.pdf) |

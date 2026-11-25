@@ -1258,6 +1258,77 @@
       "pages": 8,
       "sha256": "da6157e6d187fc6f020dd708dfa1b0f45a6e1b30f7816bfc5a2655124847f9f7",
       "validation": "Complete PDF signature and trailer, PDFKit page count and opening text checked"
+    },
+    {
+      "path": "pdf/bedau-packard-1992-evolutionary-activity.pdf",
+      "title": "Measurement of Evolutionary Activity, Teleology, and Life",
+      "authors": "Mark A. Bedau and Norman H. Packard",
+      "year": "1992",
+      "version": "Book chapter, Artificial Life II (Santa Fe Institute Studies in the Sciences of Complexity), pp. 431-461; author-hosted copy",
+      "source_url": "https://people.reed.edu/~mab/publications/papers/alife2.pdf",
+      "retrieved_on": "2026-11-25",
+      "bytes": 320128,
+      "pages": 36,
+      "sha256": "1e896f70971b816bedea5a20485d3da82f49a7630cea877d0ffd3314a0bf390c",
+      "validation": "Original download begins with a 128-byte MacBinary header before %PDF- and ends with zero padding after %%EOF; bytes kept as downloaded. Poppler page count and opening text checked",
+      "reading_depth": "Activity counter definition and its use read for the access-dynamics RQ draft"
+    },
+    {
+      "path": "pdf/bedau-et-al-1997-evolutionary-activity-comparison.pdf",
+      "title": "A Comparison of Evolutionary Activity in Artificial Evolving Systems and in the Biosphere",
+      "authors": "Mark A. Bedau, Emile Snyder, C. Titus Brown and Norman H. Packard",
+      "year": "1997",
+      "version": "Conference paper, Proceedings of the Fourth European Conference on Artificial Life (ECAL97), pp. 125-134; author-hosted copy",
+      "source_url": "https://people.reed.edu/~mab/publications/papers/ecal97.pdf",
+      "retrieved_on": "2026-11-25",
+      "bytes": 512000,
+      "pages": 12,
+      "sha256": "353a0131503513195f7b9782b21d67f84bc27147a588ee086317122a212de544",
+      "validation": "Original download begins with a 128-byte MacBinary header before %PDF-; %%EOF trailer present; bytes kept as downloaded. Poppler page count and opening text checked",
+      "reading_depth": "Statistics and neutral-model sections read for the access-dynamics RQ draft"
+    },
+    {
+      "path": "pdf/bedau-snyder-packard-1998-long-term-evolutionary-dynamics.pdf",
+      "title": "A Classification of Long-Term Evolutionary Dynamics",
+      "authors": "Mark A. Bedau, Emile Snyder and Norman H. Packard",
+      "year": "1998",
+      "version": "Conference paper, Artificial Life VI (MIT Press); the file's first line cites pp. 228-237 and its title block cites pp. 189-198; author-hosted copy",
+      "source_url": "https://people.reed.edu/~mab/papers/alife6.pdf",
+      "retrieved_on": "2026-11-25",
+      "bytes": 273920,
+      "pages": 10,
+      "sha256": "8a121e38f10193ac9b3a4dbd6422ae085e795872ef4513d3e548bab6df0fc4fd",
+      "validation": "Original download begins with a 128-byte MacBinary header before %PDF- and ends with zero padding after %%EOF; bytes kept as downloaded. Poppler page count and opening text checked",
+      "reading_depth": "Full text read: activity statistics, neutral shadow, threshold rule, classes and appendix"
+    },
+    {
+      "path": "pdf/dolson-et-al-2019-modes-toolbox.pdf",
+      "title": "The MODES Toolbox: Measurements of Open-Ended Dynamics in Evolving Systems",
+      "authors": "Emily L. Dolson, Anya E. Vostinar, Michael J. Wiser and Charles Ofria",
+      "year": "2019",
+      "version": "Published article, Artificial Life 25(1):50-73 (2019), publisher typesetting deposited in NSF Public Access Repository; final page lists citing articles",
+      "source_url": "https://par.nsf.gov/servlets/purl/10104628",
+      "article_url": "https://doi.org/10.1162/artl_a_00280",
+      "retrieved_on": "2026-11-25",
+      "bytes": 817101,
+      "pages": 25,
+      "sha256": "f8ca4b14f11ccee5d31d9eab0f8ef90d4a44a19aa5d45a0c200db3311b01ab01",
+      "validation": "Complete PDF signature and %%EOF trailer; Poppler page count and opening text checked",
+      "reading_depth": "Sections 2-4 read locally: persistence filter, informative sites, boundedness, four metrics, Avida settings and statistics"
+    },
+    {
+      "path": "pdf/stout-spector-2005-activity-validation.pdf",
+      "title": "Validation of Evolutionary Activity Metrics for Long-Term Evolutionary Dynamics",
+      "authors": "Andrew Stout and Lee Spector",
+      "year": "2005",
+      "version": "Conference paper, GECCO 2005, pp. 137-142; copy hosted by the GECCO 2005 proceedings archive at UCL",
+      "source_url": "https://gpbib.cs.ucl.ac.uk/gecco2005/docs/p137.pdf",
+      "retrieved_on": "2026-11-25",
+      "bytes": 177420,
+      "pages": 6,
+      "sha256": "5156ee1310f51f66b9083c21157b076beb34624873c9d323634befece2d353bb",
+      "validation": "Complete PDF signature and %%EOF trailer; Poppler page count and opening text checked",
+      "reading_depth": "Background, normalization description and conclusions read; Channon's cited papers not read"
     }
   ]
 }

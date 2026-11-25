@@ -4,7 +4,7 @@ Checked: 2026-11-15. The first table lists sources not cached in the manifest. T
 
 | Source | Retrieval result | Evidence used |
 | --- | --- | --- |
-| [MODES 2019](https://web.cse.msu.edu/~dolsonem/pdfs/modes_paper.pdf) | Public author PDF parsed through the web service; local curl and Python clients failed TLS. Old cse.msu.edu path redirects to department HTML. | Published methods and author manuscript read; no local PDF claimed. |
+| [MODES 2019](https://web.cse.msu.edu/~dolsonem/pdfs/modes_paper.pdf) | Public author PDF parsed through the web service; local curl and Python clients failed TLS. Old cse.msu.edu path redirects to department HTML. | Published methods and author manuscript read; no local PDF claimed. On 2026-11-25 the published article was cached from [NSF PAR](https://par.nsf.gov/servlets/purl/10104628); see the manifest. |
 | [Soros and Stanley 2014](https://wiki.santafe.edu/images/9/9c/Soros_alife14.pdf) | Local TLS retrieval failed; official UCF record says document unavailable there; old author path redirects to a missing file. | Indexed primary-text passages only. |
 | [Schonfisch and de Roos 1999](https://doi.org/10.1016/S0303-2647(99)00025-8) | Direct publisher full text returned 403; no authorized public PDF verified. | Abstract/introduction/section previews only. |
 | [Zhu and Szostak 2009](https://pmc.ncbi.nlm.nih.gov/articles/PMC2669828/) | Primary pages challenged on direct open; no working public PDF endpoint verified in this pass. | Relevant indexed primary Results and Discussion passages. |
