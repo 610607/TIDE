@@ -1,0 +1,16 @@
+block	arm	screened	enrolled	primary	exact_end	founder_end	broad_end	order_end	broad_order_end	post_return	reborn	no_birth	active	stagnant	empty	loss_p50	loss_p90	loss_p95	max_depth	last_exact_birth
+A	closed_stable	1024	880	0	880	880	880	880	880	0	0	0	0	880	0	-1	-1	-1	5	373
+A	fed_stable	1024	880	0	880	880	880	880	880	0	0	0	880	0	0	-1	-1	-1	8	2047
+A	closed_break	1024	880	0	0	0	0	0	0	89	119	0	0	0	880	104	432	528	5	397
+A	fed_break	1024	880	0	0	0	20	93	2	112	614	0	876	0	4	104	456	584	7	1045
+A	fed_break_rotated	1024	880	0	0	0	23	81	1	98	582	0	875	0	5	104	432	576	7	1058
+B	closed_stable	1024	899	0	899	899	899	899	899	0	0	0	0	899	0	-1	-1	-1	5	369
+B	fed_stable	1024	899	0	899	899	899	899	899	0	0	0	899	0	0	-1	-1	-1	8	2047
+B	closed_break	1024	899	0	0	0	0	0	0	94	120	0	0	0	899	120	456	576	4	427
+B	fed_break	1024	899	0	0	0	31	73	0	119	620	0	894	0	5	120	480	624	8	1181
+B	fed_break_rotated	1024	899	0	0	0	32	66	3	131	644	0	892	1	6	120	512	672	8	1785
+both	closed_stable	2048	1779	0	1779	1779	1779	1779	1779	0	0	0	0	1779	0	-1	-1	-1	5	373
+both	fed_stable	2048	1779	0	1779	1779	1779	1779	1779	0	0	0	1779	0	0	-1	-1	-1	8	2047
+both	closed_break	2048	1779	0	0	0	0	0	0	183	239	0	0	0	1779	112	440	552	5	427
+both	fed_break	2048	1779	0	0	0	51	166	2	231	1234	0	1770	0	9	112	472	608	8	1181
+both	fed_break_rotated	2048	1779	0	0	0	55	147	4	229	1226	0	1767	1	11	112	472	632	8	1785

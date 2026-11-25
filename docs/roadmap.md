@@ -12,6 +12,8 @@ The exploratory substrate series pauses at v31. Its paired runs showed that extr
 
 A separate pool experiment asks how a first sequence can influence assembly from abundant free pieces. With a supplied local pairing preference, 28 of 2,048 pools started from free pieces alone and recovered an unguided chain's order through two consecutive, identity-traced complementary transfers within 160 encounters. [Template pool experiment and controls](../experiments/template-pool-01/README.md)
 
+Continuing the 1,779 naturally formed first chains under breakage and fresh supply produced 231 worlds with an exact-family birth of the original order after the origin broke. Median exact-family survival was 112 encounters and the longest observed was 1,360. The initial-order effect on all new products approached zero in the final 512 encounters. [Persistence curves, material ledgers and matched order comparison](../experiments/template-persistence-01/README.md)
+
 ## Goal
 
 Research comes first. TIDE aims to contribute to the study of open-ended evolution in digital-life systems: a rule-driven kernel in which replication strategies and ecological relationships evolve rather than being scripted, with results that others can replay.
