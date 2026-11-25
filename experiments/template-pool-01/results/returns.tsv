@@ -1,0 +1,13 @@
+block	arm	branch	worlds	direct_exact_first	selected_direct_exact	direct_exact_return
+A	pattern	transfer_active	1024	751	178	123
+A	pattern	transfer_blind	1024	751	178	2
+A	reorder	transfer_active	1024	778	193	149
+A	reorder	transfer_blind	1024	778	193	5
+B	pattern	transfer_active	1024	738	177	134
+B	pattern	transfer_blind	1024	738	177	7
+B	reorder	transfer_active	1024	723	193	129
+B	reorder	transfer_blind	1024	723	193	7
+both	pattern	transfer_active	2048	1489	355	257
+both	pattern	transfer_blind	2048	1489	355	9
+both	reorder	transfer_active	2048	1501	386	278
+both	reorder	transfer_blind	2048	1501	386	12
