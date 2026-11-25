@@ -1,0 +1,12 @@
+contrast	endpoint	n	median_difference	p
+D2_minus_D1	P1	32	3	0.634485
+D2_minus_D1	P2	32	-0.122951	0.52694
+D2_minus_D1	P3	32	-0.0119769	0.977935
+D2_minus_D1	P4	32	898.341	0.389613
+D2_minus_D1	M1	32	0.00445112	0.138639
+D2_minus_D1	M2	32	42.0065	0.573302
+D2_minus_D1	M3	32	4.57934e-05	0.664522
+D2_minus_D1	M4	32	-0.0256453	0.080325
+D2_minus_D1	M5	32	0.0509117	0.977935
+M4_minus_cleared_read-retain	M4	32	0	1
+M4_minus_cleared_read_fetch-retain	M4	32	0.0016835	0.00589988

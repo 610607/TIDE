@@ -1,0 +1,5 @@
+variant	claim	arm	reference	endpoint	n	mean_difference	median_difference	median_block_A	median_block_B	reference_sd	p	glass_delta	ci90_low	ci90_high	equivalence_bound	forced_inconclusive	p_holm	blocks_agree	direction	outcome
+replication	C3	read_fetch-retain	self-retain	P1	32	-6.59375	-10.5	-3	-16.5	17.3511	0.0801521	-0.380019	-13.125	0.34375	8.67555		0.240456	True	0	inconclusive
+replication	C3	read_fetch-retain	self-retain	P2	32	-0.0210041	-0.131148	-0.0409836	-0.204918	0.289205	0.545354	-0.0726271	-0.129098	0.0927254	0.144602		1	True	0	equivalent
+replication	C3	read_fetch-retain	self-retain	P3	32	-0.0108036	-0.0322734	0.0601841	-0.067663	0.114633	0.637883	-0.0942449	-0.0525996	0.0314021	0.0573164		1	False	0	equivalent
+replication	C3	read_fetch-retain	self-retain	P4	32	2463.29	1477.62	1390.35	1477.62	1305.98	2.84212e-05	1.88617	1317.56	3862.82	652.988		0.000113685	True	1	differs

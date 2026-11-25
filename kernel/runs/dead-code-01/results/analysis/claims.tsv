@@ -1,0 +1,3 @@
+claim	arm	reference	outcome	differs	equivalent	inconclusive
+D1	read-retain	read-empty	inconclusive		P3	P1,P2,P4
+D2	read_fetch-retain	read_fetch-empty	inconclusive		P1,P3,P4	P2

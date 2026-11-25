@@ -1,0 +1,9 @@
+variant	claim	arm	reference	endpoint	n	mean_difference	median_difference	median_block_A	median_block_B	reference_sd	p	glass_delta	ci90_low	ci90_high	equivalence_bound	forced_inconclusive	p_holm	blocks_agree	direction	outcome
+primary	D1	read-retain	read-empty	P1	32	-3.71875	-6.5	-11	-1.5	12.1127	0.361794	-0.307013	-9.65625	2.40625	6.05633		1	True	0	inconclusive
+primary	D1	read-retain	read-empty	P2	32	-0.045082	0.0163934	-0.0409836	0.0327869	0.178343	0.775578	-0.252783	-0.137807	0.0476434	0.0891714		1	False	0	inconclusive
+primary	D1	read-retain	read-empty	P3	32	-0.00355459	-0.00387817	-0.00749639	0.0082838	0.0935652	0.963233	-0.0379906	-0.0389742	0.0324089	0.0467826		1	False	0	equivalent
+primary	D1	read-retain	read-empty	P4	32	-543.401	-408.661	-669.15	-113.604	2251.72	0.253948	-0.241327	-1275.9	183.166	1125.86		1	True	0	inconclusive
+primary	D2	read_fetch-retain	read_fetch-empty	P1	32	-0.03125	1	7	-6	17.1854	0.915519	-0.0018184	-7.09375	7.0625	8.59271		1	False	0	equivalent
+primary	D2	read_fetch-retain	read_fetch-empty	P2	32	-0.0343238	-0.114754	-0.114754	-0.114754	0.246192	0.614906	-0.139419	-0.137807	0.0655738	0.123096		1	True	0	inconclusive
+primary	D2	read_fetch-retain	read_fetch-empty	P3	32	0.000402037	-0.0320884	0.0458272	-0.0544445	0.0991167	0.677999	0.00405619	-0.0435617	0.0411699	0.0495583		1	False	0	equivalent
+primary	D2	read_fetch-retain	read_fetch-empty	P4	32	-321.284	112.661	121.825	110.383	4759.33	0.560757	-0.0675061	-1494.32	719.6	2379.66		1	True	0	equivalent
