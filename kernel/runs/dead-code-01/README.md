@@ -136,7 +136,26 @@ All 160 worlds survived to H, none was demographically stagnant, and all reached
 
 ## Scale check (descriptive)
 
-**Running.** Seeds 31101–31108 in the four read and read_fetch cells on a 64 × 64 torus for 2²¹ ticks. Progress is in [results/scale/progress.log](results/scale/progress.log).
+Seeds 31101–31108 ran in the four read and read_fetch cells on a 64 × 64 torus for 2²¹ = 2,097,152 ticks, 32 worlds in all. The filter length was t = 4,096, with 13 timepoints from 4,096 to 16,384 generations. The brief runs no tests on this set. The paired counts below were computed from the endpoint table and the filtered sets, and are descriptive. [Scale summary](results/scale-analysis/summary.md) · [Per-world endpoints](results/scale-analysis/endpoints.tsv) · [Strategy episodes](results/scale-analysis/strategy_worlds.tsv) · [RCCCJD per world](results/scale-analysis/rcccjd_worlds.tsv)
+
+| Cell | P1 run / shadow | P2 run / shadow | P3 run / shadow | P4 run / shadow | M1 | M2 | M3 | Window max complexity | Evolutionary stagnation | RCCCJD established |
+| --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| read-retain | 1 / 20.5 | 0.19 / 1.58 | 0.00 / 0.48 | 14,124 / 409 | 0.193 | 1,759 | 0.2811 | 4 | 7/8 | 0/8 |
+| read-empty | 1.5 / 16.5 | 0.15 / 1.27 | 0.07 / 0.23 | 13,283 / 406 | 0.191 | 2,807 | 0.2818 | 4 | 3/8 | 0/8 |
+| read_fetch-retain | 2 / 17 | 0.62 / 1.31 | 0.08 / 0.29 | 14,100 / 437 | 0.205 | 3,233 | 0.2842 | 6 | 5/8 | 8/8 |
+| read_fetch-empty | 2 / 18.5 | 0.31 / 1.42 | 0.00 / 0.36 | 13,984 / 416 | 0.221 | 3,215 | 0.2803 | 6 | 5/8 | 7/8 |
+
+Medians over eight worlds per cell. All 32 worlds survived to H, none was demographically stagnant, and all reached the 13 timepoints. The population averaged 3,380–3,392 of 4,096 sites, with about 87.6 million births per world. Mean depth at H was 48,100–49,200 generations in the run and 25,600–26,200 in the shadow.
+
+As in the access study's check, few genotypes passed the longer filter. In all 16 read worlds, the filtered sets were dominated by the independent `RCCCLD`, present at 10–13 of the 13 timepoints; other genotypes passed at one level each. Evolutionary stagnation, no new genotype passing from 12,288 to 16,384, was more common in read-retain (7 of 8) than in read-empty (3 of 8).
+
+`RCCCJD` was the only fetch-requiring genotype. It was established in all eight read_fetch-retain worlds (11 episodes, 4 losses) and in seven read_fetch-empty worlds (10 episodes, 6 losses). On average it was in the filtered set at 47% of timepoints under retain and 12% under empty, and the share was higher under retain in all 8 seed pairs. It was still there at 16,384 in three retain worlds and in no empty world. The access study's read_fetch arm at this scale, under retain, gave 8 of 8, 49% and four worlds. No genotype was residue-requiring, and the material genealogy classified no other genotype as dependent.
+
+Paired by seed, read_fetch-retain had higher P2 than read_fetch-empty in 6 of 8 pairs (median +0.35) and higher P3 in 6 (two ties). As in the access study, change and ecology rose where RCCCJD coexisted with an independent genotype. P1 and P4 had no consistent sign in read_fetch (P4 higher in 3, lower in 5). In read, P4 was higher under retain in 6 of 8 pairs (median +1,102), and P1 and P3 were lower in 5 of 8.
+
+M2 was lower under retain in all 8 read pairs (median −1,049 per 10⁶ births), as in the primary set. In read_fetch it had no consistent sign (higher in 5, lower in 3). The post hoc zero-byte replay covers only the primary set. In read_fetch, retain had lower M1 (0.205 against 0.221) and higher M3 (0.2842 against 0.2803) in all 8 pairs. Both are in the direction opposite to H-buffer. Variation births were 10.6% of births in read_fetch-retain against 11.4% in read_fetch-empty, lower in all 8 pairs. Substitution-bearing births were 10.3% and 11.0%, against 11.42% expected from substitutions alone. In read worlds both shares were 11.4–11.7%. The access study's read_fetch worlds at this scale showed the same shortfall (10.5–10.7%). These differences coincide with RCCCJD's greater share under retain, but this set does not separate the two. Under retain, 3.9% of RCCCJD births had a residue fetch, and 51% fetched from the carrier's own reservation (55% under empty).
+
+This set changed both the lattice size and the filter length relative to the primary set, so it cannot attribute differences from the primary set to population size alone. Worlds took 1,480–2,514 s each and 178–183 MB of memory. They ran from revisions `330b965`, `f0a0d1c`, `d7b65f7` and `4bddbd1`, with the frozen files unchanged.
 
 ## Validation
 
@@ -154,14 +173,14 @@ Seeds 29921–29924 ran in the five primary cells and self-empty for 65,536 tick
 ## Run record
 
 - **Code and protocol.** Frozen in `97a49cb` after validation, before any study seed ran. [revision.sha256](revision.sha256) lists the digests that `run.py` checks before each set. Each world's `log.txt` records the command, the repository revision when the driver started, the final hash, wall time and peak memory. The revisions are `97a49cb` (primary batches 1–7), `28af44f` (8–14) and `9ec04b5` (15–20); the frozen files were unchanged throughout. The kernel adds the analysis hooks `World::clear_residue` and `World::set_reclamation` (`2c28805`) to those of the access study.
-- **Batches.** Worlds ran in batches of eight, four at a time, and each batch was committed and pushed. To stay under a two-hour limit on background commands, the driver ran in three parts with `--stop-after 5400`; each part ended between batches and the next resumed at the following batch. No world was rerun. Primary worlds took 383–440 s each and 171–178 MB of memory.
+- **Batches.** Worlds ran in batches of eight, four at a time, and each batch was committed and pushed. To stay under a two-hour limit on background commands, the primary driver ran in three parts with `--stop-after 5400`; each part ended between batches and the next resumed at the following batch. No primary world was rerun. Primary worlds took 383–440 s each and 171–178 MB of memory. The scale driver's first part, with `--stop-after 4200`, was stopped by the limit during batch 2, after the seed-31103 worlds had finished. The four unfinished seed-31104 worlds were in temporary directories. They were deleted and rerun from the start when the next part, with `--stop-after 1200`, resumed batch 2. The last two parts used `--stop-after 600` and ran one batch each. [Scale progress log](results/scale/progress.log)
 - **Post hoc material.** The overview figure, [overview.py](overview.py), was drawn after the results from committed analysis files only. The zero-byte replay, [zero_births.cpp](zero_births.cpp), and the RCCCJD and ledger summaries above were computed after the frozen analysis and are labelled where used.
 
 ```sh
 make -C kernel/runs/dead-code-01
 python3 kernel/runs/dead-code-01/run.py validate
 python3 kernel/runs/dead-code-01/run.py primary --stop-after 5400
-python3 kernel/runs/dead-code-01/run.py scale --stop-after 4200
+python3 kernel/runs/dead-code-01/run.py scale --stop-after 600   # repeat until progress.log says "scale complete"
 python3 kernel/runs/dead-code-01/analyze.py primary
 python3 kernel/runs/dead-code-01/analyze.py scale
 python3 kernel/runs/dead-code-01/overview.py
