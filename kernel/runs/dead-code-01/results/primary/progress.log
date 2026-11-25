@@ -152,3 +152,5 @@
 2026-11-25T16:07:56Z	world self-retain-31023: 407 s
 2026-11-25T16:07:58Z	world read-retain-31023: 415 s
 2026-11-25T16:07:58Z	batch 14/20 done
+2026-11-25T16:08:02Z	batch 14/20 pushed
+2026-11-25T16:08:02Z	stopping before batch 15/20: time limit
