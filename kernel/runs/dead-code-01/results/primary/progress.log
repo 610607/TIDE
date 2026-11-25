@@ -208,3 +208,14 @@
 2026-11-25T17:15:52Z	world self-retain-31031: 393 s
 2026-11-25T17:15:52Z	world read-retain-31031: 392 s
 2026-11-25T17:15:52Z	batch 19/20 done
+2026-11-25T17:15:56Z	batch 19/20 pushed
+2026-11-25T17:15:56Z	batch 20/20 start: read-empty-31031 read_fetch-retain-31031 read_fetch-empty-31031 self-retain-31032 read-retain-31032 read-empty-31032 read_fetch-retain-31032 read_fetch-empty-31032
+2026-11-25T17:22:36Z	world read-empty-31031: 400 s
+2026-11-25T17:22:40Z	world read_fetch-retain-31031: 404 s
+2026-11-25T17:22:44Z	world read_fetch-empty-31031: 408 s
+2026-11-25T17:22:44Z	world self-retain-31032: 404 s
+2026-11-25T17:29:17Z	world read-retain-31032: 401 s
+2026-11-25T17:29:24Z	world read-empty-31032: 404 s
+2026-11-25T17:29:26Z	world read_fetch-retain-31032: 406 s
+2026-11-25T17:29:26Z	world read_fetch-empty-31032: 401 s
+2026-11-25T17:29:26Z	batch 20/20 done
