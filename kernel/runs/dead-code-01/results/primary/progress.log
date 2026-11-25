@@ -143,3 +143,7 @@
 2026-11-25T15:53:56Z	batch 13/20 done
 2026-11-25T15:54:03Z	batch 13/20 pushed
 2026-11-25T15:54:03Z	batch 14/20 start: read_fetch-empty-31021 self-retain-31022 read-retain-31022 read-empty-31022 read_fetch-retain-31022 read_fetch-empty-31022 self-retain-31023 read-retain-31023
+2026-11-25T16:01:02Z	world read_fetch-empty-31021: 419 s
+2026-11-25T16:01:02Z	world self-retain-31022: 417 s
+2026-11-25T16:01:03Z	world read-retain-31022: 420 s
+2026-11-25T16:01:03Z	world read-empty-31022: 418 s
