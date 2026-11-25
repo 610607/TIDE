@@ -1,1 +1,5 @@
 2026-11-25T10:09:18Z	batch 1/3 start: self-30101 read-30101 read_fetch-30101 self-30102 read-30102 read_fetch-30102 self-30103 read-30103
+2026-11-25T10:27:57Z	world self-30101: 1119 s
+2026-11-25T10:27:57Z	world read-30101: 1045 s
+2026-11-25T10:28:23Z	world read_fetch-30101: 1145 s
+2026-11-25T10:28:24Z	world self-30102: 1146 s
