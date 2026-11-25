@@ -219,3 +219,5 @@
 2026-11-25T17:29:26Z	world read_fetch-retain-31032: 406 s
 2026-11-25T17:29:26Z	world read_fetch-empty-31032: 401 s
 2026-11-25T17:29:26Z	batch 20/20 done
+2026-11-25T17:29:30Z	batch 20/20 pushed
+2026-11-25T17:29:30Z	primary complete
