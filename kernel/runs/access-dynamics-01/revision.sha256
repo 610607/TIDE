@@ -1,0 +1,8 @@
+8c46ec4916cb0b1aa52d87911d65d2d30c7c1a1060b9d47ff6e17988a1d5cc43  kernel/runs/access-dynamics-01/Makefile
+f3e71f3c50e9fe7028096f4bec029d0f9a7b6d63189951b5e3b0c3b82e7f850e  kernel/runs/access-dynamics-01/analyze.py
+89918b004d0ef9b30be023cc4f0886466147fe08c1daa271b6c788e47226bf16  kernel/runs/access-dynamics-01/protocol.md
+2967fb341796e304b4c4ac1d3995275b22a49536a129d2fd4f83cb5f505b681b  kernel/runs/access-dynamics-01/run.py
+1f23dcba8e4fec4937fcfe9f30f64338dd2273ed2c302cc7a6fd6cd6082de180  kernel/runs/access-dynamics-01/study.cpp
+89f6fb5b3c4234120242f440a0da7e277adbda0f21efa4921d21f8206a1ece61  kernel/src/vm.cpp
+2449b7a7126d9dc090ad751c2cadb0b3356c977177f2e2254d977b757349b532  kernel/src/vm.hpp
+d6cc7f0578f2b6da44ff260d55cdb958f8b340916fa16a5c1fb62a9fd8bf7b6f  docs/research/access-dynamics-rq.md
