@@ -14,6 +14,8 @@ A separate pool experiment asks how a first sequence can influence assembly from
 
 Continuing the 1,779 naturally formed first chains under breakage and fresh supply produced 231 worlds with an exact-family birth of the original order after the origin broke. Median exact-family survival was 112 encounters and the longest observed was 1,360. The initial-order effect on all new products approached zero in the final 512 encounters. [Persistence curves, material ledgers and matched order comparison](../experiments/template-persistence-01/README.md)
 
+A separate six-bead lattice experiment gives those chain positions a geometry. With a supplied attraction between unlike beads, positions 2 and 5 touched in 42.75% of the equilibrium ensemble for `001011` and 17.30% for `011100`, despite being unlike in both orders. Turning the attraction off gave identical distributions across all 20 equal-composition orders. [Exact structure census, local-motion checks and figure](../experiments/chain-structure-01/README.md)
+
 ## Goal
 
 Research comes first. TIDE aims to contribute to the study of open-ended evolution in digital-life systems: a rule-driven kernel in which replication strategies and ecological relationships evolve rather than being scripted, with results that others can replay.
