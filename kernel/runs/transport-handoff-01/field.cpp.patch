@@ -1,0 +1,82 @@
+--- field.cpp
++++ field.cpp
+@@ -34,4 +34,8 @@
+ };
+ struct Product {int child, actor, donor, site; Allocation writes;};
++struct SourceSwitch {
++    int actor, actor_site, original, original_at, last_tick, last_site, tick, site, offset, next;
++    Bank bank;
++};
+ struct Study {
+     World world;
+@@ -42,4 +46,5 @@
+     std::vector<Life> lives;
+     std::vector<Product> products;
++    std::vector<SourceSwitch> switches;
+     int deaths=0, recent=0, exposure=0, moves=0, started=0, switched=0, external_births=0;
+     std::array<int,4> directions{}, initial_bearings{};
+@@ -94,5 +99,13 @@
+             started+=a.started_unlike;
+         }
+-        if (a.started_unlike && a.first!=donor && !a.switched) {++switched; a.switched=true;}
++        if (a.started_unlike && a.first!=donor && !a.switched) {
++            ++switched; a.switched=true;
++            auto found=std::find(opening.begin(),opening.end(),a.first);
++            int where=found==opening.end()?-1:static_cast<int>(found-opening.begin());
++            require((where>=0)==(e.tick<=Tick(lives[a.first].born+81)),"opening source lifetime");
++            require(a.size>0 && where!=e.read_site,"first switch identity");
++            switches.push_back({actor,e.actor,a.first,where,a.times[a.size-1],a.sites[a.size-1],int(e.tick),
++                                e.read_site,e.write_offset,donor,external?e.read_contact.kind:Bank::occupied});
++        }
+         a.one_identity &= donor>=0 && donor==a.first;
+         a.aligned &= e.read_offset==a.size;
+@@ -117,9 +130,9 @@
+         if (actor==donor) { lives[actor].self_copy=true; return; }
+         lives[donor].supplied=true;
++        products.push_back({child,actor,donor,e.actor,a});
+         if (lives[actor].bytes==e.product) return;
+         lives[actor].contact(donor).flags|=produced;
+         lives[child].enrolled=true;
+         ++directions[a.direction];
+-        products.push_back({child,actor,donor,e.actor,a});
+     }
+     void run() {
+@@ -156,4 +169,13 @@
+         auto seeds=vacancy::output(dir,"seed.tsv","seed\tarm\tbirths\tdeaths\tliving\tfinal80_births\tstatus\tstate_fnv64\tliving_ticks\tindividual_moves\tencounters\tfacing_pairs\tfacing_room_pairs\tread_pairs\tproductive_pairs\tstarted_unlike\tswitched_supplier\texternal_births\texact_births\tnorth\teast\tsouth\twest\tcomplete\tself_again\ttemplate_again\tany_again\tincomplete\tborn_n\tborn_e\tborn_s\tborn_w\treaders");
+         auto ledger=vacancy::output(dir,"products.tsv","seed\tarm\tchild_site\tchild_born\tproduct\texecutor_birth_site\texecutor_born\texecutor\tdonor_birth_site\tdonor_born\texecutor_site\tfirst_direction\tread_ticks\tread_sites\tcomplete\tself_again\ttemplate_again");
++        auto changes=vacancy::output(dir,"switches.tsv","seed\tarm\tactor_birth_site\tactor_born\tactor_site\tdonor_birth_site\tdonor_born\tdonor_now\tprevious_tick\tprevious_site\ttick\tsite\twrite_offset\tsource_bank\tsource_birth_site\tsource_born");
++        for (const auto& s:switches) {
++            changes<<seed<<'\t'<<arm;
++            for (int v:{lives[s.actor].origin,lives[s.actor].born,s.actor_site,lives[s.original].origin,
++                        lives[s.original].born,s.original_at,s.last_tick,s.last_site,s.tick,s.site,s.offset})
++                changes<<'\t'<<v;
++            changes<<'\t'<<vacancy::kind(s.bank)<<'\t'<<(s.next<0?-1:lives[s.next].origin)
++                   <<'\t'<<(s.next<0?-1:lives[s.next].born)<<'\n';
++        }
+         int pairs=0, facing=0, available=0, actual=0, productive=0, complete=0, again=0, self=0, donor_again=0;
+         for (const auto& p:lives) {
+@@ -170,8 +192,9 @@
+         seeds<<seed<<'\t'<<arm<<'\t'<<lives.size()-1<<'\t'<<deaths<<'\t'<<living<<'\t'<<recent<<'\t'
+              <<(!living?"extinct":recent?"reproducing":"stagnant")<<'\t'<<world.hash();
+-        for (int v:{exposure,moves,pairs,facing,available,actual,productive,started,switched,external_births,int(products.size())})
++        const int enrolled=directions[0]+directions[1]+directions[2]+directions[3];
++        for (int v:{exposure,moves,pairs,facing,available,actual,productive,started,switched,external_births,enrolled})
+             seeds<<'\t'<<v;
+         for (int v:directions) seeds<<'\t'<<v;
+-        for (int v:{complete,self,donor_again,again,int(products.size())-complete}) seeds<<'\t'<<v;
++        for (int v:{complete,self,donor_again,again,enrolled-complete}) seeds<<'\t'<<v;
+         for (int v:initial_bearings) seeds<<'\t'<<v;
+         seeds<<'\t'<<std::count_if(lives.begin(),lives.end(),[](const Life& p){return p.reader && p.born<end_tick;})<<'\n';
+@@ -236,9 +259,9 @@
+         if (argc==2 && std::string_view(argv[1])=="--test") {controls(); return 0;}
+         if ((argc!=4 && argc!=5) || (argc==5 && std::string_view(argv[4])!="--reverse"))
+-            throw std::invalid_argument("usage: field SEED east|bearing|low|high DIR [--reverse]");
++            throw std::invalid_argument("usage: field SEED east|low|high DIR [--reverse]");
+         std::string arm=argv[2];
+-        require(arm=="east" || arm=="bearing" || arm=="low" || arm=="high","unknown arm");
++        require(arm=="east" || arm=="low" || arm=="high","unknown arm");
+         int seed=std::stoi(argv[1]);
+-        require(seed>=19521 && seed<=21568,"seed outside cohort");
++        require(seed>=19521 && seed<=23616,"seed outside cohort");
+         Study study(seed,arm,argc==5); study.run(); study.write(arm,argv[3]);
+     } catch(const std::exception& e) {std::cerr<<e.what()<<'\n'; return 1;}

@@ -1,0 +1,10 @@
+cohort	arm	starts	switches	same_site_displaced	same_site_after_death	changed_address
+historical	east	4582	114	0	113	1
+historical	low	4459	383	221	162	0
+historical	high	4389	2189	2001	188	0
+prospective	east	4611	101	0	101	0
+prospective	low	4661	380	234	145	1
+prospective	high	4362	2079	1920	159	0
+pooled	east	9193	215	0	214	1
+pooled	low	9120	763	455	307	1
+pooled	high	8751	4268	3921	347	0

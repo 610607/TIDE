@@ -1,0 +1,13 @@
+cohort	arm	reference	window	gained	lost	tied	delta_per_1000	low95	high95	exact_p
+historical	low	east	complete	6	6	2036	0.00000	-3.31606	3.31606	1.0000000
+historical	low	east	strict	6	6	2036	0.00000	-3.31606	3.31606	1.0000000
+historical	high	east	complete	0	6	2042	-2.92969	-5.27106	-0.58831	0.0312500
+historical	high	east	strict	0	6	2042	-2.92969	-5.27106	-0.58831	0.0312500
+prospective	low	east	complete	0	5	2043	-2.44141	-4.57930	-0.30351	0.0625000
+prospective	low	east	strict	0	4	2044	-1.95312	-3.86578	-0.04047	0.1250000
+prospective	high	east	complete	0	6	2042	-2.92969	-5.27106	-0.58831	0.0312500
+prospective	high	east	strict	0	5	2043	-2.44141	-4.57930	-0.30351	0.0625000
+pooled	low	east	complete	6	11	4079	-1.22070	-3.19356	0.75215	0.3323059
+pooled	low	east	strict	6	10	4080	-0.97656	-2.89062	0.93750	0.4544983
+pooled	high	east	complete	0	12	4084	-2.92969	-4.58509	-1.27429	0.0004883
+pooled	high	east	strict	0	11	4085	-2.68555	-4.27066	-1.10043	0.0009766
