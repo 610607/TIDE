@@ -1,6 +1,6 @@
 # Does neighbor access change long-term evolutionary dynamics?
 
-**Second research question, draft of 2026-11-25; not agreed.** Start from the same independently reproducing ancestor in every arm. Does the access permission change the long-term evolutionary dynamics of the whole population? The arms allow only the own body, neighbor data reads, or neighbor reads plus borrowed instruction fetch. Measure the dynamics with published open-ended-evolution statistics, not new ones. Every rule other than access stays fixed. Nothing in this draft is agreed. A [dead-code question](frontier.md#candidate-research-questions-proposals-only) (candidate 2) is proposed to follow it and has no brief.
+**Second research question, agreed 2026-11-25.** Start from the same independently reproducing ancestor in every arm. Does the access permission change the long-term evolutionary dynamics of the whole population? The arms allow only the own body, neighbor data reads, or neighbor reads plus borrowed instruction fetch. Measure the dynamics with published open-ended-evolution statistics, not new ones. Every rule other than access stays fixed. A [dead-code question](frontier.md#candidate-research-questions-proposals-only) (candidate 2) is proposed to follow it and has no brief.
 
 **Worked example.** In a read-arm world, a copy substitution produces genotype G. Its carriers copy their own bytes but need a neighbor read to finish the loop. From the tick G first appears, Bedau's activity counter for G grows by one each tick that at least one carrier is alive. At MODES timepoint A, suppose a G carrier has a descendant alive t generations later. G then passes the persistence filter at A. It counts once toward novelty if it never passed before, and toward change if it was not in the previous timepoint's filtered set. Forking the world at the birth of that first filtered carrier then asks what G needs. If denying reads to the focal alone stops its births, G is classified as read-requiring. The classification is made in analysis and never feeds back into the run.
 
@@ -24,7 +24,7 @@ Each claim is two-sided; no direction is predicted. The first stage gives no bas
 
 | Source | What it contributes | Expected difference in TIDE |
 | --- | --- | --- |
-| Bedau, Snyder and Packard 1998 (published conference paper) | Genotype activity counters, diversity, new and mean cumulative activity, a neutral shadow and three classes of long-term dynamics, applied to Echo and the fossil record. [Cached PDF](../references/pdf/bedau-snyder-packard-1998-long-term-evolutionary-dynamics.pdf) · [Source](https://people.reed.edu/~mab/papers/alife6.pdf) | The paper classifies systems. TIDE compares three access rules of one system on matched seeds. Genomes have a fixed length of six bytes, so at most 12^6 = 2,985,984 genotypes exist and diversity is bounded by construction. |
+| Bedau, Snyder and Packard 1998 (published conference paper) | Genotype activity counters, diversity, new and mean cumulative activity, a neutral shadow and three classes of long-term dynamics, applied to Echo and the fossil record. [Cached PDF](../references/pdf/bedau-snyder-packard-1998-long-term-evolutionary-dynamics.pdf) · [Source](https://people.reed.edu/~mab/papers/alife6.pdf) | The paper classifies systems. TIDE compares three access rules of one system on matched seeds. Genomes have a fixed length of six bytes. Each byte is one of the 12 instruction bytes or the zero that fills new reservation bytes, so at most 13^6 = 4,826,809 genotypes exist and diversity is bounded by construction. |
 | Bedau and Packard 1992; Bedau et al. 1997 (book chapter; conference paper) | The origin of activity counters and the first neutral analogues of Evita and Bugs. [1992](../references/pdf/bedau-packard-1992-evolutionary-activity.pdf) · [1997](../references/pdf/bedau-et-al-1997-evolutionary-activity-comparison.pdf) | Background only. The definitions used here follow the 1998 paper. |
 | Dolson, Vostinar, Wiser and Ofria 2019, MODES (published article) | Change, novelty, complexity and ecology after a persistence filter of t generations. Applied to NK landscapes and to Avida treatments with 30 replicates per condition, using Kruskal–Wallis and post hoc Wilcoxon tests. [Cached PDF](../references/pdf/dolson-et-al-2019-modes-toolbox.pdf) · [Article](https://doi.org/10.1162/artl_a_00280) | Access, not environment or population size, is the treatment. Complexity is capped at six informative sites. Borrowed copying separates the executing parent from the byte supplier, so "descendant" needs a stated parent rule. |
 | Stout and Spector 2005 (published conference paper) | Attempts to make the activity statistics classify an unlifelike system as class 3 failed. The paper reports Channon's criticism that the shadow drifts from the run, and his use of median activity. [Cached PDF](../references/pdf/stout-spector-2005-activity-validation.pdf) | Channon's own papers have not been read. His reset normalization is therefore not adopted. Median activity is reported because MODES also adopts it (Table 1 and footnote 2). |
@@ -70,7 +70,7 @@ Definitions follow Dolson et al. 2019, §§3.1–3.2, read in the cached publish
 - **Persistence filter:** at timepoint A, a genotype passes if some individual alive at A carrying it has a descendant alive t generations later. The primary filter length is t = 1,024 generations, the lattice capacity. MODES used t equal to population size for NK and compared t = 500–4,000 in Avida. It also notes that the median neutral coalescence time is 2N, so t = N relies on selection. The same t is used in every arm.
 - **Timepoints:** every 256 generations of Ḡ. This is finer than t, as §3.2.1 permits.
 - **Change:** the number of genotypes in the filtered set F(A) that were absent from the previous timepoint's filtered set (eq. 1).
-- **Novelty:** the number of genotypes in F(A) that have never passed the filter before (eq. 2). The genotype space has 2,985,984 entries, so an exact bit array replaces the paper's Bloom filter.
+- **Novelty:** the number of genotypes in F(A) that have never passed the filter before (eq. 2). The genotype space has 4,826,809 entries, so an exact bit array replaces the paper's Bloom filter.
 - **Ecology:** the Shannon entropy, in bits, of genotype frequencies among individuals at A whose lineages passed (eq. 3).
 - **Complexity:** the largest number of informative sites among genotypes in F(A) (§3.2.3).
   - A site is informative if replacing its byte with `.` reduces the focal's births. The test forks the whole world at the birth of the genotype's first filtered carrier and runs to the focal's age death. `.` is a no-op in the contract.
@@ -223,22 +223,26 @@ The estimate assumes:
 | Validation | — | — | 13 short worlds | < 1 | < 1 h |
 | **Total** | | | | **about 40–165** | **about 10–41 h** |
 
-The lower figures assume no assays. The upper figures assume every window timepoint is filled with distinct, newly filtered genotypes, which is not physically expected. Memory per world is small: the genotype bit array is 0.4 MB, activity counters for all genotypes take 12 MB, and the pruned phylogeny is a few MB.
+The lower figures assume no assays. The upper figures assume every window timepoint is filled with distinct, newly filtered genotypes, which is not physically expected. Memory per world is small: the genotype bit array is 0.6 MB, activity counters for all genotypes take 19 MB, and the pruned phylogeny is a few MB.
 
 **GPU (P2): not needed for this question.** The upper bound fits on this 4-core machine in under two days. Independent worlds already scale linearly across CPU cores, and the uncertain part of the cost is observer and fork work, which branches per genotype and does not map naturally onto a lattice GPU kernel. AGENTS.md places GPU work after the rules stabilize. The roadmap schedules P2 after R5 unless runs are too slow, and this estimate says they are not. A GPU backend must also match the CPU reference by state hash ([roadmap](../roadmap.md#performance-line)). Reconsider P2 if a follow-up needs lattices of 128 × 128 or larger at the same filter-relative window. One such world would need about 22 million ticks at about 1.5 ms each with events, roughly 9 hours of field simulation per world before observers and assays.
 
 ## What this cannot show
 
-- Six-byte genomes hold the genotype space at 2,985,984 entries and complexity at six sites. The design compares dynamics across access rules; it cannot test open-ended growth.
+- Six-byte genomes hold the genotype space at 4,826,809 entries and complexity at six sites. The design compares dynamics across access rules; it cannot test open-ended growth.
 - One ancestor, one lattice size for the confirmatory test, and one mutation rate. Effects may differ elsewhere, and only the one-variable rule allows that to be checked later.
 - The arms change access to living, reserved and dead neighboring banks together. Attributing an effect to dead bytes needs the reclamation comparison, which is deferred.
 - The persistence filter and the shadow reduce, but do not remove, neutral contributions. Adaptive claims about particular genotypes need permission or knockout replays.
 
-## Open items for agreement
+## Agreed choices
 
-1. The primary parent rule: material, with executor as sensitivity.
-2. Lattice size and the primary filter length t = 1,024.
-3. The four primary endpoints and the ±0.5 SD equivalence bound.
-4. The shadow adaptation for variation births.
-5. Whether to run the 64 × 64 scale check.
-6. Whether the complexity assays are required, or reported only if their cost is affordable.
+On 2026-11-25 every item left open in the draft was settled as the draft recommended:
+
+1. The material parent is primary; executor parentage is a sensitivity analysis.
+2. The primary lattice is 32 × 32 with filter length t = 1,024 generations.
+3. The primary endpoints are P1–P4, and the equivalence bound is ±0.5 SD.
+4. The shadow assigns a new genotype exactly at variation births.
+5. The 64 × 64 scale check runs with the seed budget above, after the primary runs.
+6. The complexity assays run as specified.
+
+The six-site complexity ceiling stands, and the question compares dynamics only. When the brief was agreed, its genotype count was corrected from 12^6 to 13^6: zero-filled reservation bytes can be copied into products. The run protocol and records are in [access-dynamics-01](../../kernel/runs/access-dynamics-01/README.md).
