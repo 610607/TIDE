@@ -6,7 +6,13 @@ Updated 2026-11-25.
 
 This roadmap is a plan. Stage contents are proposals until their rules are agreed; [AGENTS.md](../AGENTS.md) records what is decided.
 
+## Current focus in the reference VM
+
+Can descendants rebuild a copying relationship after its original executor and living byte source both die? In 1,024 untreated worlds, seven families produced a confirmed starting copy. Replaying all seven showed that three had two eligible descendants alive together after both original deaths, two had adjacent descendants, and one wrote all six bytes from its living relative. Its executor reached the age limit with division pending. None produced a confirmed renewal birth. The next proposed test is to measure these stages prospectively under the existing VM rules, including unfinished copies and complete births. [Seven-family replay and next comparison](../kernel/runs/natural-renewal-01/starter-audit/README.md)
+
 The first C++ reference can separate neighbor instruction fetch from data copying. A longer paired assay confirmed heritable fetch dependence in 7 of 32 prospectively tested seeds. Tracing all 37 exposed births in the read arm showed that the daughters lost their mothers' reader sequence. All eight confirmed prospective same-genome families ended by field tick 713. A retrospective lineage retained fetch dependence across a point substitution. Across 256 new read-only seeds, no newborn reader encountered a compatible live neighbor during its first-copy window. In a seeded field, proximity and residual bytes enabled up to seven reader transmissions. [Transmission study](../kernel/runs/transmission-01/README.md) [Measurement and replay](../kernel/runs/horizon-01/README.md)
+
+## Separate substrate and chain experiments
 
 The exploratory substrate series pauses at v31. Its paired runs showed that extra material improved replication while strict sites continued to decline. A lineage that requires a neighbor could fail the isolated replication assay used in those runs. [v31 results](../experiments/physub/runs/v31/README.md)
 
@@ -59,7 +65,7 @@ An experience layer (observation UI, cards, controller seats for humans, AI, and
 | R5. One living partner delivered at a changed reader's birth | In 46 matched cases, a confirmed descendant retained the focal sequence after focal death in three cases with the match nearby and one with it far away. One case qualified in both arms. In seed 20349 two descendants supplied the executor and living template after both initial individuals died. | [Paired deliveries and traced post-death births](../kernel/runs/partner-placement-01/README.md) |
 | R5. Spontaneous renewal of a copying neighborhood | In 1,024 new untreated worlds, none of 35 changed readers had a living match within one step. Fourteen had one elsewhere during life. Seven worlds had a confirmed starting copy in the broader reader screen, and none achieved replacement of both roles. | [Untreated cohorts, distance census and calibrated renewal test](../kernel/runs/natural-renewal-01/README.md) |
 
-The five- and six-byte studies establish heritable dependence in specified birth environments. A single supplied association let a later generation reproduce the changed sequence using its own living template and executor. Untreated fields sometimes formed a confirmed starting pair, with no family renewing both roles in the prospective cohort. A candidate structural comparison would test whether allowing a newborn to remain adjacent to the template it was copied from improves renewal at the same read degree.
+The five- and six-byte studies establish heritable dependence in specified birth environments. A single supplied association let a later generation reproduce the changed sequence using its own living template and executor. A candidate future geometry experiment would vary adjacency to the original template while holding read degree fixed. The untreated starter audit also found losses before a second eligible relative existed and after a full six-byte write. These stages can be measured in the reference geometry.
 
 ## Main line
 

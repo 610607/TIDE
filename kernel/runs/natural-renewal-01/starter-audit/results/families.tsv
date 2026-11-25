@@ -1,0 +1,8 @@
+seed	reader	child	donor	genome	last_original_death	confirmed_later	overlapping_pairs	adjacent_pairs	postdeath_peer_bytes	child_births	same_child_births	renewal_depth
+26720	1078	1111	1079	RS.CLD	1922	1	0	0	0	2	0	0
+26788	2804	2831	2794	RRSCLD	4622	1	0	0	0	2	0	0
+26893	882	920	891	R.SCLD	1600	2	1	1	0	1	1	0
+26947	2389	2402	2393	RJSCLD	3934	1	0	0	0	2	0	0
+27266	3275	3310	3283	R.SCLD	5429	2	1	1	6	1	1	0
+27323	5015	5026	4980	CRSCLD	8031	2	1	0	0	1	0	0
+27428	1026	1069	1022	RS.CLD	1825	1	0	0	0	1	0	0
