@@ -7,6 +7,7 @@ docs/references/pdf/*
 
 # Build output
 build/
+__pycache__/
 
 # OS and editor files
 .DS_Store
