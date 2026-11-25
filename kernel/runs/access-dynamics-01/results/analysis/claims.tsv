@@ -1,0 +1,4 @@
+claim	arm	reference	outcome	differs	equivalent	inconclusive
+C1	read	self	inconclusive		P1,P3	P2,P4
+C2	read_fetch	read	inconclusive		P2,P3,P4	P1
+C3	read_fetch	self	supported	P4	P1	P2,P3

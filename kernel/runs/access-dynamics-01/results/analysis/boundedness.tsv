@@ -1,0 +1,16 @@
+arm	metric	points	best	aic_constant	params_constant	aic_linear	params_linear	aic_logarithmic	params_logarithmic	aic_saturating_exponential	params_saturating_exponential
+self	arm_mean_change	61	saturating_exponential	-188.475	0.983607	-292.324	0.615805;4.22566e-05	-286.186	-1.41947;0.270641	-299.615	0.588288;0.962177;13062.9
+self	arm_mean_cumulative_novelty	61	linear	309.634	19.8463	1.5573	-4.11776;0.00275322	195.573	-126.697;16.504	5.49642	-1.33099;4249.71;1.536e+06
+self	arm_mean_ecology	61	saturating_exponential	-293.46	0.210579	-317.778	0.109113;1.16574e-05	-319.54	-0.477472;0.07749	-320.66	0.0811501;0.226063;7496.07
+self	arm_mean_complexity	61	linear	-261.008	4.13576	-323.761	4.31662;-2.07797e-05	-307.56	5.23073;-0.123319	-321.745	4.2956;-32.0753;1.536e+06
+self	world_cumulative_novelty_best_counts	32	linear=22;saturating_exponential=10								
+read	arm_mean_change	61	saturating_exponential	-228.845	1.06557	-273.723	0.8524;2.44915e-05	-299.101	-0.537243;0.180513	-304.338	0.687709;0.493421;3574.58
+read	arm_mean_cumulative_novelty	61	linear	314.435	21.8858	-149.616	-3.11176;0.00287196	183.959	-133.66;17.5179	-142.106	-0.206537;4433.32;1.536e+06
+read	arm_mean_ecology	61	saturating_exponential	-323.582	0.221796	-330.353	0.172793;5.62998e-06	-340.509	-0.235275;0.0514765	-348.123	0.0597756;0.185824;1869.9
+read	arm_mean_complexity	61	saturating_exponential	-283.965	4.11936	-307.45	4.22764;-1.24394e-05	-315.242	4.91336;-0.0894221	-315.375	4.30975;-0.245507;3412.91
+read	world_cumulative_novelty_best_counts	32	linear=18;logarithmic=1;saturating_exponential=13								
+read_fetch	arm_mean_change	61	saturating_exponential	-194.652	1.05379	-288.502	0.71088;3.93969e-05	-279.517	-1.16483;0.249867	-293.608	0.685478;0.896448;13062.9
+read_fetch	arm_mean_cumulative_novelty	61	linear	308.437	19.9933	-20.8534	-3.7584;0.00272883	191.74	-125.655;16.4033	-16.6956	-0.996773;4212.14;1.536e+06
+read_fetch	arm_mean_ecology	61	saturating_exponential	-282.732	0.223031	-323.762	0.0898846;1.52971e-05	-324.256	-0.660379;0.0994918	-325.829	0.0681544;0.307178;9447.91
+read_fetch	arm_mean_complexity	61	logarithmic	-232.998	4.09375	-283.758	4.30782;-2.45948e-05	-285.676	5.52439;-0.161122	-284.937	4.33486;-0.505483;10364.2
+read_fetch	world_cumulative_novelty_best_counts	32	linear=22;saturating_exponential=10								
