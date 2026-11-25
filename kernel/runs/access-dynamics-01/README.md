@@ -2,6 +2,8 @@
 
 Full neighbor access (reads plus instruction fetch) raised one preregistered statistic over self-only access in matched 32 × 32 worlds: Bedau's mean new activity (P4). The difference held in both seed blocks and exceeded the neutral shadow's. Under the frozen rules, claim C3 is therefore supported. No MODES endpoint (novelty, change, ecology) differed in any comparison. Neighbor reads alone (C1) and adding fetch to reads (C2) were inconclusive. All 96 worlds survived the 4,194,304-tick horizon. A fetch-requiring genotype, RCCCJD, passed the persistence filter in 17 of 32 read_fetch worlds. In five worlds it was the only filtered genotype at four or more consecutive timepoints. No read-requiring genotype passed the filter in any world. In a descriptive 64 × 64 check with a longer filter, RCCCJD was established in all eight read_fetch worlds. [Frozen protocol](protocol.md) · [Research brief](../../../docs/research/access-dynamics-rq.md) · [Generated analysis summary](results/analysis/summary.md)
 
+![Overview: P4 per seed across arms with the claim outcomes, MODES endpoints P1-P3, RCCCJD presence in the filtered sets at 32 × 32 and 64 × 64, and the borrowing mechanism](access-dynamics-overview.png)
+
 ![Per-world P1-P4 for runs and neutral shadows, cumulative novelty across the MODES window, and genotype diversity over the horizon](access-dynamics.png)
 
 ## Claims under the preregistered rules
@@ -111,7 +113,7 @@ Seeds 29901–29904 in all three arms for 65,536 ticks, the mutation-free self w
 - **Code and protocol.** Frozen in `d4416bd` before any study seed ran. [revision.sha256](revision.sha256) lists the digests that `run.py` checks before each set. Each world's `log.txt` records the command, the repository revision when the driver started (`06f84ec` for primary batches 1–7, `c8c00ef` after the restart), its final hash, wall time and peak memory. The kernel adds only the analysis hook `World::replace_bytes` (`5cacf82`) to the reference VM.
 - **Batches.** Worlds ran in batches of eight, four at a time; each batch was committed and pushed. Primary worlds took 344–401 s each and 168–173 MB of memory.
 - **Restart.** After batch 7 of the primary set, the driver was stopped and restarted detached, to avoid a two-hour limit on background commands. Its four unfinished worlds were rerun from scratch, and [progress.log](results/primary/progress.log) records the restart. No completed world was rerun or altered.
-- **Plot.** [plot.py](plot.py) was written and tested on non-study seeds before any primary result was read. It is not part of the frozen analysis.
+- **Plot.** [plot.py](plot.py) was written and tested on non-study seeds before any primary result was read. It is not part of the frozen analysis. The overview figure, [overview.py](overview.py), was drawn after the results from committed analysis files only; panel D is from code inspection.
 - **Post hoc checks.** The P4 quarters and the RCCCJD timepoint listing above were computed after the frozen analysis and are labelled where used.
 
 ```sh
@@ -123,6 +125,7 @@ python3 kernel/runs/access-dynamics-01/analyze.py primary
 python3 kernel/runs/access-dynamics-01/analyze.py scale
 python3 kernel/runs/access-dynamics-01/plot.py primary
 python3 kernel/runs/access-dynamics-01/plot.py scale
+python3 kernel/runs/access-dynamics-01/overview.py
 ```
 
 ## What this does not show
