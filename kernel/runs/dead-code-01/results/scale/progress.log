@@ -1,3 +1,5 @@
 2026-11-25T17:29:41Z	batch 1/4 start: read-retain-31101 read-empty-31101 read_fetch-retain-31101 read_fetch-empty-31101 read-retain-31102 read-empty-31102 read_fetch-retain-31102 read_fetch-empty-31102
 2026-11-25T17:54:37Z	world read-retain-31101: 1496 s
 2026-11-25T17:54:37Z	world read-empty-31101: 1480 s
+2026-11-25T17:55:33Z	world read_fetch-retain-31101: 1552 s
+2026-11-25T17:55:33Z	world read_fetch-empty-31101: 1482 s
