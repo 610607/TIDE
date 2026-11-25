@@ -130,3 +130,5 @@
 2026-11-25T15:40:06Z	world read_fetch-empty-31019: 385 s
 2026-11-25T15:40:06Z	world self-retain-31020: 383 s
 2026-11-25T15:40:06Z	batch 12/20 done
+2026-11-25T15:40:11Z	batch 12/20 pushed
+2026-11-25T15:40:11Z	batch 13/20 start: read-retain-31020 read-empty-31020 read_fetch-retain-31020 read_fetch-empty-31020 self-retain-31021 read-retain-31021 read-empty-31021 read_fetch-retain-31021
