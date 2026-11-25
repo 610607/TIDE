@@ -77,3 +77,12 @@
 2026-11-25T14:31:07Z	batch 7/20 pushed
 2026-11-25T14:31:07Z	stopping before batch 8/20: time limit
 2026-11-25T14:31:21Z	batch 8/20 start: read-retain-31012 read-empty-31012 read_fetch-retain-31012 read_fetch-empty-31012 self-retain-31013 read-retain-31013 read-empty-31013 read_fetch-retain-31013
+2026-11-25T14:38:13Z	world read-retain-31012: 412 s
+2026-11-25T14:38:18Z	world read-empty-31012: 417 s
+2026-11-25T14:38:19Z	world read_fetch-retain-31012: 417 s
+2026-11-25T14:38:19Z	world read_fetch-empty-31012: 408 s
+2026-11-25T14:45:26Z	world self-retain-31013: 437 s
+2026-11-25T14:45:33Z	world read-retain-31013: 440 s
+2026-11-25T14:45:38Z	world read-empty-31013: 439 s
+2026-11-25T14:45:38Z	world read_fetch-retain-31013: 438 s
+2026-11-25T14:45:38Z	batch 8/20 done
