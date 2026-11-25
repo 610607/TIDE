@@ -147,3 +147,8 @@
 2026-11-25T16:01:02Z	world self-retain-31022: 417 s
 2026-11-25T16:01:03Z	world read-retain-31022: 420 s
 2026-11-25T16:01:03Z	world read-empty-31022: 418 s
+2026-11-25T16:07:56Z	world read_fetch-retain-31022: 417 s
+2026-11-25T16:07:56Z	world read_fetch-empty-31022: 415 s
+2026-11-25T16:07:56Z	world self-retain-31023: 407 s
+2026-11-25T16:07:58Z	world read-retain-31023: 415 s
+2026-11-25T16:07:58Z	batch 14/20 done
