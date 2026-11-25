@@ -1,0 +1,4 @@
+cohort	worlds	tested	confirmed	roots	primary	strict	three_programs	returns	outside	no_successor	no_birth	no_exposed_birth	reproduced_denied	unconfirmed_other	beyond_cutoff	confirmed_worlds	changed_worlds	post_worlds	primary_worlds	strict_worlds	three_programs_worlds	material_change_on_path_worlds	post_nonroot_genome_worlds	material_reached_worlds	material_bridge_worlds	bridge_passive_worlds	bridge_changed_post_worlds	returns_worlds	outside_worlds	max_depth	max_span	max_genomes	material_depth	material_span	reproducing	stagnant	extinct
+block1	512	5820	5820	5797	1	1	0	2917	2609	0	3589	4607	0	0	31	511	12	2	1	1	0	0	0	5	0	0	0	492	491	3	96	2	1	83	512	0	0
+block2	512	5898	5898	5862	3	3	0	2999	2704	0	3586	4661	0	0	33	512	13	4	3	3	0	0	0	2	0	0	0	502	501	8	210	2	1	81	512	0	0
+pooled	1024	11718	11718	11659	4	4	0	5916	5313	0	7175	9268	0	0	64	1023	25	6	4	4	0	0	0	7	0	0	0	994	992	8	210	2	1	83	1024	0	0

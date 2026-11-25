@@ -2,7 +2,7 @@
 
 TIDE stands for TIDE Is Digital Evolution.
 
-Updated 2026-11-24.
+Updated 2026-11-25.
 
 This roadmap is a plan. Stage contents are proposals until their rules are agreed; [AGENTS.md](../AGENTS.md) records what is decided.
 
@@ -46,8 +46,10 @@ An experience layer (observation UI, cards, controller seats for humans, AI, and
 | R5. Paired placement of a distant active reader | Moving the same reader adjacent to a surviving template yielded 50 exact births in 45 of 3,439 matched cases. Equal-distance control moves yielded zero. Three offspring supplied four more exact births to the same reader. None supplied one to a different reader. | [Paired fields, byte traces and offspring follow-up](../kernel/runs/contact-placement-01/README.md) |
 | R5. Handoff under passive movement | In 2,048 new seeds, six stationary worlds, one low-exchange world and zero high-exchange worlds produced a different-reader handoff. At high exchange, 1,920 of 2,079 source switches occurred at the same read address while the original donor was alive elsewhere. | [Matched cohorts, handoff links and source-switch traces](../kernel/runs/transport-handoff-01/README.md) |
 | R5. Timing of exchange at a fixed opportunity budget | In 2,048 new seeds, concentrating the same edge offers into bursts raised six aligned reads per qualifying start from 43.6% to 61.6%. Each schedule had one world with a different-reader handoff from a fully followed newborn. | [Matched schedules, first-write phases and handoff traces](../kernel/runs/transport-timing-01/README.md) |
+| R6. First-stage research report | Neighbor dependence arose under both access channels. Permission forks, tracked family extinctions and donor identities distinguish inheritance of behavior, transmission of material and regeneration of identical bytes. | [Stage report and evidence index](research/neighbor-dependence-results.md) |
+| R5. Long-term inheritance of changed behavior | In 4 of 1,024 new worlds, a confirmed changed path produced a descendant after the first carrier died. All such later births returned to the original sequence. The longest unchanged path spanned eight carriers. | [Long-run pedigrees, permission forks and sequence returns](../kernel/runs/trait-lineage-01/README.md) |
 
-The pilot's budget, five-byte ancestor and substitution-only mutation restrict the interpretation. A remaining question is which spatial conditions bring independently arising readers and compatible banks together often enough for serial transmission.
+The five- and six-byte studies establish heritable dependence in specified birth environments. The long-run experiment found transient changes on a small number of continuous behavioral pedigrees. Sustaining a changed program together with the conditions its reproduction requires remains an open question.
 
 ## Main line
 
