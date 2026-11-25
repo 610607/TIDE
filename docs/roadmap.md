@@ -67,6 +67,10 @@ An experience layer (observation UI, cards, controller seats for humans, AI, and
 
 The five- and six-byte studies establish heritable dependence in specified birth environments. A single supplied association let a later generation reproduce the changed sequence using its own living template and executor. A candidate future geometry experiment would vary adjacency to the original template while holding read degree fixed. The untreated starter audit also found losses before a second eligible relative existed and after a full six-byte write. These stages can be measured in the reference geometry.
 
+**Draft second question, not agreed.** From the same independently reproducing ancestor, does the access permission change the population's long-term evolutionary dynamics? The three arms allow the own body only, neighbor reads, or neighbor reads plus borrowed fetch. Every other rule stays fixed. The draft measures the arms with Bedau's activity statistics and a neutral shadow, and with the MODES metrics after a persistence filter. It also states windows, endpoints, interpretation rules, seeds and a compute estimate from a [tick timing benchmark](../kernel/bench/README.md). [Draft brief](research/access-dynamics-rq.md)
+
+**Proposed to follow it.** Dead code as an ecological resource ([frontier candidate 2](research/frontier.md#candidate-research-questions-proposals-only)) is a proposal ranked after the draft question. It has no brief.
+
 ## Main line
 
 | Stage | Content | Exit condition |
