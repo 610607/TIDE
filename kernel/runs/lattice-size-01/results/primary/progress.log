@@ -88,3 +88,5 @@
 2026-11-26T10:25:27Z	world L24-32015: 222 s
 2026-11-26T10:25:27Z	world L24-32016: 225 s
 2026-11-26T10:25:27Z	batch 8/16 done
+2026-11-26T10:25:31Z	batch 8/16 pushed
+2026-11-26T10:25:31Z	stopping before batch 9/16: deadline
