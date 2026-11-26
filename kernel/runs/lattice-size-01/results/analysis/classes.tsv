@@ -1,0 +1,21 @@
+size	cls	established	worlds	ci_lo	ci_hi	mean_fraction
+24	read_requiring	0	32	0	0.108881	0
+24	fetch_requiring	5	32	0.0527506	0.327879	0.0057398
+24	both_requiring	0	32	0	0.108881	0
+24	either_sufficient	0	32	0	0.108881	0
+24	focus genotype class: fetch_requiring 9, not assayed 23		32			
+32	read_requiring	0	32	0	0.108881	0
+32	fetch_requiring	12	32	0.211	0.563078	0.0229592
+32	both_requiring	0	32	0	0.108881	0
+32	either_sufficient	0	32	0	0.108881	0
+32	focus genotype class: fetch_requiring 23, not assayed 9		32			
+48	read_requiring	0	32	0	0.108881	0
+48	fetch_requiring	28	32	0.710052	0.964869	0.16773
+48	both_requiring	0	32	0	0.108881	0
+48	either_sufficient	0	32	0	0.108881	0
+48	focus genotype class: fetch_requiring 32		32			
+64	read_requiring	0	32	0	0.108881	0
+64	fetch_requiring	31	32	0.837829	0.999209	0.477041
+64	both_requiring	0	32	0	0.108881	0
+64	either_sufficient	0	32	0	0.108881	0
+64	focus genotype class: fetch_requiring 32		32			

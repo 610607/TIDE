@@ -1,0 +1,21 @@
+endpoint	size	worlds	statistic	value	lo95	hi95	method
+E1_t1024	24	32	proportion	0.125	0.0351307	0.289948	Clopper-Pearson
+E1_t1024	32	32	proportion	0.375	0.211	0.563078	Clopper-Pearson
+E1_t1024	48	32	proportion	0.875	0.710052	0.964869	Clopper-Pearson
+E1_t1024	64	32	proportion	0.96875	0.837829	0.999209	Clopper-Pearson
+E1_t4096	24	32	proportion	0.125	0.0351307	0.289948	Clopper-Pearson
+E1_t4096	32	32	proportion	0.34375	0.185719	0.531931	Clopper-Pearson
+E1_t4096	48	32	proportion	0.875	0.710052	0.964869	Clopper-Pearson
+E1_t4096	64	32	proportion	0.96875	0.837829	0.999209	Clopper-Pearson
+E2_t1024	24	32	median	0	0	0	percentile bootstrap, 10000 resamples
+E2_t1024	32	32	median	0	0	0.0204082	percentile bootstrap, 10000 resamples
+E2_t1024	48	32	median	0.255102	0.183673	0.306122	percentile bootstrap, 10000 resamples
+E2_t1024	64	32	median	0.795918	0.765306	0.836735	percentile bootstrap, 10000 resamples
+E2_t4096	24	32	median	0	0	0	percentile bootstrap, 10000 resamples
+E2_t4096	32	32	median	0	0	0.0102041	percentile bootstrap, 10000 resamples
+E2_t4096	48	32	median	0.173469	0.122449	0.183673	percentile bootstrap, 10000 resamples
+E2_t4096	64	32	median	0.479592	0.428571	0.55102	percentile bootstrap, 10000 resamples
+E3	24	32	median	0.0204082	0	0.0612245	percentile bootstrap, 10000 resamples
+E3	32	32	median	0.0510204	0.0204082	0.142857	percentile bootstrap, 10000 resamples
+E3	48	32	median	0.765306	0.5	0.928571	percentile bootstrap, 10000 resamples
+E3	64	32	median	1	1	1	percentile bootstrap, 10000 resamples
