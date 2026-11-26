@@ -199,3 +199,12 @@ Read for the [access-dynamics RQ draft](../research/access-dynamics-rq.md). The 
 | [The MODES Toolbox: Measurements of Open-Ended Dynamics in Evolving Systems](pdf/dolson-et-al-2019-modes-toolbox.pdf) | Published article, Artificial Life 25(1):50–73, deposited in NSF PAR | 25 | [Source](https://par.nsf.gov/servlets/purl/10104628) · [Article](https://doi.org/10.1162/artl_a_00280) |
 | [Validation of Evolutionary Activity Metrics for Long-Term Evolutionary Dynamics](pdf/stout-spector-2005-activity-validation.pdf) | Conference paper, GECCO 2005, pp. 137–142 | 6 | [Source](https://gpbib.cs.ucl.ac.uk/gecco2005/docs/p137.pdf) |
 | [Neutral Evolution of Mutational Robustness](pdf/van-nimwegen-crutchfield-huynen-1999-neutral-robustness-v2.pdf) | arXiv:adap-org/9903006v2, 19 March 1999; preprint of PNAS 96(17):9716–9720 | 7 | [Source](https://arxiv.org/pdf/adap-org/9903006v2) |
+
+## Lattice size and spatial persistence (2026-11-26)
+
+Read for the [lattice-size RQ draft](../research/lattice-size-rq.md). Boerlijst and Hogeweg 1991, Takeuchi and Hogeweg 2009 and the MODES paper were already cached; the two sources below were added.
+
+| Source | Version | Pages | Online source |
+| --- | --- | ---: | --- |
+| [Stochastic models of population extinction](pdf/ovaskainen-meerson-2010-stochastic-extinction-v1.pdf) | arXiv:1008.1162v1, 6 August 2010; preprint of a review in Trends in Ecology & Evolution 25 (2010) | 42 | [Source](https://arxiv.org/pdf/1008.1162v1) |
+| [Parasites Sustain and Enhance RNA-Like Replicators through Spatial Self-Organisation](pdf/colizzi-hogeweg-2016-parasites-spatial-self-organisation.pdf) | Published article, PLoS Computational Biology 12(4):e1004902 (2016), CC BY | 17 | [Source](https://journals.plos.org/ploscompbiol/article/file?id=10.1371/journal.pcbi.1004902&type=printable) · [Article](https://doi.org/10.1371/journal.pcbi.1004902) |

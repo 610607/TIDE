@@ -73,6 +73,8 @@ The five- and six-byte studies establish heritable dependence in specified birth
 
 **Third question, agreed.** Dead code as an ecological resource ([frontier candidate 2](research/frontier.md#candidate-research-questions-proposals-only)) follows the second question. Its [brief](research/dead-code-rq.md) compares retained with cleared dead code under neighbor access and tests the predictions of two hypotheses, mutation buffering and raw material. Under its rules, retaining dead code changed no primary endpoint in either arm. The only mechanism difference counted against raw material, so neither pattern was supported. A post hoc replay found that this difference came mostly from all-zero offspring under clearing. [Runs](../kernel/runs/dead-code-01/README.md)
 
+**Proposed scale control, draft.** The fetch-requiring genotype was established at 64 × 64 but transient at 32 × 32, and the 64 × 64 checks also changed the filter length and timepoints. A [draft brief](research/lattice-size-rq.md) holds every setting fixed except the lattice size, at 24, 32, 48 and 64, and states what a finite-population and a spatial-pattern explanation each predict. It is not agreed.
+
 ## Main line
 
 | Stage | Content | Exit condition |

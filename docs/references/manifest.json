@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "verified_at": "2026-11-18T03:11:24.926815+00:00",
+  "verified_at": "2026-11-26T01:01:45.237466+00:00",
   "papers": [
     {
       "path": "pdf/ray-1991-synthesis-of-life.pdf",
@@ -1343,6 +1343,34 @@
       "validation": "Complete PDF signature and %%EOF trailer; Poppler page count and opening text checked",
       "version": "arXiv:adap-org/9903006v2, 19 March 1999; preprint of PNAS 96(17):9716-9720 (1999)",
       "year": "1999"
+    },
+    {
+      "authors": "Otso Ovaskainen and Baruch Meerson",
+      "bytes": 1046116,
+      "pages": 42,
+      "path": "pdf/ovaskainen-meerson-2010-stochastic-extinction-v1.pdf",
+      "reading_depth": "Abstract, classical results (Eqs. 1-2) and the threshold-case scaling read; WKB methods screened",
+      "retrieved_on": "2026-11-26",
+      "sha256": "742dbeeb285b66de299ecb42866d2187446ba69e2b36a3cd7db8099de1fdb0ab",
+      "source_url": "https://arxiv.org/pdf/1008.1162v1",
+      "title": "Stochastic models of population extinction",
+      "validation": "Complete PDF signature and %%EOF trailer; Poppler page count and opening text checked",
+      "version": "arXiv:1008.1162v1, 6 August 2010; preprint of a review in Trends in Ecology & Evolution 25 (2010)",
+      "year": "2010"
+    },
+    {
+      "authors": "Enrico Sandro Colizzi and Paulien Hogeweg",
+      "bytes": 3642678,
+      "pages": 17,
+      "path": "pdf/colizzi-hogeweg-2016-parasites-spatial-self-organisation.pdf",
+      "reading_depth": "Abstract, introduction, methods and opening results read; lattice sizes in figure legends checked",
+      "retrieved_on": "2026-11-26",
+      "sha256": "3a4b0cc821a9546074f9b542191156a88ad5b191bb46cac04e9b2cc852707e32",
+      "source_url": "https://journals.plos.org/ploscompbiol/article/file?id=10.1371/journal.pcbi.1004902&type=printable",
+      "title": "Parasites Sustain and Enhance RNA-Like Replicators through Spatial Self-Organisation",
+      "validation": "Complete PDF signature and %%EOF trailer; Poppler page count and opening text checked",
+      "version": "Published article, PLoS Computational Biology 12(4):e1004902 (2016); publisher PDF, CC BY",
+      "year": "2016"
     }
   ]
 }
