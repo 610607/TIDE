@@ -67,3 +67,4 @@
 2026-11-26T09:04:26Z	batch 6/16 done
 2026-11-26T09:04:31Z	batch 6/16 pushed
 2026-11-26T09:04:31Z	stopping before batch 7/16: deadline
+2026-11-26T09:04:43Z	batch 7/16 start (extended window): L64-32013 L64-32014 L48-32013 L48-32014 L32-32013 L32-32014 L24-32013 L24-32014
