@@ -146,3 +146,5 @@
 2026-11-26T13:47:22Z	world L24-32025: 222 s
 2026-11-26T13:47:22Z	world L24-32026: 221 s
 2026-11-26T13:47:22Z	batch 13/16 done
+2026-11-26T13:47:27Z	batch 13/16 pushed
+2026-11-26T13:47:27Z	stopping before batch 14/16: deadline
