@@ -1,0 +1,11 @@
+classifier	R..CLD	1	1	1	1	4	independent
+classifier	RSCLD	1	0	1	0	4	read_requiring
+classifier	RJD	1	1	0	0	3	fetch_requiring
+spatial	empty	0	0	0	0	-1	0	nan,nan,nan,nan
+spatial	wrap_pair_and_single	3	2	2	2	1	0	0.1257,-0.0492,-0.0492,-0.0492
+spatial	row	8	1	8	16	4	1	0.4286,0.4286,0.4286,0.4286
+spatial	checkerboard	32	32	1	0	1	0	-1.0000,1.0000,-1.0000,1.0000
+spatial	stripes2	32	2	16	96	2	0	0.5000,0.0000,0.5000,1.0000
+origin	from_other	1
+origin	from_focus	0
+origin	other_child	0

@@ -1,0 +1,4 @@
+pattern	statistic	value	holds
+supply-like (A1a)	origins slope; rho(L, ff_longest)	1.273 [0.9881, 1.875]; 0.8549 [0.7785, 0.9374]	0
+smooth (A1b)	rho(L, ff_longest) interval; rise in mean E2 and largest step share	[0.7785, 0.9374]; t64 rise 0.8622, largest step 0.5858; t256 rise 0.8367, largest step 0.5122	0
+pattern-like (A2)	rho(L, xi); median xi at largest L; one-cluster share at smallest L	0.7044 [0.5171, 0.8698]; 3; 9/18	0

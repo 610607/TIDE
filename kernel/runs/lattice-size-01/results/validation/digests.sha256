@@ -1,0 +1,8 @@
+3d04ba375bee5cba0130eae6a959a875e1df8feabf5cc972a5390beb3ec46af4  kernel/runs/lattice-size-01/Makefile
+0fdefb15e3dcb317959f57b2a0a0ff2abe846422e06ecbdd0ae3a916778737d9  kernel/runs/lattice-size-01/analyze.py
+b0ad806285c11365884a9f34d6a1ed04bdcee905213e651ddb908b5de1161867  kernel/runs/lattice-size-01/protocol.md
+c5d85a596b4a82368800957fc9d0365233668061ee7bf0fc4456d582a879bf58  kernel/runs/lattice-size-01/run.py
+37acc85a07e97830016781983ffae8f3eea69826a3183f1d7ad04b8389c85abd  kernel/runs/lattice-size-01/study.cpp
+269e84c435c24111b3ded213a57dc48f2aeaba37c883a876bbfe3a0d74690147  kernel/src/vm.cpp
+8867ddfcf9dce0d666430f9493ce15bf8ff682407fbe0708fd67e78f46adf11c  kernel/src/vm.hpp
+f127a3f1bf1b3e4051127a28a5ef13fd8e9c5aa38be1062c6dc74651a760344a  docs/research/lattice-size-rq.md
