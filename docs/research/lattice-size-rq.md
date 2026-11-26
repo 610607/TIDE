@@ -1,6 +1,6 @@
 # Does lattice size alone change whether the fetch-requiring genotype persists?
 
-**Draft, not agreed (2026-11-26).** This brief proposes a scale control after the [access](access-dynamics-rq.md) and [dead-code](dead-code-rq.md) studies. Nothing in it is decided, and no study seed runs until the decisions at the end are settled.
+**Scale control, agreed 2026-11-26.** This brief sets out a scale control after the [access](access-dynamics-rq.md) and [dead-code](dead-code-rq.md) studies. Every decision at the end was settled as recommended ([agreed choices](#agreed-choices)). The run protocol and records are in [lattice-size-01](../../kernel/runs/lattice-size-01/README.md).
 
 **Question.** Start from the same `R..CLD` founder, with neighbor reads plus instruction fetch and retained dead code. Does the side length L of the torus, changed alone, change whether the fetch-requiring genotype `RCCCJD` is established and how long it persists? Filter lengths, timepoints, loss rule, tick horizon, mutation rate, seed list and every kernel rule stay the same at every size.
 
@@ -109,10 +109,10 @@ A size series changes N and L together, so it cannot separate A1b from A2 causal
 | Option | Sizes L | N = L² |
 | --- | --- | --- |
 | A, as requested | 32, 48, 64 | 1,024, 2,304, 4,096 |
-| B, recommended | 24, 32, 48, 64 | 576, 1,024, 2,304, 4,096 |
+| B, agreed | 24, 32, 48, 64 | 576, 1,024, 2,304, 4,096 |
 | C | 24, 32, 40, 48, 64 | 576, 1,024, 1,600, 2,304, 4,096 |
 
-**Reasons for option B:**
+**Reasons for option B, the agreed choice:**
 
 - 24 × 24 tests whether 32 × 32 is already at a floor. A floor at 24 and 32 followed by a rise points to a threshold (A2). A continued decline points to smooth scaling (A1b).
 - It adds about 2 CPU-hours.
@@ -279,9 +279,11 @@ The work runs in committed batches as before. The 64 × 64 worlds take about 60%
 - **No open-endedness claim.** The six-byte genome caps complexity. The study compares persistence of one genotype, not open-ended growth.
 - **The parasite reading is an analogy.** `RCCCJD` is partly self-executing and has no hypercycle partner. The precedents supply hypotheses, not expected values.
 
-## Decisions needed
+## Agreed choices
 
-| # | Decision | Recommendation |
+On 2026-11-26 every decision below was settled as recommended, including option B. Item 13 is settled by its stated condition on the validation timings.
+
+| # | Decision | Agreed |
 | --- | --- | --- |
 | 1 | Adopt the question as a scale control after the dead-code study, with A0, A1a, A1b and A2 as outcome patterns that may co-occur | Adopt |
 | 2 | Arm | read_fetch-retain only, the cell where `RCCCJD` occurs in both earlier studies. Adding read_fetch-empty would roughly double the cost. |
