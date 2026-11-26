@@ -11,3 +11,6 @@ __pycache__/
 
 # OS and editor files
 .DS_Store
+
+# Worlds being written by a study driver; renamed into place when complete
+kernel/runs/*/results/*/.tmp-*/
