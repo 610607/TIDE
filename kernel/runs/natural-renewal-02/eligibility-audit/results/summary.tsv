@@ -1,0 +1,13 @@
+cohort	exit	source	births	after_turnover	starts_with_any	starts
+natural-renewal-01	substituted	own_reservation	1	0	1	7
+natural-renewal-01	other_input	one_living_neighbor	10	8	7	7
+natural-renewal-01	other_input	own_reservation	2	0	2	7
+natural-renewal-01	no_offspring	own_reservation	1	0	1	7
+natural-renewal-01	all	all	14	8	7	7
+natural-renewal-02	substituted	one_living_neighbor	4	1	4	31
+natural-renewal-02	substituted	own_reservation	5	0	5	31
+natural-renewal-02	other_input	mixed	4	2	4	31
+natural-renewal-02	other_input	one_living_neighbor	20	9	16	31
+natural-renewal-02	other_input	own_reservation	34	9	21	31
+natural-renewal-02	no_offspring	one_living_neighbor	7	1	7	31
+natural-renewal-02	all	all	74	22	31	31
