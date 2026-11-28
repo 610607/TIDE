@@ -1,0 +1,7 @@
+seed	id	at_birth	contact_ticks	matching_reads	first_contact	first_read	birth_distance	min_distance	anywhere_ticks
+100516	3513	0	0	0	-1	-1	-1	-1	0
+100520	3086	0	0	0	-1	-1	-1	-1	0
+100530	2614	0	0	0	-1	-1	-1	2	66
+100530	2621	0	0	0	-1	-1	2	2	67
+100570	3521	0	0	0	-1	-1	-1	-1	0
+100576	1347	0	0	0	-1	-1	-1	-1	0

@@ -1,0 +1,5 @@
+seed	id	born	site	maker	maker_genome	genome	ordinary_births	blocked	at_birth	contact_ticks	matching_reads	first_contact	first_read	birth_distance	min_distance	anywhere_ticks	live_donor_births	intact_births	starts	depth
+101422	1029	1759	62	999	522e53434c44	52532e434c44	1	14	0	0	0	-1	-1	-1	-1	0	0	0	0	0
+101424	218	435	10	213	52532e434c44	525453434c44	2	31	0	0	0	-1	-1	-1	-1	0	1	0	0	0
+101452	3586	5739	9	3574	52533e434c44	435253434c44	1	26	0	0	0	-1	-1	-1	2	48	1	0	0	0
+101452	3606	5771	56	3574	52533e434c44	435253434c44	1	34	0	0	0	-1	-1	2	2	49	0	0	0	0
